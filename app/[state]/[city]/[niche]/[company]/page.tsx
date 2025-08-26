@@ -175,6 +175,42 @@ export default function DynamicFunnelPage() {
         { label: decoded.niche === "med spas" ? "Medical Spas" : decoded.niche === "law firms" ? "Law Firms" : decoded.niche === "home services" ? "Home Services" : decoded.niche.charAt(0).toUpperCase() + decoded.niche.slice(1), href: `/${decoded.state.toLowerCase()}/${params?.city}/${params?.niche}`, icon: Users },
         { label: businessData?.name || decoded.company, href: "#", icon: Briefcase }
       ]} />
+      {/* Structured Data: Breadcrumbs for company page */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: decoded.state,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${decoded.state.toLowerCase()}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: decoded.city,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${decoded.state.toLowerCase()}/${params?.city}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: decoded.niche === 'med spas' ? 'Medical Spas' : decoded.niche,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${decoded.state.toLowerCase()}/${params?.city}/${params?.niche}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 4,
+                name: businessData?.name || decoded.company,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}${typeof window !== 'undefined' ? window.location.pathname : ''}`,
+              },
+            ],
+          }),
+        }}
+      />
       <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
         {!!businessData && (
           <>

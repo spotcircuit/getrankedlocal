@@ -54,6 +54,51 @@ export default function CityPage() {
     <>
       <Header />
       <Breadcrumbs items={breadcrumbs} />
+      {/* Structured Data: Collection (City) with Niches */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: `${collectionName} Collection`,
+            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}`,
+            hasPart: {
+              '@type': 'ItemList',
+              numberOfItems: niches.length,
+              itemListElement: niches.map((n, i) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                name: n.displayName,
+                url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}/${n.niche}`,
+              })),
+            },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: state,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: `${collectionName} Collection`,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}`,
+              },
+            ],
+          }),
+        }}
+      />
       
       <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
         <div className="py-16 px-4 sm:px-6">

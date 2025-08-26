@@ -59,6 +59,45 @@ export default function StatePage() {
     <>
       <Header />
       <Breadcrumbs items={breadcrumbs} />
+      {/* Structured Data: State Collections */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: `Medical Spa Collections - ${stateName}`,
+            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}`,
+            hasPart: {
+              '@type': 'ItemList',
+              numberOfItems: collections.length,
+              itemListElement: collections.map((c, i) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                name: c.collection,
+                url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${c.collection.toLowerCase().replace(/\s+/g, '-')}`,
+              })),
+            },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: state,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}`,
+              },
+            ],
+          }),
+        }}
+      />
       
       <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
         <div className="py-16 px-4 sm:px-6">

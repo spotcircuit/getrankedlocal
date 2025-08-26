@@ -24,6 +24,27 @@ export default function RootLayout({
         className={inter.className}
         style={{ backgroundColor: '#000000', color: '#ffffff' }}
       >
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              '@context': 'https://schema.org',
+              '@type': 'Organization',
+              name: 'GetRankedLocal',
+              url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
+              logo: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/logo1.png',
+              sameAs: [
+                'https://www.linkedin.com/company/getrankedlocal',
+              ],
+              contactPoint: [{
+                '@type': 'ContactPoint',
+                contactType: 'customer support',
+                email: 'support@getrankedlocal.com',
+                availableLanguage: ['English'],
+              }],
+            }),
+          }}
+        />
         {children}
       </body>
     </html>

@@ -80,6 +80,57 @@ export default function NichePage() {
     <>
       <Header />
       <Breadcrumbs items={breadcrumbs} />
+      {/* Structured Data: Niche listing with businesses */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: `${nicheDisplay} - ${collectionName} Collection`,
+            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}`,
+            hasPart: {
+              '@type': 'ItemList',
+              numberOfItems: businesses.length,
+              itemListElement: businesses.map((b, i) => ({
+                '@type': 'ListItem',
+                position: i + 1,
+                name: b.name,
+                url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}/${b.slug}`,
+              })),
+            },
+          }),
+        }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: state,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: `${collectionName} Collection`,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: nicheDisplay,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}`,
+              },
+            ],
+          }),
+        }}
+      />
       
       <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
         <div className="py-16 px-4 sm:px-6">
