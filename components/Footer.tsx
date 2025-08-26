@@ -12,35 +12,46 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row justify-between items-center gap-10">
           <div className="text-center md:text-left">
-            <div className="mb-4">
-              {/* Try to load image first, fallback to custom logo on error */}
-              {!imageError ? (
-                <div className="bg-white p-4 rounded-lg inline-block">
-                  <Image 
-                    src="/logo4.png" 
-                    alt="GetRankedLocal" 
-                    width={180} 
-                    height={50}
-                    className="h-auto w-auto max-h-[50px] max-w-[180px]"
-                    onError={() => setImageError(true)}
-                    priority={false}
-                  />
-                </div>
-              ) : (
-                /* Custom text logo as fallback */
-                <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 rounded-xl shadow-2xl inline-block">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-yellow-400 p-1.5 rounded">
-                      <MapPin className="w-6 h-6 text-gray-900" />
-                    </div>
-                    <div className="text-white font-bold text-2xl tracking-tight">
-                      GetRanked<span className="text-yellow-300">Local</span>
+            <div className="flex flex-col md:flex-row items-center md:items-start gap-4">
+              {/* Left logo aligned with right logo */}
+              <div>
+                {!imageError ? (
+                  <div className="bg-white p-3 rounded-lg inline-block">
+                    <Image 
+                      src="/logo4.png" 
+                      alt="GetRankedLocal" 
+                      width={200} 
+                      height={60}
+                      style={{ 
+                        width: 'auto',
+                        height: '60px',
+                        maxWidth: '200px',
+                        objectFit: 'contain'
+                      }}
+                      onError={() => setImageError(true)}
+                      priority={false}
+                    />
+                  </div>
+                ) : (
+                  /* Custom text logo as fallback */
+                  <div className="bg-gradient-to-r from-purple-600 to-blue-600 p-4 rounded-xl shadow-2xl inline-block">
+                    <div className="flex items-center gap-2">
+                      <div className="bg-yellow-400 p-1.5 rounded">
+                        <MapPin className="w-6 h-6 text-gray-900" />
+                      </div>
+                      <div className="text-white font-bold text-2xl tracking-tight">
+                        GetRanked<span className="text-yellow-300">Local</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              )}
+                )}
+              </div>
+              {/* Tagline to the right of left logo */}
+              <div className="flex flex-col justify-center">
+                <p className="text-base text-white font-medium">Dominate Google & AI Search</p>
+                <p className="text-sm text-gray-300">in 90 Days</p>
+              </div>
             </div>
-            <p className="text-base text-white font-medium">Dominate Google & AI Search in 90 Days</p>
           </div>
           
           <div className="text-center">
@@ -51,18 +62,52 @@ export default function Footer() {
           </div>
           
           <div className="text-center md:text-right">
-            <p className="text-base text-white">
-              Powered by{' '}
-              <a 
-                href="https://spotcircuit.com" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-purple-300 hover:text-purple-200 font-bold transition-colors underline"
-              >
-                SpotCircuit
-              </a>
-            </p>
-            <p className="text-sm text-gray-300 mt-2">AI-Powered Marketing Technology</p>
+            <div className="flex flex-col md:flex-row items-center md:justify-end gap-4">
+              {/* Second logo aligned with left logo */}
+              <div className="mb-4 md:mb-0">
+                {!imageError ? (
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-lg inline-block">
+                    <Image 
+                      src="/logo4.png" 
+                      alt="GetRankedLocal" 
+                      width={200} 
+                      height={60}
+                      style={{ 
+                        width: 'auto',
+                        height: '60px',
+                        maxWidth: '200px',
+                        objectFit: 'contain',
+                        filter: 'brightness(0) invert(1)'  // Makes logo white
+                      }}
+                      onError={() => setImageError(true)}
+                      priority={false}
+                    />
+                  </div>
+                ) : (
+                  /* Alternative styled text logo */
+                  <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-3 rounded-xl shadow-xl inline-block">
+                    <div className="text-white font-bold text-xl tracking-tight">
+                      GetRanked<span className="text-yellow-300">Local</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {/* Powered by SpotCircuit to the right of logo */}
+              <div>
+                <p className="text-base text-white">
+                  Powered by{' '}
+                  <a 
+                    href="https://spotcircuit.com" 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-purple-300 hover:text-purple-200 font-bold transition-colors underline"
+                  >
+                    SpotCircuit
+                  </a>
+                </p>
+                <p className="text-sm text-gray-300 mt-1">AI-Powered Marketing Technology</p>
+              </div>
+            </div>
           </div>
         </div>
       </div>

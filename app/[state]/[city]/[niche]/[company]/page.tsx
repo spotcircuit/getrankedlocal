@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams, useRouter } from 'next/navigation';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ComplianceDisclaimer from '@/components/ComplianceDisclaimer';
@@ -20,6 +20,8 @@ import { MapPin, Building2, Users, Briefcase } from 'lucide-react';
 
 export default function DynamicFunnelPage() {
   const params = useParams<{ state: string; city: string; niche: string; company: string }>();
+  const searchParams = useSearchParams();
+  const router = useRouter();
 
   const [businessData, setBusinessData] = useState<BusinessData | null>(null);
   const [analysisData, setAnalysisData] = useState<AnalysisData | null>(null);
@@ -77,14 +79,35 @@ export default function DynamicFunnelPage() {
   useEffect(() => {
     const fetchBusinessData = async () => {
       try {
-        const query = new URLSearchParams({
-          id: '',
-          name: decoded.company,
-          // Pass only city name for better DB match (API uses ILIKE %city%)
-          city: decoded.city,
-          niche: decoded.niche,
-          state: decoded.state,
-        });
+        let idToUse = searchParams.get('id') || '';
+
+        // If no id in query, resolve slug -> id via directory API
+        if (!idToUse) {
+          const slug = (params?.company || '').toString();
+          const dirQs = new URLSearchParams({
+            state: decoded.state,
+            collection: decoded.city,
+            niche: decoded.niche,
+            slug,
+          });
+          const dirRes = await fetch(`/api/directory?${dirQs.toString()}`);
+          if (dirRes.ok) {
+            const dirJson = await dirRes.json();
+            const foundId = dirJson?.business?.id;
+            if (foundId) {
+              idToUse = String(foundId);
+            }
+          }
+        }
+
+        const query = new URLSearchParams();
+        if (idToUse) {
+          query.set('id', idToUse);
+        }
+        // Pass only city name for competitor context
+        query.set('city', decoded.city);
+        query.set('niche', decoded.niche);
+        query.set('state', decoded.state);
         const response = await fetch(`/api/analyze?${query.toString()}`);
         if (!response.ok) {
           throw new Error(`Analyze API ${response.status}`);
@@ -96,6 +119,13 @@ export default function DynamicFunnelPage() {
         setBusinessData(data.business);
         setAnalysisData(data.analysis);
         setPitch(data.pitch || null);
+
+        // Clean the URL: remove ?id from query after successful fetch
+        if (searchParams.get('id')) {
+          // Preserve the same path without query string
+          const cleanPath = window.location.pathname;
+          router.replace(cleanPath, { scroll: false });
+        }
       } catch (err) {
         console.error('Error fetching dynamic page data:', err);
         // Fallback demo
@@ -126,7 +156,7 @@ export default function DynamicFunnelPage() {
     };
 
     fetchBusinessData();
-  }, [decoded.cityWithState, decoded.company, decoded.niche]);
+  }, [decoded.cityWithState, decoded.company, decoded.niche, searchParams]);
 
   if (loading) {
     return (

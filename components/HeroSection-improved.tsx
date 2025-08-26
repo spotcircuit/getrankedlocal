@@ -118,7 +118,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
             fontWeight: '700',
             fontSize: '1.25em'
           }}>
-            #{typeof currentRank === 'number' ? currentRank : '—'}
+            #{typeof currentRank === 'number' ? currentRank : '??'}
           </span>{' '}for {niche || 'your niche'} in {city || 'your city'}
           <br />
           while your competitors dominate the Top 3

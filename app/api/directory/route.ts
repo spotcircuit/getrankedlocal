@@ -8,6 +8,7 @@ export async function GET(request: Request) {
   const state = searchParams.get('state');
   const collection = searchParams.get('collection');
   const niche = searchParams.get('niche');
+  const slug = searchParams.get('slug');
   const debug = searchParams.get('debug');
   const sort = searchParams.get('sort');
 
@@ -22,14 +23,39 @@ export async function GET(request: Request) {
         ORDER BY column_name
       `;
       return NextResponse.json({ columns: cols.map((c: any) => c.column_name) });
+    } else if (state && collection && niche && slug) {
+      // Single business by slug
+      const sourceDir = `med_spas_${collection.replace(/ /g, '_')}_${state}`;
+      const rows = await sql`
+        SELECT 
+          id,
+          business_name as name,
+          regexp_replace(LOWER(REPLACE(business_name, ' ', '-')), '[^a-z0-9-]+', '', 'g') as slug,
+          CAST(rating AS float) as rating,
+          CAST(review_count AS int) as "reviewCount",
+          CONCAT(street_address, ', ', city, ', ', state) as address,
+          website,
+          phone,
+          ROW_NUMBER() OVER (ORDER BY rating DESC NULLS LAST, review_count DESC NULLS LAST) as rank,
+          (rating >= 4.5) as trending,
+          'Premier medical spa offering advanced aesthetic treatments' as description
+        FROM leads
+        WHERE LOWER(source_directory) = LOWER(${sourceDir})
+      `;
+      const match = rows.find((r: any) => r.slug === slug.toLowerCase());
+      if (!match) {
+        return NextResponse.json({ error: 'Not found' }, { status: 404 });
+      }
+      return NextResponse.json({ business: match });
     } else if (state && collection && niche) {
       // Get businesses in a specific collection and niche
       let businesses;
       if (sort === 'rating_asc') {
         businesses = await sql`
           SELECT 
+            id,
             business_name as name,
-            LOWER(regexp_replace(REPLACE(business_name, ' ', '-'), '[^a-z0-9-]+', '', 'g')) as slug,
+            regexp_replace(LOWER(REPLACE(business_name, ' ', '-')), '[^a-z0-9-]+', '', 'g') as slug,
             CAST(rating AS float) as rating,
             CAST(review_count AS int) as "reviewCount",
             CONCAT(street_address, ', ', city, ', ', state) as address,
@@ -47,8 +73,9 @@ export async function GET(request: Request) {
       } else if (sort === 'rating_desc') {
         businesses = await sql`
           SELECT 
+            id,
             business_name as name,
-            LOWER(regexp_replace(REPLACE(business_name, ' ', '-'), '[^a-z0-9-]+', '', 'g')) as slug,
+            regexp_replace(LOWER(REPLACE(business_name, ' ', '-')), '[^a-z0-9-]+', '', 'g') as slug,
             CAST(rating AS float) as rating,
             CAST(review_count AS int) as "reviewCount",
             CONCAT(street_address, ', ', city, ', ', state) as address,
@@ -67,8 +94,9 @@ export async function GET(request: Request) {
         // Default: reviews_desc
         businesses = await sql`
           SELECT 
+            id,
             business_name as name,
-            LOWER(regexp_replace(REPLACE(business_name, ' ', '-'), '[^a-z0-9-]+', '', 'g')) as slug,
+            regexp_replace(LOWER(REPLACE(business_name, ' ', '-')), '[^a-z0-9-]+', '', 'g') as slug,
             CAST(rating AS float) as rating,
             CAST(review_count AS int) as "reviewCount",
             CONCAT(street_address, ', ', city, ', ', state) as address,

@@ -9,6 +9,7 @@ import Breadcrumbs from '@/components/Breadcrumbs';
 import { MapPin, Building2, Star, Phone, Globe, ArrowRight, TrendingUp, Award, Users } from 'lucide-react';
 
 interface BusinessData {
+  id: number;
   name: string;
   slug: string;
   rating: number;
@@ -46,6 +47,7 @@ export default function NichePage() {
         const response = await fetch(`/api/directory?state=${state}&collection=${collectionName}&niche=${nicheSlug}`);
         const data = await response.json();
         const normalized: BusinessData[] = (data.businesses || []).map((b: any) => ({
+          id: Number(b?.id),
           ...b,
           rating: Number(b?.rating) || 0,
           reviewCount: Number(b?.reviewCount) || 0,
@@ -141,7 +143,7 @@ export default function NichePage() {
                 {businesses.map((business, index) => (
                   <Link
                     key={index}
-                    href={`/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}/${business.slug}`}
+                    href={`/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}/${business.slug}?id=${business.id}`}
                     className="block group"
                   >
                     <div className={`relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 border ${
