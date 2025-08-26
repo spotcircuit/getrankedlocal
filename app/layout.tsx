@@ -7,6 +7,10 @@ const inter = Inter({ subsets: ['latin'] })
 export const metadata: Metadata = {
   title: 'GetRankedLocal - Dominate Google & AI Search in 90 Days',
   description: 'Get your business ranked #1 on Google Maps and AI platforms. See exactly who\'s stealing your customers and how to beat them.',
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  alternates: {
+    canonical: '/',
+  },
 }
 
 export default function RootLayout({
