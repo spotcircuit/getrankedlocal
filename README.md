@@ -2,22 +2,30 @@
 
 ## 🚀 Quick Start (Windows)
 
-### 1. Install Dependencies
-```cmd
-install.bat
+### 1) Install dependencies
+```powershell
+npm install
+# or: .\install.bat
 ```
 
-### 2. Start Development Server
-```cmd
-dev.bat
+### 2) Configure environment (optional)
+Copy `.env.example` to `.env.local` and fill in values.
+```powershell
+Copy-Item .env.example .env.local
 ```
 
-Then open http://localhost:3000 in your browser
+### 3) Start dev server
+```powershell
+npm run dev
+# or: .\dev.bat
+```
 
-### 3. Start API Backend (Optional - for dynamic data)
-In a separate terminal:
-```cmd
-start-api.bat
+Open http://localhost:3000
+
+### 4) Start API backend (optional)
+In a separate terminal (only if using API-driven features):
+```powershell
+.\start-api.bat
 ```
 
 ## 📁 File Structure
@@ -97,19 +105,35 @@ const testimonials = [
 ## 🌐 Production Deployment
 
 ### Build for Production
-```cmd
-build.bat
+```powershell
+npm run build
+# or: .\build.bat
 ```
 
 ### Start Production Server
-```cmd
-start-prod.bat
+```powershell
+npm run start
+# or: .\start-prod.bat
 ```
 
 ### Deploy to Vercel
 ```bash
 npx vercel
 ```
+
+## 🔑 Environment Variables
+
+Create `.env.local` (never commit). See `.env.example` for the shape.
+
+- `DATABASE_URL` (optional) — PostgreSQL connection string used by API features.
+  - Format: `postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require`
+  - If unset, the site still runs; API-backed features may be limited.
+
+## 🔎 Key Routes
+
+- `/` — Homepage with “Browse Med Spas by Location”, social proof, and CTAs.
+- `/getrankedlocal` — Get Ranked Local page with hero form, CTA, breadcrumbs, and lead capture modal.
+- `/[state]`, `/[state]/[city]`, etc. — Dynamic directories.
 
 ## 📊 Tracking & Analytics
 
@@ -148,6 +172,9 @@ Ensure images are in `public/images/` folder.
 
 ### API Connection Failed
 Check that Python backend is running on port 8000.
+
+### Build Warning about Dynamic Route
+If you see a Next.js message about dynamic server usage for `/api/analyze`, it's expected when that route inspects `request.url`. This does not block the build.
 
 ## 📞 Support
 
