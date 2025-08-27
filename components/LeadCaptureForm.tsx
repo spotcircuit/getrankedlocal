@@ -157,15 +157,15 @@ export default function LeadCaptureForm({
   }
 
   const content = (
-    <div className="fixed inset-0 overflow-hidden isolate" role="dialog" aria-modal="true" style={{ zIndex: 2147483647 }}>
+    <div className="fixed inset-0 overflow-y-auto isolate" role="dialog" aria-modal="true" style={{ zIndex: 2147483647 }}>
       {/* Background overlay */}
       <div className="absolute inset-0 z-0 bg-black/90 backdrop-blur-sm" onClick={!isSubmitting && !showSuccess ? onClose : undefined} />
       
       {/* Modal container - centered and prevents scrolling */}
-      <div className="relative z-10 flex items-center justify-center min-h-screen p-4">
+      <div className="relative z-10 flex items-center justify-center px-4 py-6 sm:py-8" style={{ minHeight: '100dvh' }}>
         <div 
-          className="relative z-10 animate-fadeIn" 
-          style={{ width: '90%', maxWidth: '550px' }}
+          className="relative z-10 animate-fadeIn overflow-y-auto" 
+          style={{ width: '90%', maxWidth: '550px', maxHeight: 'calc(100dvh - 3rem)' }}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Decorative glow effect */}
@@ -179,10 +179,10 @@ export default function LeadCaptureForm({
             {!isSubmitting && !showSuccess && (
               <button
                 onClick={onClose}
-                className="absolute top-4 right-4 bg-gray-800/80 hover:bg-gray-700 rounded-lg p-2 transition-colors z-10"
+                className="absolute top-4 right-4 bg-gray-800/80 hover:bg-gray-700 rounded-lg p-3 transition-colors z-10"
                 aria-label="Close"
               >
-                <X className="w-4 h-4 text-gray-400" />
+                <X className="w-5 h-5 text-gray-300" />
               </button>
             )}
             
