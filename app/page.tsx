@@ -139,12 +139,12 @@ export default function HomePage() {
               transition={{ duration: 0.8 }}
             >
               {/* Trust badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-8">
+              <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-green-500/20 to-emerald-500/20 border border-green-500/30 rounded-full mb-6 sm:mb-8">
                 <Shield className="w-4 h-4 text-green-400" />
                 <span className="text-sm font-semibold text-green-400">Trusted by 10,000+ Med Spas</span>
               </div>
               
-              <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold mb-6">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold mb-6">
                 <span className="block">Your Patients</span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
                   Are Searching
@@ -152,7 +152,7 @@ export default function HomePage() {
                 <span className="block">Are You #1?</span>
               </h1>
               
-              <p className="text-xl md:text-2xl text-gray-300 mb-12 max-w-3xl mx-auto">
+              <p className="text-base sm:text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto">
                 90% of patients never scroll past the first 3 results. 
                 <span className="text-white font-semibold"> We get med spas there in 90 days.</span>
               </p>
@@ -161,14 +161,14 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
                 <Link
                   href="/getrankedlocal"
-                  className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-lg hover:scale-105 transition-all shadow-xl hover:shadow-purple-500/25 flex items-center gap-2"
+                  className="group px-5 py-2.5 sm:px-8 sm:py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-xl font-bold text-base sm:text-lg hover:scale-105 transition-all shadow-xl hover:shadow-purple-500/25 flex items-center gap-2"
                 >
                   Get Your Free Analysis
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <button
                   onClick={() => document.getElementById('search-section')?.scrollIntoView({ behavior: 'smooth' })}
-                  className="px-8 py-4 bg-gray-800/50 border border-gray-700 rounded-xl font-bold text-lg hover:bg-gray-800 transition-all flex items-center gap-2"
+                  className="px-5 py-2.5 sm:px-8 sm:py-4 bg-gray-800/50 border border-gray-700 rounded-xl font-bold text-base sm:text-lg hover:bg-gray-800 transition-all flex items-center gap-2"
                 >
                   <Search className="w-5 h-5" />
                   Find Top Practices

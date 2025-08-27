@@ -55,7 +55,7 @@ export default function GetRankedLocal() {
             }}
           />
           <div
-            className="max-w-6xl mx-auto px-4 pt-12"
+            className="max-w-6xl mx-auto px-4 pt-10 sm:pt-12"
             style={{ paddingBottom: '2.5rem' }}
           >
             <motion.h1
@@ -63,7 +63,7 @@ export default function GetRankedLocal() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
-              className="text-4xl md:text-6xl font-extrabold leading-tight text-center"
+              className="text-3xl sm:text-4xl md:text-6xl font-extrabold leading-tight text-center"
             >
               Rank Top 3 in Google Maps
               <span
@@ -82,7 +82,7 @@ export default function GetRankedLocal() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 }}
-              className="mt-4 text-center text-gray-300 text-lg"
+              className="mt-3 sm:mt-4 text-center text-gray-300 text-base sm:text-lg"
             >
               We execute reviews, GBP optimization, content, and technical SEO to get you into the Local Pack.
             </motion.p>
@@ -116,7 +116,7 @@ export default function GetRankedLocal() {
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   placeholder="Business Name"
-                  className="w-full rounded-lg px-4 py-3 border focus:border-purple-500 outline-none text-white placeholder-gray-400"
+                  className="w-full rounded-lg px-3 py-2 sm:px-4 sm:py-3 border focus:border-purple-500 outline-none text-white placeholder-gray-400"
                   style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
                   required
                 />
@@ -125,14 +125,14 @@ export default function GetRankedLocal() {
                   value={city}
                   onChange={(e) => setCity(e.target.value)}
                   placeholder="City (e.g., Dallas, TX)"
-                  className="w-full rounded-lg px-4 py-3 border focus:border-purple-500 outline-none text-white placeholder-gray-400"
+                  className="w-full rounded-lg px-3 py-2 sm:px-4 sm:py-3 border focus:border-purple-500 outline-none text-white placeholder-gray-400"
                   style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
                   // Optional while instant analysis is coming soon
                 />
                 <select
                   value={niche}
                   onChange={(e) => setNiche(e.target.value)}
-                  className="w-full rounded-lg px-4 py-3 border focus:border-purple-500 outline-none text-white bg-black/40"
+                  className="w-full rounded-lg px-3 py-2 sm:px-4 sm:py-3 border focus:border-purple-500 outline-none text-white bg-black/40"
                   style={{ backgroundColor: 'rgba(0,0,0,0.4)' }}
                 >
                   <option value="med spas">Med Spas</option>
@@ -143,9 +143,9 @@ export default function GetRankedLocal() {
                 <div className="md:col-span-1 flex">
                   <button
                     type="submit"
-                    className="w-full px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-semibold hover:scale-[1.02] transition-transform"
+                    className="w-full px-4 py-3 sm:px-6 sm:py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-semibold text-sm sm:text-base hover:scale-[1.02] transition-transform"
                   >
-                    Get Instant Analysis (Coming Soon)
+                    Get Instant Analysis
                   </button>
                 </div>
               </form>
@@ -159,16 +159,16 @@ export default function GetRankedLocal() {
         {/* Prominent CTA below hero */}
         <section className="px-4 mt-10">
           <div className="mx-auto max-w-4xl rounded-2xl border border-purple-500/40 bg-gray-900 p-8 text-center shadow-2xl">
-            <h3 className="text-3xl font-extrabold mb-3 text-white">
+            <h3 className="text-2xl sm:text-3xl font-extrabold mb-3 text-white">
               Get Listed and Analyzed Now
             </h3>
-            <p className="text-gray-200 mb-6 text-lg">
+            <p className="text-gray-200 mb-6 text-base sm:text-lg">
               We’ll prioritize your practice and deliver a manual competitive analysis within 24 hours.
             </p>
             <button
               type="button"
               onClick={() => setShowLeadForm(true)}
-              className="inline-flex items-center justify-center gap-2 px-10 py-4 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-transform hover:scale-105 shadow-purple-500/30 shadow-lg text-white"
+              className="inline-flex items-center justify-center gap-2 px-7 py-3 sm:px-10 sm:py-4 rounded-xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 transition-transform hover:scale-105 shadow-purple-500/30 shadow-lg text-white"
             >
               Start Free Analysis
             </button>

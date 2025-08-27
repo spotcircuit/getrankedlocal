@@ -18,7 +18,41 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Mobile: prevent sideways scroll from wide elements */
+  overflow-x: hidden;
+  /* Improve text sizing behavior on mobile */
+  -webkit-text-size-adjust: 100%;
 }
+
+/* Media elements scale within viewport */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Avoid long strings causing overflow on small screens */
+.break-words {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* Intake form scoped light theme for readability */
+.intake {
+  color: #111827; /* text-gray-900 */
+}
+.intake a { color: inherit; }
+.intake input,
+.intake textarea,
+.intake select {
+  color: #111827; /* gray-900 */
+  background: #ffffff;
+  border: 1px solid #d1d5db; /* gray-300 */
+}
+.intake input::placeholder,
+.intake textarea::placeholder {
+  color: #9ca3af; /* gray-400 */
+}
+.intake .border { border-color: #e5e7eb; } /* gray-200 default for borders inside white cards */
 
 /* Make links inherit color and remove default underline so internal elements can control color/contrast */
 a {
@@ -454,6 +488,11 @@ a:visited {
   color: #6b7280;
 }
 
+/* Additional grayscale utilities used by intake page */
+.text-gray-100 { color: #f3f4f6; }
+.text-gray-600 { color: #4b5563; }
+.text-gray-700 { color: #374151; }
+
 .text-red-400 {
   color: #f87171;
 }
@@ -538,6 +577,9 @@ a:visited {
 .bg-white {
   background-color: #ffffff;
 }
+.bg-gray-50 { background-color: #f9fafb; }
+.bg-gray-100 { background-color: #f3f4f6; }
+.bg-gray-950 { background-color: #030712; }
 
 .bg-transparent {
   background-color: transparent;
@@ -791,6 +833,9 @@ a:visited {
 .border-gray-800 {
   border-color: #1f2937;
 }
+/* Additional border colors */
+.border-gray-100 { border-color: #f3f4f6; }
+.border-gray-300 { border-color: #d1d5db; }
 
 .border-red-500 {
   border-color: #ef4444;
@@ -1106,6 +1151,8 @@ a:visited {
 .hover\:bg-gray-700:hover {
   background-color: #374151;
 }
+/* Additional hover backgrounds */
+.hover\:bg-gray-50:hover { background-color: #f9fafb; }
 
 .hover\:bg-purple-600:hover {
   background-color: #9333ea;
