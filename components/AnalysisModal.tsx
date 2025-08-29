@@ -64,24 +64,36 @@ export default function AnalysisModal({
       setProgress(30);
 
       if (jobId === 'direct') {
-        // FAKE POLLING WITH REALISTIC UPDATES
+        // EXTENDED TIMELINE WITH MORE REALISTIC UPDATES (60+ seconds total)
         const statusUpdates = [
-          { step: 'searching', progress: 8, message: 'Connecting to Google Business Intelligence API...', delay: 2000, icon: 'database' },
-          { step: 'searching', progress: 12, message: 'Scanning local market for competitors in your niche...', delay: 4000, icon: 'search' },
-          { step: 'searching', progress: 18, message: 'Identified 47 businesses in your competitive landscape...', delay: 6000, icon: 'users' },
-          { step: 'searching', progress: 24, message: 'Extracting Google Maps ranking positions...', delay: 8000, icon: 'globe' },
-          { step: 'searching', progress: 30, message: 'Analyzing review velocity and sentiment patterns...', delay: 10000, icon: 'trending' },
-          { step: 'analyzing', progress: 36, message: 'Building competitor intelligence profiles...', delay: 12000, icon: 'shield' },
-          { step: 'analyzing', progress: 42, message: 'Examining digital presence and social signals...', delay: 14000, icon: 'activity' },
-          { step: 'analyzing', progress: 48, message: 'Calculating market share distribution...', delay: 16000, icon: 'chart' },
-          { step: 'analyzing', progress: 54, message: 'Identifying strategic gaps and opportunities...', delay: 18000, icon: 'target' },
-          { step: 'processing', progress: 60, message: 'Processing AI-powered competitive insights...', delay: 20000, icon: 'brain' },
-          { step: 'processing', progress: 66, message: 'Evaluating ranking factors and visibility metrics...', delay: 22000, icon: 'bar' },
-          { step: 'processing', progress: 72, message: 'Calculating potential revenue impact...', delay: 24000, icon: 'trending' },
-          { step: 'processing', progress: 78, message: 'Generating personalized growth strategies...', delay: 26000, icon: 'lightbulb' },
-          { step: 'finalizing', progress: 84, message: 'Compiling comprehensive market analysis...', delay: 28000, icon: 'bot' },
-          { step: 'finalizing', progress: 90, message: 'Finalizing AI intelligence report...', delay: 30000, icon: 'rocket' },
-          { step: 'finalizing', progress: 95, message: 'Preparing your custom action plan...', delay: 32000, icon: 'zap' },
+          { step: 'searching', progress: 5, message: 'Connecting to Google Business Intelligence API...', delay: 2000, icon: 'database' },
+          { step: 'searching', progress: 8, message: 'Initializing market analysis engine...', delay: 4000, icon: 'search' },
+          { step: 'searching', progress: 12, message: 'Scanning local market for competitors in your niche...', delay: 6000, icon: 'search' },
+          { step: 'searching', progress: 15, message: 'Identified 47 businesses in your competitive landscape...', delay: 8000, icon: 'users' },
+          { step: 'searching', progress: 18, message: 'Extracting Google Maps ranking positions...', delay: 10000, icon: 'globe' },
+          { step: 'searching', progress: 22, message: 'Analyzing review velocity and sentiment patterns...', delay: 12000, icon: 'trending' },
+          { step: 'searching', progress: 25, message: 'Collecting business intelligence data...', delay: 14000, icon: 'database' },
+          { step: 'analyzing', progress: 28, message: 'Building competitor intelligence profiles...', delay: 16000, icon: 'shield' },
+          { step: 'analyzing', progress: 32, message: 'Examining digital presence and social signals...', delay: 18000, icon: 'activity' },
+          { step: 'analyzing', progress: 35, message: 'Calculating market share distribution...', delay: 20000, icon: 'chart' },
+          { step: 'analyzing', progress: 38, message: 'Identifying strategic gaps and opportunities...', delay: 22000, icon: 'target' },
+          { step: 'analyzing', progress: 42, message: 'Analyzing customer review patterns...', delay: 24000, icon: 'users' },
+          { step: 'analyzing', progress: 45, message: 'Evaluating service offerings and pricing...', delay: 26000, icon: 'trending' },
+          { step: 'processing', progress: 48, message: 'Processing AI-powered competitive insights...', delay: 28000, icon: 'brain' },
+          { step: 'processing', progress: 52, message: 'Evaluating ranking factors and visibility metrics...', delay: 30000, icon: 'bar' },
+          { step: 'processing', progress: 55, message: 'Calculating potential revenue impact...', delay: 32000, icon: 'trending' },
+          { step: 'processing', progress: 58, message: 'Generating personalized growth strategies...', delay: 34000, icon: 'lightbulb' },
+          { step: 'processing', progress: 62, message: 'Analyzing competitor strengths and weaknesses...', delay: 36000, icon: 'shield' },
+          { step: 'processing', progress: 65, message: 'Identifying quick-win opportunities...', delay: 38000, icon: 'rocket' },
+          { step: 'processing', progress: 68, message: 'Building market penetration strategy...', delay: 40000, icon: 'target' },
+          { step: 'finalizing', progress: 72, message: 'Compiling comprehensive market analysis...', delay: 42000, icon: 'bot' },
+          { step: 'finalizing', progress: 75, message: 'Cross-referencing industry benchmarks...', delay: 44000, icon: 'chart' },
+          { step: 'finalizing', progress: 78, message: 'Validating data accuracy and completeness...', delay: 46000, icon: 'shield' },
+          { step: 'finalizing', progress: 82, message: 'Finalizing AI intelligence report...', delay: 48000, icon: 'rocket' },
+          { step: 'finalizing', progress: 85, message: 'Preparing your custom action plan...', delay: 50000, icon: 'zap' },
+          { step: 'finalizing', progress: 88, message: 'Optimizing recommendations for your market...', delay: 52000, icon: 'brain' },
+          { step: 'finalizing', progress: 92, message: 'Finalizing competitive analysis insights...', delay: 54000, icon: 'activity' },
+          { step: 'finalizing', progress: 95, message: 'Completing analysis and preparing results...', delay: 56000, icon: 'check' },
         ];
         
         // Define city and state OUTSIDE the async function so they're available later
