@@ -276,7 +276,7 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
     }));
     
     // Check if target business is in top 10
-    const targetInTop10 = top10.some(c => 
+    const targetInTop10 = top10.some((c: any) => 
       c.name === businessData.name || c.place_id === businessData.place_id
     );
     
@@ -303,7 +303,7 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
       });
     } else {
       // Mark the target business in the top 10
-      formattedList = top10.map(c => ({
+      formattedList = top10.map((c: any) => ({
         ...c,
         isTargetBusiness: c.name === businessData.name || c.place_id === businessData.place_id
       }));

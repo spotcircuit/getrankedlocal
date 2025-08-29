@@ -316,7 +316,7 @@ export default function AIIntelligenceDynamic({ aiData, businessName }: AIIntell
                     <div>
                       <p className="text-xs text-gray-400 capitalize">{platform}</p>
                       <p className="text-sm text-white">
-                        {typeof value === 'number' ? `${value.toLocaleString()} followers` : value}
+                        {typeof value === 'number' ? `${(value as number).toLocaleString()} followers` : String(value)}
                       </p>
                     </div>
                   </div>
@@ -353,7 +353,7 @@ export default function AIIntelligenceDynamic({ aiData, businessName }: AIIntell
           {Object.entries(sections).map(([key, content]) => {
             // Skip if already displayed above or if content is too short/duplicate
             if (['founder', 'pricing', 'social'].includes(key)) return null;
-            if (!content || content.length < 10) return null;
+            if (!content || typeof content !== 'string' || content.length < 10) return null;
             
             // Skip if content looks like duplicate/placeholder text
             if (content.includes('Here are the complete details') || 
