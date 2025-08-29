@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Search, MapPin, TrendingUp, Sparkles, Star, ChevronRight, Target, Zap, Trophy, Users, CheckCircle } from 'lucide-react';
+import { Search, MapPin, TrendingUp, Sparkles, Star, ChevronRight, Target, Zap, Trophy, Users, CheckCircle, AlertCircle } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AnalysisModal from '@/components/AnalysisModal';
@@ -14,6 +14,8 @@ export default function HomePage() {
   const [showModal, setShowModal] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [extractedLocation, setExtractedLocation] = useState<any>(null);
+  const [isValidBusiness, setIsValidBusiness] = useState(false);
+  const [validationError, setValidationError] = useState('');
   const businessInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize Google Places Autocomplete
@@ -41,7 +43,14 @@ export default function HomePage() {
 
         autocomplete.addListener('place_changed', () => {
           const place = autocomplete.getPlace();
-          if (!place) return;
+          
+          // Check if a valid place was selected
+          if (!place || !place.place_id) {
+            setIsValidBusiness(false);
+            setValidationError('Please select a business from the dropdown');
+            setExtractedLocation(null);
+            return;
+          }
 
           // Extract location data
           const components = place.address_components || [];
@@ -64,6 +73,8 @@ export default function HomePage() {
           // Update input with full name and address
           const displayName = place.name + (place.formatted_address ? ', ' + place.formatted_address : '');
           setBusinessName(displayName);
+          setIsValidBusiness(true);
+          setValidationError('');
         });
       };
 
@@ -75,6 +86,13 @@ export default function HomePage() {
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Validate that a business was selected from autocomplete
+    if (!isValidBusiness || !extractedLocation) {
+      setValidationError('Please select a valid business from the dropdown');
+      return;
+    }
+    
     if (!businessName.trim()) return;
 
     // Set default niche if empty
@@ -83,6 +101,29 @@ export default function HomePage() {
 
     // Open modal immediately
     setShowModal(true);
+  };
+
+  const handleBusinessInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setBusinessName(value);
+    
+    // Reset validation when user starts typing
+    if (value !== businessName) {
+      setIsValidBusiness(false);
+      setExtractedLocation(null);
+      if (value.trim()) {
+        setValidationError('Please select a business from the suggestions');
+      } else {
+        setValidationError('');
+      }
+    }
+  };
+
+  const handleBusinessInputBlur = () => {
+    // Check validation on blur
+    if (businessName.trim() && !isValidBusiness) {
+      setValidationError('Please select a valid business from the dropdown');
+    }
   };
 
   const handleAnalysisComplete = (results: any) => {
@@ -158,11 +199,30 @@ export default function HomePage() {
                         ref={businessInputRef}
                         type="text"
                         value={businessName}
-                        onChange={(e) => setBusinessName(e.target.value)}
+                        onChange={handleBusinessInputChange}
+                        onBlur={handleBusinessInputBlur}
                         placeholder="Start typing to search..."
-                        className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none"
+                        className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-lg text-white placeholder-gray-400 focus:outline-none transition-colors ${
+                          validationError 
+                            ? 'border-red-500 focus:border-red-500' 
+                            : isValidBusiness 
+                              ? 'border-green-500 focus:border-green-500'
+                              : 'border-gray-600 focus:border-purple-500'
+                        }`}
                         required
                       />
+                      {validationError && (
+                        <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
+                          <AlertCircle className="w-4 h-4" />
+                          {validationError}
+                        </p>
+                      )}
+                      {isValidBusiness && extractedLocation && (
+                        <p className="mt-2 text-sm text-green-400 flex items-center gap-1">
+                          <CheckCircle className="w-4 h-4" />
+                          Valid business selected - {extractedLocation.city}, {extractedLocation.state}
+                        </p>
+                      )}
                     </div>
                     
                     {/* Niche Input */}
@@ -182,12 +242,19 @@ export default function HomePage() {
 
                   <button
                     type="submit"
-                    className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 rounded-lg font-bold text-white text-lg transition-all hover:shadow-lg hover:shadow-purple-600/25 flex items-center justify-center gap-2"
-                    style={{ textShadow: '0 1px 2px rgba(0,0,0,0.3)' }}
+                    disabled={!isValidBusiness || !businessName.trim()}
+                    className={`w-full py-4 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 ${
+                      isValidBusiness && businessName.trim()
+                        ? 'bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white hover:shadow-lg hover:shadow-purple-600/25 cursor-pointer'
+                        : 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                    }`}
+                    style={{ textShadow: isValidBusiness ? '0 1px 2px rgba(0,0,0,0.3)' : 'none' }}
                   >
-                    <Sparkles className="w-5 h-5 text-white" />
-                    <span className="text-white">Get Free Analysis</span>
-                    <ChevronRight className="w-5 h-5 text-white" />
+                    <Sparkles className={`w-5 h-5 ${isValidBusiness ? 'text-white' : 'text-gray-400'}`} />
+                    <span className={isValidBusiness ? 'text-white' : 'text-gray-400'}>
+                      {!businessName.trim() ? 'Enter a Business Name' : !isValidBusiness ? 'Select from Dropdown' : 'Get Free Analysis'}
+                    </span>
+                    <ChevronRight className={`w-5 h-5 ${isValidBusiness ? 'text-white' : 'text-gray-400'}`} />
                   </button>
 
                   <p className="text-center text-sm text-gray-400 mt-4">
