@@ -7,6 +7,7 @@ import CompetitorAnalysis from '@/components/CompetitorAnalysis';
 import ProblemSection from '@/components/ProblemSection';
 import ActionPlan from '@/components/ActionPlan';
 import CTASection from '@/components/CTASection';
+import AIIntelligenceSection from '@/components/AIIntelligenceSection';
 
 interface ResultsSectionV2Props {
   results: any;
@@ -35,6 +36,7 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
   console.log("Top competitors:", top_competitors?.length, "items");
   console.log("Market analysis:", market_analysis);
   console.log("Business object:", business);
+  console.log("AI Intelligence data:", ai_intelligence);
   
   // Use all available competitors for calculations - check various field names
   const allCompetitorsList = results.all_competitors || 
@@ -228,6 +230,11 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
       <BusinessInsights 
         business={businessData} 
         analysis={analysisData} 
+      />
+
+      <AIIntelligenceSection
+        aiData={ai_intelligence}
+        businessName={businessData.name}
       />
 
       <CompetitorAnalysis
