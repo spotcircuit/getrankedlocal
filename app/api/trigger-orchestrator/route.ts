@@ -42,18 +42,43 @@ export async function POST(request: NextRequest) {
     
     console.log('📤 SENDING TO RAILWAY API:', JSON.stringify(requestPayload, null, 2));
     
-    // Step 1: Start the job
-    const startJobResponse = await fetch(`${apiUrl}/api/single-business-analysis`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(requestPayload),
-    });
-
-    if (!startJobResponse.ok) {
-      const errorText = await startJobResponse.text().catch(() => 'Unknown error');
-      throw new Error(`Failed to start analysis: ${startJobResponse.status} - ${errorText}`);
+    // Step 1: Start the job with retry logic
+    let startJobResponse;
+    let retries = 3;
+    let lastError;
+    
+    while (retries > 0) {
+      try {
+        startJobResponse = await fetch(`${apiUrl}/api/single-business-analysis`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestPayload),
+          signal: AbortSignal.timeout(30000), // 30 second timeout
+        });
+        
+        if (startJobResponse.ok) {
+          break; // Success, exit retry loop
+        }
+        
+        const errorText = await startJobResponse.text().catch(() => 'Unknown error');
+        lastError = new Error(`Failed to start analysis: ${startJobResponse.status} - ${errorText}`);
+        
+      } catch (fetchError) {
+        lastError = fetchError;
+        console.error(`Fetch attempt failed (${4 - retries}/3):`, fetchError);
+      }
+      
+      retries--;
+      if (retries > 0) {
+        console.log(`Retrying in 2 seconds... (${retries} attempts remaining)`);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+      }
+    }
+    
+    if (!startJobResponse || !startJobResponse.ok) {
+      throw lastError || new Error('Failed to start analysis after 3 attempts');
     }
 
     const { job_id } = await startJobResponse.json();
@@ -67,12 +92,19 @@ export async function POST(request: NextRequest) {
     while (Date.now() - startTime < maxPollingTime) {
       await new Promise(resolve => setTimeout(resolve, pollInterval));
 
-      const jobStatusResponse = await fetch(`${apiUrl}/api/job/${job_id}`, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
+      let jobStatusResponse;
+      try {
+        jobStatusResponse = await fetch(`${apiUrl}/api/job/${job_id}`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          signal: AbortSignal.timeout(10000), // 10 second timeout for status checks
+        });
+      } catch (pollError) {
+        console.error(`Failed to check job status (network error):`, pollError);
+        continue; // Continue polling on network errors
+      }
 
       if (!jobStatusResponse.ok) {
         console.error(`Failed to check job status: ${jobStatusResponse.status}`);

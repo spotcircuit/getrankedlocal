@@ -103,7 +103,9 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                       placeId: c.place_id,
                       rank: idx + 1,
                       rating: c.rating,
-                      reviews: c.reviews 
+                      reviews: c.reviews,
+                      review_count: c.review_count,
+                      actualReviews: c.review_count || c.reviews || 0
                     })));
                     console.log("  Current business:", business?.name, "place_id:", businessPlaceId);
                     console.log("  Current rank from analysis:", rawRank, "-> processed as:", currentRank);
@@ -117,6 +119,8 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                       const comp = competitors[i];
                       const rank = i + 1; // Rank is index + 1
                       const clickShare = clickShares[rank - 1] || 1;
+                      // Handle both review_count and reviews field names
+                      const compReviews = comp.review_count || comp.reviews || 0;
                       
                       // Check if this is the searched business (by place_id or by rank match)
                       const isSearchedBusiness = (businessPlaceId && comp.place_id === businessPlaceId) || 
@@ -168,7 +172,7 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                             <span className={rank <= 3 && !isSearchedBusiness ? 'text-green-400 font-semibold' : 'text-gray-500'}>
                               ★{comp.rating != null && !isNaN(Number(comp.rating)) 
                                 ? Number(comp.rating).toFixed(1) 
-                                : 'N/A'} ({comp.reviews || 0})
+                                : 'N/A'} ({compReviews})
                             </span>
                             <span className={
                               isSearchedBusiness ? 'text-red-400' : 
@@ -297,10 +301,10 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                 
                 {/* Business Indicator - Top Center */}
                 {business?.name && (
-                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white rounded-lg px-4 py-2 shadow-lg border-2 border-red-400">
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-white rounded-lg px-4 py-2 shadow-lg border-2 border-red-500">
                     <div className="flex items-center gap-2">
-                      <span className="text-sm font-bold">📍 YOUR BUSINESS:</span>
-                      <span className="text-sm">{business.name}</span>
+                      <span className="text-sm font-bold text-red-600">📍 YOUR BUSINESS:</span>
+                      <span className="text-sm font-semibold text-black">{business.name}</span>
                     </div>
                   </div>
                 )}
@@ -354,6 +358,7 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                     </div>
                   </div>
                 )}
+
                 
                 {/* Map Controls - Bottom Inside Map */}
                 <div className="absolute bottom-4 left-4 right-4 flex flex-col sm:flex-row gap-2">

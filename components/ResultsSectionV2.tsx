@@ -7,7 +7,7 @@ import CompetitorAnalysis from '@/components/CompetitorAnalysis';
 import ProblemSection from '@/components/ProblemSection';
 import ActionPlan from '@/components/ActionPlan';
 import CTASection from '@/components/CTASection';
-import AIIntelligenceSection from '@/components/AIIntelligenceSection';
+import AIIntelligenceDynamic from '@/components/AIIntelligenceDynamic';
 
 interface ResultsSectionV2Props {
   results: any;
@@ -204,8 +204,9 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
         })()
       },
       top_competitors: (() => {
-        const competitors = top_competitors || [];
-        // If business has a rank and is not in top_competitors, add it
+        // Use ALL competitors if available, not just top 3
+        const competitors = all_competitors || top_competitors || [];
+        // If business has a rank and is not in competitors list, add it
         console.log("DEBUG: Building top_competitors list");
         console.log("  Current business:", business?.name, "Rank:", business?.rank);
         console.log("  Original top_competitors:", competitors.map((c: any) => ({ name: c.name, index: c.index })));
@@ -256,10 +257,12 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
   // Format competitors for CompetitorAnalysis component - show more competitors
   const competitorsSafe = useMemo(() => {
     const list = top_competitors || [];
-    // Show up to 10 competitors, not just 3
-    return list.slice(0, 10).map((c: any, idx: number) => ({
+    let formattedList = [];
+    
+    // First, add top 10 competitors
+    const top10 = list.slice(0, 10).map((c: any, idx: number) => ({
       name: c?.name || 'Competitor',
-      rank: idx + 1,  // Use index as rank since they're already sorted
+      rank: idx + 1,
       reviews: typeof c?.review_count === 'number' ? c.review_count : (typeof c?.reviews === 'number' ? c.reviews : Number(c?.reviews || c?.review_count) || 0),
       rating: c?.rating != null ? Number(c.rating) : 0,
       advantages: [],
@@ -269,8 +272,45 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
       place_id: c?.place_id || '',
       cid: c?.cid || '',
       display_rank: idx + 1,
+      isTargetBusiness: false,
     }));
-  }, [top_competitors]);
+    
+    // Check if target business is in top 10
+    const targetInTop10 = top10.some(c => 
+      c.name === businessData.name || c.place_id === businessData.place_id
+    );
+    
+    // If target business is not in top 10 but has a rank, add it
+    if (!targetInTop10 && analysisData.currentRank && analysisData.currentRank > 10) {
+      // Add separator if needed
+      formattedList = [...top10];
+      
+      // Add the target business with its actual rank
+      formattedList.push({
+        name: businessData.name,
+        rank: analysisData.currentRank,
+        reviews: businessData.reviewCount || 0,
+        rating: businessData.rating || 0,
+        advantages: [],
+        address: businessData.address || '',
+        latitude: businessData.coordinates?.lat,
+        longitude: businessData.coordinates?.lng,
+        place_id: businessData.place_id || '',
+        cid: '',
+        display_rank: analysisData.currentRank,
+        isTargetBusiness: true,
+        showSeparator: true, // Show "..." between rank 10 and this business
+      });
+    } else {
+      // Mark the target business in the top 10
+      formattedList = top10.map(c => ({
+        ...c,
+        isTargetBusiness: c.name === businessData.name || c.place_id === businessData.place_id
+      }));
+    }
+    
+    return formattedList;
+  }, [top_competitors, businessData, analysisData.currentRank]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
@@ -289,10 +329,14 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
         analysis={analysisData} 
       />
 
-      <AIIntelligenceSection
-        aiData={ai_intelligence}
-        businessName={businessData.name}
-      />
+      <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
+        <div className="max-w-6xl mx-auto px-6">
+          <AIIntelligenceDynamic
+            aiData={ai_intelligence}
+            businessName={businessData.name}
+          />
+        </div>
+      </section>
 
       <CompetitorAnalysis
         competitors={competitorsSafe}

@@ -200,28 +200,57 @@ export default function CompetitorAnalysis({ competitors, businessName, business
               <span className="text-gray-400">Other Top Competitors</span>
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              {competitors.slice(3, 10).map((competitor, index) => (
-                <motion.div
-                  key={competitor.name}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                  viewport={{ once: true }}
-                  className="bg-gray-800/50 border border-gray-700 rounded-lg p-4"
-                >
-                  <div className="text-center">
-                    <div className="text-sm font-bold text-gray-300 mb-1">#{index + 4}</div>
-                    <div className="text-sm font-semibold text-white truncate mb-2">{competitor.name}</div>
-                    <div className="text-xs text-yellow-400 mb-1">★ {fmtRating(competitor.rating)}</div>
-                    <div className="text-xs text-gray-400">{fmtReviews(competitor.reviews)} reviews</div>
-                    {(competitor as any).address && (
-                      <div className="text-xs text-gray-500 mt-2 truncate" title={(competitor as any).address}>
-                        📍 {((competitor as any).address || '').split(',')[0]}
+              {competitors.slice(3).map((competitor, index) => {
+                const isTarget = (competitor as any).isTargetBusiness;
+                const showSeparator = (competitor as any).showSeparator;
+                const actualRank = (competitor as any).display_rank || (index + 4);
+                
+                return (
+                  <>
+                    {/* Show separator if business is outside top 10 */}
+                    {showSeparator && (
+                      <div key={`separator-${competitor.name}`} className="col-span-full text-center py-4 my-2">
+                        <div className="flex items-center justify-center gap-4">
+                          <div className="h-px bg-gray-700 flex-1"></div>
+                          <span className="text-gray-500 text-sm px-4">
+                            ... {actualRank - 11} other businesses ...
+                          </span>
+                          <div className="h-px bg-gray-700 flex-1"></div>
+                        </div>
                       </div>
                     )}
-                  </div>
-                </motion.div>
-              ))}
+                    <motion.div
+                      key={competitor.name}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.5, delay: index * 0.1 }}
+                      viewport={{ once: true }}
+                      className={`${
+                        isTarget 
+                          ? 'bg-gradient-to-br from-red-900/30 to-red-800/20 border-2 border-red-500/50 ring-2 ring-red-500/20' 
+                          : 'bg-gray-800/50 border border-gray-700'
+                      } rounded-lg p-4`}
+                    >
+                      <div className="text-center">
+                        <div className={`text-sm font-bold mb-1 ${isTarget ? 'text-red-400' : 'text-gray-300'}`}>
+                          #{actualRank}
+                        </div>
+                        <div className={`text-sm font-semibold truncate mb-2 ${isTarget ? 'text-red-200' : 'text-white'}`}>
+                          {competitor.name}
+                          {isTarget && <span className="block text-xs text-red-400 mt-1">(Your Business)</span>}
+                        </div>
+                        <div className="text-xs text-yellow-400 mb-1">★ {fmtRating(competitor.rating)}</div>
+                        <div className="text-xs text-gray-400">{fmtReviews(competitor.reviews)} reviews</div>
+                        {(competitor as any).address && (
+                          <div className="text-xs text-gray-500 mt-2 truncate" title={(competitor as any).address}>
+                            📍 {((competitor as any).address || '').split(',')[0]}
+                          </div>
+                        )}
+                      </div>
+                    </motion.div>
+                  </>
+                );
+              })}
             </div>
           </div>
         )}
