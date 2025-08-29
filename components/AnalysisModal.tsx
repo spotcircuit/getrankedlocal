@@ -214,7 +214,8 @@ export default function AnalysisModal({
             niche: niche,
             city: city,
             state: state,
-            place_id: analysisData?.place_id || null
+            place_id: analysisData?.place_id || null,
+            geometry: analysisData?.geometry || null
           })
         });
 

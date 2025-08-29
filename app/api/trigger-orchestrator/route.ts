@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { business_name, niche, city, state, place_id } = body;
+    const { business_name, niche, city, state, place_id, geometry } = body;
 
     // Validate required fields
     if (!business_name || !niche || !city || !state) {
@@ -26,7 +26,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Call the Railway job-based API
-    const apiUrl = process.env.RAILWAY_API_URL || 'https://leadfinderparallel-production.up.railway.app';
+    const apiUrl = (process.env.RAILWAY_API_URL || 'https://leadfinderparallel-production.up.railway.app').trim();
     
     // Prepare the request payload
     const requestPayload = {
@@ -35,7 +35,8 @@ export async function POST(request: NextRequest) {
       target_business: {
         name: cleanBusinessName,  // Use clean name without address
         place_id: place_id,       // Primary matching should use place_id
-        original_name: business_name  // Keep original for reference
+        original_name: business_name,  // Keep original for reference
+        geometry: geometry       // Include coordinates for map display
       }
     };
     

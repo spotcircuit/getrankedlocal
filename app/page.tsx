@@ -298,7 +298,8 @@ export default function HomePage() {
             place_id: extractedLocation.placeId,
             city: extractedLocation.city,
             state: extractedLocation.state,
-            formatted_address: extractedLocation.formattedAddress
+            formatted_address: extractedLocation.formattedAddress,
+            geometry: extractedLocation.geometry
           } : undefined}
           onComplete={handleAnalysisComplete}
         />

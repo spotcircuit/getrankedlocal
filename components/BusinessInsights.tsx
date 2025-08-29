@@ -264,10 +264,18 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
               <div className="relative h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
                 <iframe 
                   src={(() => {
+                    // Check if we have coordinates
+                    if (business?.coordinates?.lat && business?.coordinates?.lng) {
+                      return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${business.coordinates.lat},${business.coordinates.lng}&zoom=14`;
+                    }
+                    // Fallback to address if available
+                    if (business?.address) {
+                      return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(business.address)}&zoom=14`;
+                    }
+                    // Fallback to search query
                     const niche = business?.niche || business?.industry;
                     const displayNiche = niche && niche !== business?.name ? niche : '';
                     const searchQuery = [displayNiche, business?.city || '', business?.state || ''].filter(Boolean).join(' ');
-                    // If no valid search query, just show the city/state or a default
                     const finalQuery = searchQuery || business?.name || 'businesses';
                     return `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(finalQuery)}&zoom=12`;
                   })()}

@@ -59,7 +59,20 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
     industry: business?.industry || niche || ai_intelligence?.industry || '',
     website: business?.website || ai_intelligence?.domain || '',
     phone: business?.phone || ai_intelligence?.contacts?.phones?.[0] || '',
-    address: business?.address || ai_intelligence?.location?.formatted_address || ''
+    address: business?.address || ai_intelligence?.location?.formatted_address || '',
+    coordinates: (() => {
+      // Try to get coordinates from various sources
+      if (business?.coordinates) return business.coordinates;
+      if (business?.geometry?.location) {
+        return {
+          lat: business.geometry.location.lat,
+          lng: business.geometry.location.lng
+        };
+      }
+      if (business?.location?.coordinates) return business.location.coordinates;
+      if (ai_intelligence?.location?.coordinates) return ai_intelligence.location.coordinates;
+      return null;
+    })()
   };
 
   const analysisData = {
