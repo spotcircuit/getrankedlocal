@@ -11,6 +11,7 @@ import {
   CartesianGrid,
   Tooltip,
 } from "recharts";
+import { TrendingUp, Users, MousePointer, DollarSign, Target, AlertCircle } from "lucide-react";
 
 // --- Utility helpers ---
 const clamp = (v: number, min: number, max: number) => Math.min(Math.max(v, min), max);
@@ -18,149 +19,307 @@ const num = (v: any, fallback = 0) => (Number.isFinite(+v) ? +v : fallback);
 const fmt = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: 0 });
 const pct = (v: number) => `${clamp(v, -1000, 1000).toFixed(1)}%`;
 
-export default function LostRevenueCalculator() {
-  // --- Inputs (with med-spa friendly defaults) ---
-  const [sessions, setSessions] = useState(2500); // monthly visitors searching for your services
-  const [conv, setConv] = useState(2.2); // % booking/lead rate
-  const [aov, setAov] = useState(350); // avg revenue per visit (realistic for med spas)
-  const [trafficUplift, setTrafficUplift] = useState(45); // % more traffic from ranking #1 vs #7
-  const [convUplift, setConvUplift] = useState(25); // % better conversion from trust/reviews
-  const [grossMargin, setGrossMargin] = useState(60); // % typical med spa margin
+// CTR by position (industry averages)
+const CTR_BY_POSITION: { [key: number]: number } = {
+  1: 35,
+  2: 17,
+  3: 11,
+  4: 8,
+  5: 5,
+  6: 4,
+  7: 3,
+  8: 2.5,
+  9: 2,
+  10: 1.5,
+};
+
+export default function LostRevenueCalculator({ currentRank = 7 }: { currentRank?: number }) {
+  // --- Inputs ---
+  const [monthlySearches, setMonthlySearches] = useState(1000); // monthly searches for your service
+  const [conv, setConv] = useState(2.5); // % booking/lead rate
+  const [aov, setAov] = useState(350); // avg revenue per customer
+  const [targetRank, setTargetRank] = useState(1); // target position
 
   const metrics = useMemo(() => {
-    const s = clamp(num(sessions), 0, 1e9);
-    const c = clamp(num(conv), 0, 100);
-    const v = clamp(num(aov), 0, 1e7);
-    const tUp = clamp(num(trafficUplift), -100, 1000); // allow negatives for reality checks
-    const cUp = clamp(num(convUplift), -100, 1000);
-    const margin = clamp(num(grossMargin), 0, 100) / 100;
-
-    const currentConversions = (s * c) / 100;
-    const currentRevenue = currentConversions * v;
-
-    const potentialSessions = s * (1 + tUp / 100);
-    const potentialConvRate = clamp(c * (1 + cUp / 100), 0, 100);
-    const potentialConversions = (potentialSessions * potentialConvRate) / 100;
-    const potentialRevenue = potentialConversions * v;
-
-    const monthlyDelta = Math.max(0, potentialRevenue - currentRevenue);
-    const annualDelta = monthlyDelta * 12;
-    const maxMonthlySpend = monthlyDelta * margin; // what you can spend and still break even on gross profit
+    const searches = clamp(num(monthlySearches), 0, 1e9);
+    const convRate = clamp(num(conv), 0, 100);
+    const revenue = clamp(num(aov), 0, 1e7);
+    
+    const curRank = clamp(num(currentRank), 1, 20);
+    const tarRank = clamp(num(targetRank), 1, 10);
+    
+    // Current performance
+    const currentCTR = CTR_BY_POSITION[curRank] || 0.5;
+    const currentClicks = (searches * currentCTR) / 100;
+    const currentCustomers = (currentClicks * convRate) / 100;
+    const currentRevenue = currentCustomers * revenue;
+    
+    // Potential performance at target rank
+    const targetCTR = CTR_BY_POSITION[tarRank] || 35;
+    const targetClicks = (searches * targetCTR) / 100;
+    const targetCustomers = (targetClicks * convRate) / 100;
+    const targetRevenue = targetCustomers * revenue;
+    
+    // The opportunity
+    const clicksGap = Math.max(0, targetClicks - currentClicks);
+    const customersGap = Math.max(0, targetCustomers - currentCustomers);
+    const revenueGap = Math.max(0, targetRevenue - currentRevenue);
+    const multiplier = targetCTR / Math.max(currentCTR, 0.1);
 
     return {
-      s,
-      c,
-      v,
-      tUp,
-      cUp,
-      currentConversions,
+      searches,
+      convRate,
+      revenue,
+      curRank,
+      tarRank,
+      currentCTR,
+      currentClicks,
+      currentCustomers,
       currentRevenue,
-      potentialSessions,
-      potentialConvRate,
-      potentialConversions,
-      potentialRevenue,
-      monthlyDelta,
-      annualDelta,
-      maxMonthlySpend,
-      margin,
+      targetCTR,
+      targetClicks,
+      targetCustomers,
+      targetRevenue,
+      clicksGap,
+      customersGap,
+      revenueGap,
+      multiplier,
     };
-  }, [sessions, conv, aov, trafficUplift, convUplift, grossMargin]);
+  }, [monthlySearches, conv, aov, currentRank, targetRank]);
 
   const chartData = [
-    { name: "Current", Revenue: Math.round(metrics.currentRevenue) },
-    { name: "Potential", Revenue: Math.round(metrics.potentialRevenue) },
+    { name: `Position #${metrics.curRank}`, Clicks: Math.round(metrics.currentClicks), Revenue: Math.round(metrics.currentRevenue) },
+    { name: `Position #${metrics.tarRank}`, Clicks: Math.round(metrics.targetClicks), Revenue: Math.round(metrics.targetRevenue) },
   ];
 
-  const Preset = ({ label, s, c, v, t, cu }: any) => (
+  // Position-specific messaging
+  const getMessage = (rank: number) => {
+    if (rank === 1) return "You're #1! Focus on defending your position.";
+    if (rank === 2) return "You're just ONE position away from 2X more customers";
+    if (rank === 3) return "The top 2 businesses get 52% of all clicks. You're close!";
+    if (rank >= 4 && rank <= 7) return "You're invisible to 75% of searchers who never scroll past top 3";
+    if (rank >= 8 && rank <= 10) return "87% of people never scroll this far. Break into the top 3!";
+    if (rank > 10) return "You're on page 2+. That's 99% invisible to searchers.";
+    return "Improve your ranking to capture more customers";
+  };
+
+  const Preset = ({ label, s, c, v }: any) => (
     <button
       onClick={() => {
-        setSessions(s); setConv(c); setAov(v); setTrafficUplift(t); setConvUplift(cu);
+        setMonthlySearches(s); setConv(c); setAov(v);
       }}
-      className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-medium"
+      className="px-3 py-1.5 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 text-xs font-medium transition-all"
     >
       {label}
     </button>
   );
 
   return (
-    <div className="w-full bg-slate-950 text-slate-100 p-6 md:p-10 font-sans">
+    <div className="w-full bg-gradient-to-br from-slate-950 to-slate-900 text-slate-100 p-6 md:p-10 font-sans rounded-2xl">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
           <div>
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight">Calculate Your Lost Revenue</h2>
-            <p className="text-slate-300 mt-1">See the <span className="font-semibold">money left on the table</span> from poor rankings and low conversion.</p>
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight flex items-center gap-3">
+              <Target className="w-8 h-8 text-purple-400" />
+              Visibility Gap Calculator
+            </h2>
+            <p className="text-slate-300 mt-2">
+              See exactly what moving from <span className="font-bold text-yellow-400">#{metrics.curRank}</span> to{" "}
+              <span className="font-bold text-green-400">#{metrics.tarRank}</span> means for your business
+            </p>
           </div>
           <div className="flex items-center gap-2 flex-wrap">
-            <Preset label="Med Spa Average" s={2500} c={2.2} v={350} t={45} cu={25} />
-            <Preset label="Hair Salon" s={1800} c={3.5} v={85} t={40} cu={20} />
-            <Preset label="Dental Practice" s={3000} c={2.8} v={450} t={50} cu={30} />
+            <Preset label="Local Service" s={1000} c={2.5} v={350} />
+            <Preset label="High Volume" s={5000} c={1.5} v={200} />
+            <Preset label="Premium" s={500} c={3.5} v={1200} />
           </div>
         </div>
+
+        {/* Alert Message */}
+        <motion.div 
+          initial={{ opacity: 0, y: -10 }} 
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 p-4 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/30 rounded-xl flex items-start gap-3"
+        >
+          <AlertCircle className="w-5 h-5 text-amber-400 mt-0.5" />
+          <div>
+            <p className="text-amber-200 font-semibold">{getMessage(metrics.curRank)}</p>
+            {metrics.curRank > 1 && (
+              <p className="text-amber-100/70 text-sm mt-1">
+                The business at position #1 gets {metrics.multiplier.toFixed(1)}X more clicks than you do.
+              </p>
+            )}
+          </div>
+        </motion.div>
 
         {/* Grid */}
         <div className="grid md:grid-cols-3 gap-6">
           {/* Inputs Card */}
-          <section className="md:col-span-1 bg-slate-900/70 rounded-2xl border border-white/10 p-5 shadow-xl">
-            <h3 className="text-lg font-semibold mb-4">Your Current Metrics</h3>
+          <section className="md:col-span-1 bg-slate-900/70 backdrop-blur rounded-2xl border border-white/10 p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <MousePointer className="w-5 h-5 text-blue-400" />
+              Your Market Data
+            </h3>
             <div className="space-y-4">
-              <Field label="Monthly Visitors" value={sessions} onChange={setSessions} suffix="visits" />
-              <Field label="Current Conversion Rate" value={conv} onChange={setConv} suffix="%" step={0.1} />
-              <Field label="Avg Revenue per Conversion" value={aov} onChange={setAov} prefix="$" />
+              <Field 
+                label="Monthly Search Volume" 
+                value={monthlySearches} 
+                onChange={setMonthlySearches} 
+                suffix="searches"
+                tooltip="How many people search for your service each month" 
+              />
+              <Field 
+                label="Visitor → Customer Rate" 
+                value={conv} 
+                onChange={setConv} 
+                suffix="%" 
+                step={0.1}
+                tooltip="What % of website visitors become customers" 
+              />
+              <Field 
+                label="Average Customer Value" 
+                value={aov} 
+                onChange={setAov} 
+                prefix="$"
+                tooltip="How much revenue per customer on average" 
+              />
               <Divider />
-              <Field label="Traffic Uplift (from SEO)" value={trafficUplift} onChange={setTrafficUplift} suffix="%" step={1} />
-              <Field label="Conversion Uplift (from CRO/UX)" value={convUplift} onChange={setConvUplift} suffix="%" step={1} />
-              <Field label="Gross Margin" value={grossMargin} onChange={setGrossMargin} suffix="%" step={1} />
+              <div className="space-y-2">
+                <label className="block">
+                  <div className="text-sm mb-1 text-slate-300 flex items-center gap-2">
+                    Target Position
+                    <span className="text-xs text-slate-500">(your goal)</span>
+                  </div>
+                  <select
+                    value={targetRank}
+                    onChange={(e) => setTargetRank(+e.target.value)}
+                    className="w-full bg-slate-800/70 border border-white/10 rounded-xl px-3 py-2 text-slate-100 outline-none focus:border-sky-400/40"
+                  >
+                    {[1, 2, 3, 4, 5].map(r => (
+                      <option key={r} value={r}>Position #{r} ({CTR_BY_POSITION[r]}% CTR)</option>
+                    ))}
+                  </select>
+                </label>
+              </div>
             </div>
-            <p className="text-xs text-slate-400 mt-4">Tip: Ranking #1 typically increases traffic by 35-50% and better UX/reviews boost conversion 15-40%.</p>
           </section>
 
-          {/* Summary Card */}
-          <section className="md:col-span-1 bg-slate-900/70 rounded-2xl border border-white/10 p-5 shadow-xl">
-            <h3 className="text-lg font-semibold mb-3">Impact Analysis</h3>
-            <div className="space-y-3">
-              <Row label="Current conversions" value={metrics.currentConversions.toLocaleString()} />
-              <Row label="Current monthly revenue" value={fmt.format(metrics.currentRevenue)} bold />
-              <Divider />
-              <Row label="Potential conversions" value={metrics.potentialConversions.toLocaleString()} />
-              <Row label="Potential monthly revenue" value={fmt.format(metrics.potentialRevenue)} bold />
-            </div>
+          {/* Current vs Potential Card */}
+          <section className="md:col-span-1 bg-slate-900/70 backdrop-blur rounded-2xl border border-white/10 p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 text-green-400" />
+              Your Opportunity
+            </h3>
+            
+            <div className="space-y-4">
+              {/* Current Performance */}
+              <div className="p-4 bg-slate-800/50 rounded-xl">
+                <div className="text-xs uppercase tracking-wide text-slate-400 mb-2">Current (Position #{metrics.curRank})</div>
+                <div className="space-y-2">
+                  <Row label="Click Rate" value={`${metrics.currentCTR}%`} />
+                  <Row label="Monthly Visitors" value={Math.round(metrics.currentClicks).toLocaleString()} />
+                  <Row label="New Customers" value={Math.round(metrics.currentCustomers).toLocaleString()} />
+                  <Row label="Monthly Revenue" value={fmt.format(metrics.currentRevenue)} bold />
+                </div>
+              </div>
 
-            <motion.div initial={{ scale: 0.98, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ duration: 0.4 }} className="mt-5 p-4 rounded-xl bg-gradient-to-br from-rose-500/15 via-rose-500/10 to-rose-400/15 border border-rose-300/20">
-              <div className="text-sm uppercase tracking-wide text-rose-200/90">You're Losing</div>
-              <div className="text-3xl font-extrabold text-rose-200">{fmt.format(metrics.monthlyDelta)}<span className="text-base font-semibold text-rose-100/80"> / mo</span></div>
-              <div className="text-sm text-rose-100/80">≈ {fmt.format(metrics.annualDelta)} per year</div>
-            </motion.div>
+              {/* Potential Performance */}
+              <div className="p-4 bg-gradient-to-br from-green-500/10 to-emerald-500/10 rounded-xl border border-green-500/20">
+                <div className="text-xs uppercase tracking-wide text-green-300 mb-2">Potential (Position #{metrics.tarRank})</div>
+                <div className="space-y-2">
+                  <Row label="Click Rate" value={`${metrics.targetCTR}%`} />
+                  <Row label="Monthly Visitors" value={Math.round(metrics.targetClicks).toLocaleString()} />
+                  <Row label="New Customers" value={Math.round(metrics.targetCustomers).toLocaleString()} />
+                  <Row label="Monthly Revenue" value={fmt.format(metrics.targetRevenue)} bold />
+                </div>
+              </div>
 
-            <div className="mt-4 text-sm text-slate-300">
-              <span className="font-semibold">ROI potential:</span> {fmt.format(metrics.maxMonthlySpend)} <span className="text-slate-400">/ mo at {pct(metrics.margin * 100)} margin</span>
+              {/* The Gap */}
+              <motion.div 
+                initial={{ scale: 0.98, opacity: 0 }} 
+                animate={{ scale: 1, opacity: 1 }} 
+                transition={{ duration: 0.4 }}
+                className="p-4 rounded-xl bg-gradient-to-br from-purple-500/15 to-pink-500/15 border border-purple-300/20"
+              >
+                <div className="text-xs uppercase tracking-wide text-purple-200/90 mb-1">Your Opportunity</div>
+                <div className="text-2xl font-extrabold text-purple-200">
+                  +{Math.round(metrics.customersGap)} customers
+                </div>
+                <div className="text-lg font-bold text-purple-100/90 mt-1">
+                  {fmt.format(metrics.revenueGap)}<span className="text-sm font-normal"> / month</span>
+                </div>
+                <div className="text-sm text-purple-100/70 mt-2">
+                  That's {fmt.format(metrics.revenueGap * 12)} per year
+                </div>
+              </motion.div>
             </div>
           </section>
 
-          {/* Chart Card */}
-          <section className="md:col-span-1 bg-slate-900/70 rounded-2xl border border-white/10 p-5 shadow-xl">
-            <h3 className="text-lg font-semibold mb-3">Revenue Comparison</h3>
+          {/* Visual Chart Card */}
+          <section className="md:col-span-1 bg-slate-900/70 backdrop-blur rounded-2xl border border-white/10 p-6 shadow-2xl">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-purple-400" />
+              Visual Comparison
+            </h3>
             <div className="h-56">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 20 }}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" />
                   <XAxis dataKey="name" stroke="#cbd5e1" tickLine={false} axisLine={{ stroke: "#334155" }} />
                   <YAxis stroke="#cbd5e1" tickFormatter={(v) => `${(v / 1000).toFixed(0)}k`} tickLine={false} axisLine={{ stroke: "#334155" }} />
-                  <Tooltip formatter={(v: any) => fmt.format(v)} contentStyle={{ background: "#0f172a", border: "1px solid #1f2937", borderRadius: "12px", color: "#e2e8f0" }} />
-                  <Bar dataKey="Revenue" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
+                  <Tooltip 
+                    formatter={(v: any, name: string) => [
+                      name === 'Clicks' ? `${v} visitors` : fmt.format(v),
+                      name
+                    ]} 
+                    contentStyle={{ 
+                      background: "#0f172a", 
+                      border: "1px solid #1f2937", 
+                      borderRadius: "12px", 
+                      color: "#e2e8f0" 
+                    }} 
+                  />
+                  <Bar dataKey="Clicks" fill="#8b5cf6" radius={[8, 8, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </div>
-            <ul className="mt-4 text-sm text-slate-300 space-y-1 list-disc list-inside">
-              <li>Traffic ↑ by {pct(trafficUplift)} from better rankings</li>
-              <li>Conversion ↑ by {pct(convUplift)} from optimization</li>
-              <li>Based on your actual market potential</li>
-            </ul>
+            
+            <div className="mt-4 p-3 bg-slate-800/50 rounded-xl">
+              <h4 className="text-sm font-semibold text-slate-200 mb-2">Quick Facts:</h4>
+              <ul className="text-sm text-slate-300 space-y-1.5">
+                <li className="flex items-start gap-2">
+                  <span className="text-green-400 mt-0.5">•</span>
+                  <span>Top 3 positions get <span className="font-semibold text-green-400">63%</span> of all clicks</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-yellow-400 mt-0.5">•</span>
+                  <span>Position #4-10 share just <span className="font-semibold text-yellow-400">29%</span> of clicks</span>
+                </li>
+                <li className="flex items-start gap-2">
+                  <span className="text-red-400 mt-0.5">•</span>
+                  <span>Page 2+ gets less than <span className="font-semibold text-red-400">8%</span> of traffic</span>
+                </li>
+              </ul>
+            </div>
           </section>
         </div>
 
-        {/* Footer note */}
-        <p className="mt-8 text-xs text-slate-500 text-center">These calculations are based on industry averages and your specific inputs. Real results achieved for 500+ businesses.</p>
+        {/* Bottom CTA Section */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
+          className="mt-8 p-6 bg-gradient-to-r from-purple-500/10 via-pink-500/10 to-purple-500/10 rounded-2xl border border-purple-500/20 text-center"
+        >
+          <h3 className="text-xl font-bold mb-2">
+            Ready to Capture Those {Math.round(metrics.customersGap)} Missing Customers?
+          </h3>
+          <p className="text-slate-300 mb-4">
+            Moving from position #{metrics.curRank} to #{metrics.tarRank} would generate an additional{" "}
+            <span className="font-bold text-green-400">{fmt.format(metrics.revenueGap * 12)}</span> per year
+          </p>
+        </motion.div>
       </div>
     </div>
   );
@@ -173,13 +332,21 @@ interface FieldProps {
   prefix?: string;
   suffix?: string;
   step?: number;
+  tooltip?: string;
 }
 
-function Field({ label, value, onChange, prefix, suffix, step = 1 }: FieldProps) {
+function Field({ label, value, onChange, prefix, suffix, step = 1, tooltip }: FieldProps) {
   return (
-    <label className="block">
-      <div className="text-sm mb-1 text-slate-300">{label}</div>
-      <div className="flex items-center gap-2 bg-slate-800/70 border border-white/10 rounded-xl px-3 py-2 focus-within:border-sky-400/40">
+    <label className="block group">
+      <div className="text-sm mb-1 text-slate-300 flex items-center gap-2">
+        {label}
+        {tooltip && (
+          <span className="text-xs text-slate-500 opacity-0 group-hover:opacity-100 transition-opacity">
+            ({tooltip})
+          </span>
+        )}
+      </div>
+      <div className="flex items-center gap-2 bg-slate-800/70 border border-white/10 rounded-xl px-3 py-2 focus-within:border-sky-400/40 transition-colors">
         {prefix && <span className="text-slate-400">{prefix}</span>}
         <input
           type="number"
@@ -203,12 +370,12 @@ interface RowProps {
 function Row({ label, value, bold }: RowProps) {
   return (
     <div className="flex items-center justify-between">
-      <div className="text-slate-300 text-sm">{label}</div>
-      <div className={bold ? "font-semibold" : "text-slate-100"}>{value}</div>
+      <div className="text-slate-400 text-sm">{label}</div>
+      <div className={bold ? "font-semibold text-white" : "text-slate-100"}>{value}</div>
     </div>
   );
 }
 
 function Divider() {
-  return <div className="my-2 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />;
+  return <div className="my-3 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />;
 }

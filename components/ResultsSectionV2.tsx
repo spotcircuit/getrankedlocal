@@ -13,9 +13,11 @@ interface ResultsSectionV2Props {
   results: any;
   businessName: string;
   niche?: string;
+  city?: string;
+  state?: string;
 }
 
-export default function ResultsSectionV2({ results, businessName, niche }: ResultsSectionV2Props) {
+export default function ResultsSectionV2({ results, businessName, niche, city, state }: ResultsSectionV2Props) {
   if (!results) return null;
 
   const { business, analysis, ai_intelligence, market_analysis, top_competitors, all_competitors, competitors } = results;
@@ -55,13 +57,14 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
     name: business?.name || businessName,
     rating: business?.rating || 0,
     reviewCount: business?.review_count || 0,
-    city: business?.city || ai_intelligence?.location?.city || '',
-    state: business?.state || ai_intelligence?.location?.state || '',
+    city: business?.city || city || ai_intelligence?.location?.city || '',
+    state: business?.state || state || ai_intelligence?.location?.state || '',
     niche: business?.niche || niche || ai_intelligence?.industry || '',
     industry: business?.industry || niche || ai_intelligence?.industry || '',
     website: business?.website || ai_intelligence?.domain || '',
     phone: business?.phone || ai_intelligence?.contacts?.phones?.[0] || '',
     address: business?.address || ai_intelligence?.location?.formatted_address || '',
+    place_id: business?.place_id || null,
     coordinates: (() => {
       // Try to get coordinates from various sources
       if (business?.coordinates) return business.coordinates;
@@ -79,12 +82,21 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
 
   const analysisData = {
     currentRank: business?.rank || market_analysis?.rank_position || null,
-    potentialTraffic: business?.rank <= 10 ? '85%' : '45%',
+    potentialTraffic: (() => {
+      const rank = business?.rank || market_analysis?.rank_position || 999;
+      const clickShares = [33, 17, 11, 8, 6, 5, 4, 3, 2.5, 2];
+      if (rank <= 10) {
+        const myShare = clickShares[rank - 1] || 1;
+        const lostShare = 100 - myShare;
+        return `${Math.round(lostShare)}%`;
+      }
+      return '99%';
+    })(),
     lostRevenue: business?.rank > 3 ? 75000 : 0,
     reviewDeficit: business?.rank > 3 && top_competitors?.[0] 
       ? Math.max(0, (top_competitors[0]?.reviews || 0) - (business?.review_count || 0))
       : 0,
-    competitors: top_competitors || [],
+    competitors: allCompetitorsList || top_competitors || [],
     painPoints: [
       { 
         issue: 'Review Deficit', 
@@ -191,7 +203,48 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
           return 0;
         })()
       },
-      top_competitors: top_competitors || [],
+      top_competitors: (() => {
+        const competitors = top_competitors || [];
+        // If business has a rank and is not in top_competitors, add it
+        console.log("DEBUG: Building top_competitors list");
+        console.log("  Current business:", business?.name, "Rank:", business?.rank);
+        console.log("  Original top_competitors:", competitors.map((c: any) => ({ name: c.name, index: c.index })));
+        if (business?.rank && business?.name) {
+          const businessInList = competitors.some((c: any) => 
+            c.name === business.name || c.place_id === business.place_id
+          );
+          if (!businessInList) {
+            // Insert the business at its rank position or at the end
+            const businessEntry = {
+              name: business.name,
+              rank: business.rank,
+              rating: business.rating,
+              review_count: business.review_count || business.reviews || 0,
+              place_id: business.place_id,
+              street_address: business.address || business.street_address,
+              latitude: business.coordinates?.lat || business.latitude,
+              longitude: business.coordinates?.lng || business.longitude
+            };
+            
+            // Always insert the business at its rank position
+            if (business.rank <= 10) {
+              const insertIndex = business.rank - 1;
+              competitors.splice(insertIndex, 0, businessEntry);
+            } else {
+              // For ranks > 10, add it to the list anyway so BusinessInsights can find it
+              // But keep it after the top 10
+              if (competitors.length >= 10) {
+                // Insert after top 10 at position 10
+                competitors.splice(10, 0, businessEntry);
+              } else {
+                // If we don't have 10 competitors yet, just add it at the end
+                competitors.push(businessEntry);
+              }
+            }
+          }
+        }
+        return competitors;
+      })(),
       digital_presence: {
         with_website: business?.website ? 1 : 0,
         with_instagram: ai_intelligence?.social_media?.instagram ? 1 : 0,
@@ -200,21 +253,24 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
     }
   };
 
-  // Format competitors for CompetitorAnalysis component
+  // Format competitors for CompetitorAnalysis component - show more competitors
   const competitorsSafe = useMemo(() => {
     const list = top_competitors || [];
-    return list.slice(0, 3).map((c: any, idx: number) => ({
+    // Show up to 10 competitors, not just 3
+    return list.slice(0, 10).map((c: any, idx: number) => ({
       name: c?.name || 'Competitor',
-      rank: c?.rank || idx + 1,
-      reviews: typeof c?.reviews === 'number' ? c.reviews : Number(c?.reviews) || 0,
+      rank: idx + 1,  // Use index as rank since they're already sorted
+      reviews: typeof c?.review_count === 'number' ? c.review_count : (typeof c?.reviews === 'number' ? c.reviews : Number(c?.reviews || c?.review_count) || 0),
       rating: c?.rating != null ? Number(c.rating) : 0,
       advantages: [],
-      city: businessData.city,
-      website: '',
-      phone: '',
-      display_rank: c?.rank || idx + 1,
+      address: c?.street_address || c?.address || '',
+      latitude: c?.latitude,
+      longitude: c?.longitude,
+      place_id: c?.place_id || '',
+      cid: c?.cid || '',
+      display_rank: idx + 1,
     }));
-  }, [top_competitors, businessData.city]);
+  }, [top_competitors]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
@@ -225,6 +281,7 @@ export default function ResultsSectionV2({ results, businessName, niche }: Resul
         competitors={analysisData.competitors}
         niche={businessData.niche}
         city={businessData.city}
+        state={businessData.state}
       />
 
       <BusinessInsights 

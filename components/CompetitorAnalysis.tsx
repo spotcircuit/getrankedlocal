@@ -81,20 +81,21 @@ export default function CompetitorAnalysis({ competitors, businessName, business
             {currentRank && currentRank <= 3 ? (
               <>Your <span className="text-green-500">Closest Competitors</span> in the Market</>
             ) : (
-              <>The <span className="text-red-500">Top 3 Businesses</span> Stealing Your Customers</>
+              <>The <span className="text-red-500">Top 10 Businesses</span> Dominating Your Market</>
             )}
           </h2>
           <p className="text-xl text-gray-400">
             {currentRank && currentRank <= 3 ? (
               "These businesses are competing for your market share"
             ) : (
-              "These competitors dominate Google and capture 73% of all searches"
+              "These competitors capture the majority of all local searches"
             )}
           </p>
         </motion.div>
         
-        <div className="grid md:grid-cols-3 gap-6 mb-12">
-          {competitors.map((competitor, index) => (
+        {/* Top 3 Competitors - Large Cards */}
+        <div className="grid md:grid-cols-3 gap-6 mb-8">
+          {competitors.slice(0, 3).map((competitor, index) => (
             <motion.div
               key={competitor.name}
               initial={{ opacity: 0, y: 20 }}
@@ -148,10 +149,10 @@ export default function CompetitorAnalysis({ competitors, businessName, business
                 
                 {/* Location & Contact */}
                 <div className="space-y-2 pt-3 border-t border-gray-700">
-                  {competitor.city && (
+                  {(competitor as any).address && (
                     <div className="flex items-center gap-2 text-xs text-gray-400">
                       <MapPin className="w-3 h-3" />
-                      <span>{competitor.city}, {(competitor as any).state || 'TX'}</span>
+                      <span className="truncate">{(competitor as any).address}</span>
                     </div>
                   )}
                   {competitor.website && (
@@ -173,7 +174,13 @@ export default function CompetitorAnalysis({ competitors, businessName, business
                 
                 {/* View on Google */}
                 <a 
-                  href={`https://www.google.com/maps/search/${encodeURIComponent(competitor.name + ' ' + (competitor.city || ''))}`}
+                  href={(() => {
+                    // Use coordinates if available, otherwise search by name
+                    if ((competitor as any).latitude && (competitor as any).longitude) {
+                      return `https://www.google.com/maps/search/?api=1&query=${(competitor as any).latitude},${(competitor as any).longitude}`;
+                    }
+                    return `https://www.google.com/maps/search/${encodeURIComponent(competitor.name)}`;
+                  })()}
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="w-full mt-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2"
@@ -185,6 +192,39 @@ export default function CompetitorAnalysis({ competitors, businessName, business
             </motion.div>
           ))}
         </div>
+        
+        {/* Additional Competitors 4-10 - Smaller Cards */}
+        {competitors.length > 3 && (
+          <div className="mb-12">
+            <h3 className="text-2xl font-bold text-center mb-6">
+              <span className="text-gray-400">Other Top Competitors</span>
+            </h3>
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
+              {competitors.slice(3, 10).map((competitor, index) => (
+                <motion.div
+                  key={competitor.name}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5, delay: index * 0.1 }}
+                  viewport={{ once: true }}
+                  className="bg-gray-800/50 border border-gray-700 rounded-lg p-4"
+                >
+                  <div className="text-center">
+                    <div className="text-sm font-bold text-gray-300 mb-1">#{index + 4}</div>
+                    <div className="text-sm font-semibold text-white truncate mb-2">{competitor.name}</div>
+                    <div className="text-xs text-yellow-400 mb-1">★ {fmtRating(competitor.rating)}</div>
+                    <div className="text-xs text-gray-400">{fmtReviews(competitor.reviews)} reviews</div>
+                    {(competitor as any).address && (
+                      <div className="text-xs text-gray-500 mt-2 truncate" title={(competitor as any).address}>
+                        📍 {((competitor as any).address || '').split(',')[0]}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
       
       {/* Ranking Factors - Card Grid */}
@@ -192,7 +232,7 @@ export default function CompetitorAnalysis({ competitors, businessName, business
         <KeyFactors businessName={businessName} businessWebsite={businessWebsite} city={city} state={state} />
       </div>
       
-      {/* Lost Revenue Calculator Section */}
+      {/* Visibility Gap Calculator Section */}
       <div className="max-w-6xl mx-auto px-6">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -203,18 +243,24 @@ export default function CompetitorAnalysis({ competitors, businessName, business
         >
           <div className="text-center mb-8">
             <h3 className="text-3xl md:text-4xl font-bold mb-4">
-              Calculate Your <span className="text-red-500">Lost Revenue</span>
+              Discover Your <span className="text-purple-500">Visibility Gap</span>
             </h3>
             <p className="text-lg text-gray-400 mb-6">
-              See exactly how much these ranking gaps are costing you every month
+              {currentRank && currentRank <= 3 ? (
+                "See how much more traffic position #1 would bring you"
+              ) : currentRank && currentRank <= 10 ? (
+                "Calculate your opportunity from reaching the top 3 positions"
+              ) : (
+                "Discover what you're missing by not ranking in the top positions"
+              )}
             </p>
             <button
               onClick={() => setShowCalculator(!showCalculator)}
               className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold transition-all transform hover:scale-105 text-white shadow-lg"
             >
               <Calculator className="w-6 h-6" />
-              <span className="text-lg">{showCalculator ? 'Hide Calculator' : 'Calculate Your Loss'}</span>
-              <DollarSign className="w-6 h-6" />
+              <span className="text-lg">{showCalculator ? 'Hide Calculator' : 'Calculate My Opportunity'}</span>
+              <TrendingUp className="w-6 h-6" />
             </button>
           </div>
           
@@ -226,7 +272,7 @@ export default function CompetitorAnalysis({ competitors, businessName, business
               transition={{ duration: 0.3 }}
               className="mb-12"
             >
-              <LostRevenueCalculator />
+              <LostRevenueCalculator currentRank={bRank || 7} />
             </motion.div>
           )}
           
@@ -239,14 +285,14 @@ export default function CompetitorAnalysis({ competitors, businessName, business
               className="text-center mt-8"
             >
               <p className="text-lg text-gray-400 mb-4">
-                Ready to stop losing revenue to competitors?
+                Ready to capture those missing customers?
               </p>
               <button
                 onClick={handleCTAClick}
                 className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold transition-all transform hover:scale-105 text-white shadow-lg text-lg"
               >
                 <Zap className="w-6 h-6" />
-                Get My Custom Fix Priority Plan
+                Get My Visibility Improvement Plan
                 <ArrowRight className="w-6 h-6" />
               </button>
             </motion.div>

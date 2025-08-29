@@ -95,6 +95,50 @@ export async function POST(request: NextRequest) {
         const analysisData = jobData.result || jobData.data || jobData;
         console.log('📦 Storing analysis data:', analysisData?.business?.name || 'Unknown structure');
         
+        // DETAILED LOGGING FOR DIAGNOSIS
+        console.log('\n========== RAILWAY API RESPONSE DIAGNOSIS ==========');
+        console.log('🔍 Top-level keys in jobData:', Object.keys(jobData));
+        console.log('🔍 Keys in analysisData:', Object.keys(analysisData || {}));
+        
+        // Check for AI intelligence in various possible locations
+        const possibleAILocations = [
+          'ai_intelligence',
+          'aiIntelligence', 
+          'ai_data',
+          'business_intelligence',
+          'intelligence',
+          'enrichment',
+          'ai_enrichment'
+        ];
+        
+        console.log('\n🤖 Checking for AI Intelligence data:');
+        for (const key of possibleAILocations) {
+          if (analysisData?.[key]) {
+            console.log(`  ✅ Found at analysisData.${key}:`, typeof analysisData[key]);
+            console.log(`     Keys:`, Object.keys(analysisData[key]));
+            console.log(`     Sample:`, JSON.stringify(analysisData[key]).substring(0, 200) + '...');
+          } else if (jobData?.[key]) {
+            console.log(`  ✅ Found at jobData.${key}:`, typeof jobData[key]);
+            console.log(`     Keys:`, Object.keys(jobData[key]));
+            console.log(`     Sample:`, JSON.stringify(jobData[key]).substring(0, 200) + '...');
+          }
+        }
+        
+        // Check if AI data is nested within business object
+        if (analysisData?.business) {
+          console.log('\n🏢 Checking business object for AI data:');
+          const businessKeys = Object.keys(analysisData.business);
+          console.log('  Business object keys:', businessKeys);
+          
+          for (const key of possibleAILocations) {
+            if (analysisData.business[key]) {
+              console.log(`  ✅ Found at business.${key}:`, typeof analysisData.business[key]);
+            }
+          }
+        }
+        
+        console.log('====================================================\n');
+        
         // Log competitor data details
         console.log('🏢 Competitor data breakdown:');
         console.log('  - top_competitors count:', analysisData?.top_competitors?.length || 0);
@@ -102,7 +146,55 @@ export async function POST(request: NextRequest) {
         console.log('  - competitors count:', analysisData?.competitors?.length || 0);
         console.log('  - market_analysis.competitors count:', analysisData?.market_analysis?.competitors?.length || 0);
         console.log('  - Available keys:', Object.keys(analysisData || {}));
+        console.log('  - AI Intelligence data:', analysisData?.ai_intelligence ? 'Present' : 'Missing');
+        if (analysisData?.ai_intelligence) {
+          console.log('  - AI Intelligence keys:', Object.keys(analysisData.ai_intelligence));
+        }
         storeJobResults(job_id, analysisData);
+        
+        // Store competitor data in database
+        try {
+          const { storeCompetitorSearch } = await import('@/lib/competitor-db');
+          const searchDestination = `${city}, ${state}`;
+          
+          // Extract AI intelligence data from wherever it might be
+          const aiIntelligence = analysisData?.ai_intelligence || 
+                                 analysisData?.aiIntelligence || 
+                                 analysisData?.ai_data ||
+                                 analysisData?.ai_raw_response ||
+                                 analysisData?.business?.ai_intelligence ||
+                                 null;
+          
+          if (aiIntelligence) {
+            console.log('🤖 Found AI Intelligence data to store');
+            console.log('   Type:', typeof aiIntelligence);
+            if (typeof aiIntelligence === 'string') {
+              console.log('   Length:', aiIntelligence.length, 'characters');
+            } else {
+              console.log('   Keys:', Object.keys(aiIntelligence));
+            }
+          }
+          
+          console.log('💾 Storing competitor data in database...');
+          const storeResult = await storeCompetitorSearch({
+            job_id,
+            search_term: niche,
+            search_destination: searchDestination,
+            target_business: {
+              name: analysisData?.business?.name || cleanBusinessName,
+              place_id: analysisData?.business?.place_id || place_id,
+              rank: analysisData?.business?.rank
+            },
+            competitors: analysisData?.all_competitors || analysisData?.competitors || [],
+            market_analysis: analysisData?.market_analysis,
+            ai_intelligence: aiIntelligence  // Pass the AI intelligence data
+          });
+          
+          console.log('✅ Database storage result:', storeResult);
+        } catch (dbError) {
+          console.error('❌ Failed to store in database (non-critical):', dbError);
+          // Continue even if database storage fails
+        }
         
         return NextResponse.json({
           success: true,

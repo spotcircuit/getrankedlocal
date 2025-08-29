@@ -12,9 +12,10 @@ interface HeroSectionProps {
   competitors?: Competitor[];
   niche?: string;
   city?: string;
+  state?: string;
 }
 
-export default function HeroSection({ businessName, currentRank, potentialTraffic, competitors, niche, city }: HeroSectionProps) {
+export default function HeroSection({ businessName, currentRank, potentialTraffic, competitors, niche, city, state }: HeroSectionProps) {
   // Debug: verify real values are reaching the UI
   useEffect(() => {
     if (Array.isArray(competitors)) {
@@ -119,7 +120,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
             fontSize: '1.25em'
           }}>
             #{typeof currentRank === 'number' ? currentRank : '??'}
-          </span>{' '}for {niche || 'your niche'} in {city || 'your city'}
+          </span>{' '}for {niche || 'your niche'} in {city ? `${city}${state ? `, ${state}` : ''}` : 'your area'}
           <br />
           while your competitors dominate the Top 3
         </motion.p>

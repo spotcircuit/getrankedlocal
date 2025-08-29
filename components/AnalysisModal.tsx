@@ -84,6 +84,50 @@ export default function AnalysisModal({
           { step: 'finalizing', progress: 95, message: 'Preparing your custom action plan...', delay: 32000, icon: 'zap' },
         ];
         
+        // Define city and state OUTSIDE the async function so they're available later
+        let city = analysisData?.city || 'Ashburn';
+        let state = analysisData?.state || 'VA';
+        
+        // If no analysisData, try to extract from business name
+        if (!analysisData && businessName.includes(',')) {
+          const parts = businessName.split(',');
+          if (parts.length >= 2) {
+            const locationPart = parts[parts.length - 1].trim();
+            // Try to extract state abbreviation
+            const stateMatch = locationPart.match(/\b([A-Z]{2})\b/);
+            if (stateMatch) {
+              state = stateMatch[1];
+              city = locationPart.replace(stateMatch[0], '').trim();
+            }
+          }
+        }
+
+        // Start the API call immediately (don't await it yet)
+        const apiCallPromise = (async () => {
+          
+          // Call the trigger orchestrator which will call the single business analysis
+          const response = await fetch('/api/trigger-orchestrator', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              business_name: businessName,
+              niche: niche,
+              city: city,
+              state: state,
+              place_id: analysisData?.place_id || null,
+              geometry: analysisData?.geometry || null
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Analysis failed: ${response.status}`);
+          }
+
+          return await response.json();
+        })();
+
         // Run status updates with proper timing
         let lastTime = 0;
         for (const update of statusUpdates) {
@@ -102,8 +146,9 @@ export default function AnalysisModal({
           setCurrentIcon(update.icon || 'database');
         }
         
-        // After all status updates, generate fake results
-        await new Promise(resolve => setTimeout(resolve, 2000));
+        // After all status updates, wait for API call to complete
+        console.log('⏳ Waiting for API response...');
+        const data = await apiCallPromise;
         
         // Create comprehensive fake results
         const fakeResults = {
@@ -184,46 +229,6 @@ export default function AnalysisModal({
 //           onComplete(fakeAnalysis);
 //         }
         // return; // DISABLED FAKE MODE
-
-        // Use analysisData if provided (from autocomplete), otherwise extract from name
-        let city = analysisData?.city || 'Ashburn';
-        let state = analysisData?.state || 'VA';
-        
-        // If no analysisData, try to extract from business name
-        if (!analysisData && businessName.includes(',')) {
-          const parts = businessName.split(',');
-          if (parts.length >= 2) {
-            const locationPart = parts[parts.length - 1].trim();
-            // Try to extract state abbreviation
-            const stateMatch = locationPart.match(/\b([A-Z]{2})\b/);
-            if (stateMatch) {
-              state = stateMatch[1];
-              city = locationPart.replace(stateMatch[0], '').trim();
-            }
-          }
-        }
-        
-        // Call the trigger orchestrator which will call the single business analysis
-        const response = await fetch('/api/trigger-orchestrator', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            business_name: businessName,
-            niche: niche,
-            city: city,
-            state: state,
-            place_id: analysisData?.place_id || null,
-            geometry: analysisData?.geometry || null
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error(`Analysis failed: ${response.status}`);
-        }
-
-        const data = await response.json();
 
         // LOG THE ENTIRE RESPONSE TO CONSOLE AND LOCALSTORAGE
         console.log('🔴🔴🔴 FULL API RESPONSE:', JSON.stringify(data, null, 2));

@@ -88,147 +88,147 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                 </h4>
                 
                 <div className="space-y-1 overflow-y-auto flex-1 pr-2">
-                  {/* Top 10 Competitors with Click Shares */}
+                  {/* Top Competitors with Click Shares */}
                   {(() => {
                     const competitors = analysis?.marketIntel?.top_competitors || [];
-                    const currentRank = analysis?.currentRank || 999;
-                    const businessInTop10 = competitors.slice(0, 10).some((c: any) => c.name === business?.name);
+                    // Handle unranked businesses properly
+                    const rawRank = analysis?.currentRank;
+                    const currentRank = (rawRank === 'unranked' || !rawRank || isNaN(rawRank)) ? 999 : Number(rawRank);
+                    const isUnranked = rawRank === 'unranked' || currentRank === 999;
+                    const businessPlaceId = business?.place_id;
+                    
+                    console.log("DEBUG BusinessInsights:");
+                    console.log("  Competitors:", competitors.map((c: any, idx: number) => ({ 
+                      name: c.name, 
+                      placeId: c.place_id,
+                      rank: idx + 1,
+                      rating: c.rating,
+                      reviews: c.reviews 
+                    })));
+                    console.log("  Current business:", business?.name, "place_id:", businessPlaceId);
+                    console.log("  Current rank from analysis:", rawRank, "-> processed as:", currentRank);
+                    console.log("  Is unranked?", isUnranked);
+                    
+                    // Create display items for top 10 competitors
+                    const displayItems = [];
                     
                     // Display top 10 competitors
-                    const topCompetitors = competitors.slice(0, 10).map((comp: any, idx: number) => {
-                      const position = idx + 1;
-                      const clickShare = clickShares[idx] || 1;
-                      const isYourBusiness = comp.name === business?.name;
+                    for (let i = 0; i < Math.min(10, competitors.length); i++) {
+                      const comp = competitors[i];
+                      const rank = i + 1; // Rank is index + 1
+                      const clickShare = clickShares[rank - 1] || 1;
                       
-                      return (
+                      // Check if this is the searched business (by place_id or by rank match)
+                      const isSearchedBusiness = (businessPlaceId && comp.place_id === businessPlaceId) || 
+                                                (currentRank === rank);
+                      
+                      displayItems.push(
                         <div 
-                          key={idx}
+                          key={i}
                           className={`p-1.5 rounded text-[11px] ${
-                            isYourBusiness 
+                            isSearchedBusiness 
                               ? 'bg-red-900 border-2 border-red-500' 
-                              : position <= 3 
+                              : rank <= 3 
                                 ? 'bg-green-900/20 border border-green-500/30'
-                                : 'bg-gray-900/50 border border-gray-700/30'
+                                : rank <= 5
+                                  ? 'bg-blue-900/20 border border-blue-500/30'
+                                  : 'bg-gray-900/50 border border-gray-700/30'
                           }`}
-                          style={isYourBusiness ? { backgroundColor: 'rgba(220, 38, 38, 0.4)' } : {}}
+                          style={isSearchedBusiness ? { backgroundColor: 'rgba(220, 38, 38, 0.4)' } : {}}
                         >
                           <div className="flex items-center justify-between mb-0.5">
                             <div className="flex items-center gap-1">
                               <span className={`font-bold ${
-                                isYourBusiness ? 'text-red-400' :
-                                position <= 3 ? 'text-green-400' : 'text-gray-400'
+                                isSearchedBusiness ? 'text-red-400' :
+                                rank <= 3 ? 'text-green-400' : 
+                                rank <= 5 ? 'text-blue-400' : 'text-gray-400'
                               }`}>
-                                #{position}
+                                #{rank}
                               </span>
-                              {isYourBusiness && (
+                              {isSearchedBusiness && (
                                 <span className="text-[9px] font-bold text-red-400 uppercase">YOU</span>
                               )}
                             </div>
                             <span className={`font-semibold ${
-                              isYourBusiness ? 'text-red-400' :
-                              position <= 3 ? 'text-green-400' : 'text-gray-500'
+                              isSearchedBusiness ? 'text-red-400' :
+                              rank <= 3 ? 'text-green-400' :
+                              rank <= 5 ? 'text-blue-400' : 'text-gray-500'
                             }`}>
                               {clickShare}%
                             </span>
                           </div>
                           
                           <div className={`truncate mb-0.5 ${
-                            isYourBusiness ? 'text-white font-semibold' : 'text-gray-300'
+                            isSearchedBusiness ? 'text-white font-semibold' : 'text-gray-300'
                           }`}>
                             {comp.name}
                           </div>
                           
                           <div className="flex items-center justify-between text-[10px]">
-                            <span className={position <= 3 && !isYourBusiness ? 'text-green-400 font-semibold' : 'text-gray-500'}>
+                            <span className={rank <= 3 && !isSearchedBusiness ? 'text-green-400 font-semibold' : 'text-gray-500'}>
                               ★{comp.rating != null && !isNaN(Number(comp.rating)) 
                                 ? Number(comp.rating).toFixed(1) 
                                 : 'N/A'} ({comp.reviews || 0})
                             </span>
-                            <span className={isYourBusiness ? 'text-red-400' : position <= 3 ? 'text-green-400 font-semibold' : 'text-gray-400'}>
+                            <span className={
+                              isSearchedBusiness ? 'text-red-400' : 
+                              rank <= 3 ? 'text-green-400 font-semibold' : 
+                              rank <= 5 ? 'text-blue-400' : 'text-gray-400'
+                            }>
                               ~{Math.round(clickShare * 10)} leads/mo
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    });
-                    
-                    // If business not in top 10, add it separately
-                    if (!businessInTop10 && currentRank > 10 && currentRank <= 20) {
-                      const yourClickShare = clickShares[currentRank - 1] || 0.5;
-                      topCompetitors.push(
-                        <div key="separator" className="text-center text-[10px] text-gray-500 py-1">
-                          ••• {currentRank - 11} others •••
-                        </div>
-                      );
-                      topCompetitors.push(
-                        <div 
-                          key="current-business"
-                          className="p-1.5 rounded text-[11px] bg-red-900 border-2 border-red-500"
-                          style={{ backgroundColor: 'rgba(220, 38, 38, 0.4)' }}
-                        >
-                          <div className="flex items-center justify-between mb-0.5">
-                            <div className="flex items-center gap-1">
-                              <span className="font-bold text-red-400">#{currentRank}</span>
-                              <span className="text-[9px] font-bold text-red-400 uppercase">YOU</span>
-                            </div>
-                            <span className="font-semibold text-red-400">{yourClickShare}%</span>
-                          </div>
-                          
-                          <div className="text-white font-semibold truncate mb-0.5">
-                            {business?.name || 'Your Business'}
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-gray-500">
-                              ★{business?.rating != null && !isNaN(Number(business.rating)) 
-                                ? Number(business.rating).toFixed(1) 
-                                : 'N/A'} ({business?.reviewCount || 0})
-                            </span>
-                            <span className="text-red-400">
-                              ~{Math.round(yourClickShare * 10)} leads/mo
-                            </span>
-                          </div>
-                        </div>
-                      );
-                    } else if (!businessInTop10 && currentRank > 20) {
-                      topCompetitors.push(
-                        <div key="separator" className="text-center text-[10px] text-gray-500 py-1">
-                          ••• many others •••
-                        </div>
-                      );
-                      topCompetitors.push(
-                        <div 
-                          key="current-business"
-                          className="p-1.5 rounded text-[11px] bg-red-900 border-2 border-red-500"
-                          style={{ backgroundColor: 'rgba(220, 38, 38, 0.4)' }}
-                        >
-                          <div className="flex items-center justify-between mb-0.5">
-                            <div className="flex items-center gap-1">
-                              <span className="font-bold text-red-400">#{currentRank}</span>
-                              <span className="text-[9px] font-bold text-red-400 uppercase">YOU'RE HERE</span>
-                            </div>
-                            <span className="font-semibold text-red-400">&lt;1%</span>
-                          </div>
-                          
-                          <div className="text-white font-semibold truncate mb-0.5">
-                            {business?.name || 'Your Business'}
-                          </div>
-                          
-                          <div className="flex items-center justify-between text-[10px]">
-                            <span className="text-gray-500">
-                              ★{business?.rating != null && !isNaN(Number(business.rating)) 
-                                ? Number(business.rating).toFixed(1) 
-                                : 'N/A'} ({business?.reviewCount || 0})
-                            </span>
-                            <span className="text-red-400">
-                              ~0-5 leads/mo
                             </span>
                           </div>
                         </div>
                       );
                     }
                     
-                    return topCompetitors;
+                    // If searched business is unranked or beyond rank 10, add it separately
+                    if (isUnranked || (currentRank > 10 && currentRank < 999)) {
+                      const yourClickShare = isUnranked ? 0 : (clickShares[currentRank - 1] || 0.5);
+                      
+                      displayItems.push(
+                        <div key="separator" className="text-center text-[10px] text-gray-500 py-1">
+                          {isUnranked ? '••• Not Ranked •••' : `••• ${currentRank - 11} others •••`}
+                        </div>
+                      );
+                      
+                      displayItems.push(
+                        <div 
+                          key="current-business"
+                          className="p-1.5 rounded text-[11px] bg-red-900 border-2 border-red-500"
+                          style={{ backgroundColor: 'rgba(220, 38, 38, 0.4)' }}
+                        >
+                          <div className="flex items-center justify-between mb-0.5">
+                            <div className="flex items-center gap-1">
+                              <span className="font-bold text-red-400">
+                                {isUnranked ? 'UNRANKED' : `#${currentRank}`}
+                              </span>
+                              <span className="text-[9px] font-bold text-red-400 uppercase">YOU</span>
+                            </div>
+                            <span className="font-semibold text-red-400">
+                              {isUnranked ? '0%' : `${yourClickShare}%`}
+                            </span>
+                          </div>
+                          
+                          <div className="text-white font-semibold truncate mb-0.5">
+                            {business?.name || 'Your Business'}
+                          </div>
+                          
+                          <div className="flex items-center justify-between text-[10px]">
+                            <span className="text-gray-500">
+                              ★{business?.rating != null && !isNaN(Number(business.rating)) 
+                                ? Number(business.rating).toFixed(1) 
+                                : 'N/A'} ({business?.reviewCount || 0})
+                            </span>
+                            <span className="text-red-400">
+                              {isUnranked ? '~0 leads/mo' : `~${Math.round(yourClickShare * 10)} leads/mo`}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+                    
+                    return displayItems;
                   })()}
                 </div>
 
@@ -241,9 +241,11 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                   <div className="flex justify-between">
                     <span className="text-gray-500">Your share:</span>
                     <span className="text-red-400 font-semibold">
-                      {analysis?.currentRank && analysis.currentRank <= 20 
-                        ? `${clickShares[analysis.currentRank - 1]}%` 
-                        : '<1%'}
+                      {analysis?.currentRank === 'unranked' 
+                        ? '0%' 
+                        : analysis?.currentRank && analysis.currentRank <= 20 
+                          ? `${clickShares[analysis.currentRank - 1]}%` 
+                          : '<1%'}
                     </span>
                   </div>
                   <div className="flex justify-between">
@@ -264,20 +266,27 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
               <div className="relative h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
                 <iframe 
                   src={(() => {
-                    // Check if we have coordinates
+                    // If we have the business coordinates, center on it
                     if (business?.coordinates?.lat && business?.coordinates?.lng) {
-                      return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${business.coordinates.lat},${business.coordinates.lng}&zoom=14`;
+                      // Use place mode to show the specific business
+                      return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${business.coordinates.lat},${business.coordinates.lng}&zoom=13`;
                     }
-                    // Fallback to address if available
-                    if (business?.address) {
-                      return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(business.address)}&zoom=14`;
-                    }
-                    // Fallback to search query
-                    const niche = business?.niche || business?.industry;
-                    const displayNiche = niche && niche !== business?.name ? niche : '';
-                    const searchQuery = [displayNiche, business?.city || '', business?.state || ''].filter(Boolean).join(' ');
-                    const finalQuery = searchQuery || business?.name || 'businesses';
-                    return `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(finalQuery)}&zoom=12`;
+                    
+                    // Otherwise use search to show competitors in the area
+                    const searchTerms = [];
+                    
+                    // Add the niche/industry
+                    const niche = business?.niche || business?.industry || 'businesses';
+                    searchTerms.push(niche);
+                    
+                    // Add location if available
+                    if (business?.city) searchTerms.push(business.city);
+                    if (business?.state) searchTerms.push(business.state);
+                    
+                    const searchQuery = searchTerms.join(' ');
+                    
+                    // Use search mode to show multiple businesses in the area
+                    return `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(searchQuery)}&zoom=12`;
                   })()}
                   className="w-full h-full"
                   style={{ border: 0, minHeight: '400px' }}
@@ -286,9 +295,19 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                   referrerPolicy="no-referrer-when-downgrade"
                 />
                 
+                {/* Business Indicator - Top Center */}
+                {business?.name && (
+                  <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-red-600 text-white rounded-lg px-4 py-2 shadow-lg border-2 border-red-400">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold">📍 YOUR BUSINESS:</span>
+                      <span className="text-sm">{business.name}</span>
+                    </div>
+                  </div>
+                )}
+                
                 {/* Market Benchmarks Overlay - Top Left */}
                 {analysis?.marketIntel?.review_momentum && (
-                  <div className="absolute top-4 left-4 bg-gray-900 rounded-lg p-3 max-w-[180px] border border-gray-700">
+                  <div className="absolute top-16 left-4 bg-gray-900 rounded-lg p-3 max-w-[180px] border border-gray-700">
                     <h4 className="text-xs font-bold text-white mb-2">Market Benchmarks</h4>
                     <div className="space-y-1.5 text-xs">
                       <div className="flex justify-between gap-3">
@@ -309,7 +328,7 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
 
                 {/* Market Intelligence Overlay - Top Right */}
                 {analysis?.marketIntel?.market_summary && (
-                  <div className="absolute top-4 right-4 bg-gray-900 rounded-lg p-3 max-w-[200px] border border-gray-700">
+                  <div className="absolute top-16 right-4 bg-gray-900 rounded-lg p-3 max-w-[200px] border border-gray-700">
                     <h4 className="text-xs font-bold text-white mb-2">Market Leaders</h4>
                     <div className="space-y-1.5 text-xs">
                       <div className="flex justify-between gap-3">
@@ -364,7 +383,7 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                   <div className="flex items-center justify-between mb-1">
                     <Target className="w-4 h-4 text-red-400" />
                     <span className="text-xl font-bold text-red-400">
-                      #{analysis?.currentRank || '?'}
+                      {analysis?.currentRank === 'unranked' ? 'N/A' : `#${analysis?.currentRank || '?'}`}
                     </span>
                   </div>
                   <h3 className="text-xs text-gray-400">Google Rank</h3>
@@ -406,6 +425,42 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                 </div>
               </div>
 
+              {/* Business Contact Information */}
+              {(business?.website || business?.phone) && (
+                <div className="mt-4 bg-gradient-to-br from-purple-600/20 to-purple-900/10 border border-purple-500/30 rounded-lg p-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Building2 className="w-5 h-5 text-purple-400" />
+                    <h3 className="text-sm font-bold">Contact Information</h3>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    {business?.phone && (
+                      <div className="flex items-center gap-2">
+                        <Phone className="w-4 h-4 text-gray-400" />
+                        <a 
+                          href={`tel:${business.phone}`}
+                          className="text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                        >
+                          {business.phone}
+                        </a>
+                      </div>
+                    )}
+                    {business?.website && (
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-4 h-4 text-gray-400" />
+                        <a 
+                          href={business.website.startsWith('http') ? business.website : `https://${business.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm text-blue-400 hover:text-blue-300 transition-colors truncate"
+                        >
+                          {business.website.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
               {/* Market Intelligence Stats - Below KPIs */}
               <div className="mt-4 bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
                 <div className="flex items-center gap-2 mb-3">
@@ -445,7 +500,9 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                     </div>
                     <div className="bg-red-900/30 rounded-lg p-2 text-center">
                       <p className="text-xs text-gray-500">Your Rank</p>
-                      <p className="text-sm font-bold text-red-400">#{analysis?.currentRank || '?'}</p>
+                      <p className="text-sm font-bold text-red-400">
+                        {analysis?.currentRank === 'unranked' ? 'Unranked' : `#${analysis?.currentRank || '?'}`}
+                      </p>
                     </div>
                     <div className="bg-green-900/30 rounded-lg p-2 text-center">
                       <p className="text-xs text-gray-500">Top Performer</p>

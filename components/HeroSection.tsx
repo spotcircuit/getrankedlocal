@@ -33,9 +33,20 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
           transition={{ duration: 0.8 }}
           className="mb-8"
         >
-          <span className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-full text-red-400 text-sm font-semibold">
+          <span className={`inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold ${
+            currentRank === 1 
+              ? 'bg-green-500/20 border border-green-500/50 text-green-400'
+              : currentRank && currentRank <= 3
+              ? 'bg-yellow-500/20 border border-yellow-500/50 text-yellow-400' 
+              : 'bg-red-500/20 border border-red-500/50 text-red-400'
+          }`}>
             <AlertCircle className="w-4 h-4" />
-            URGENT: Your Ranking is Costing You Customers
+            {currentRank === 1 
+              ? 'CONGRATS: You\'re #1! But There\'s Still Opportunity'
+              : currentRank && currentRank <= 3
+              ? 'GOOD NEWS: You\'re Close to the Top'
+              : 'URGENT: Your Ranking is Costing You Customers'
+            }
           </span>
         </motion.div>
         
@@ -45,9 +56,21 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
           transition={{ duration: 0.8, delay: 0.2 }}
           className="text-5xl md:text-7xl font-bold mb-6"
         >
-          {businessName} is{' '}
-          <span className="text-red-500">Losing {potentialTraffic}</span> of
-          Potential Customers
+          {currentRank === 1 ? (
+            <>
+              {businessName} is <span className="text-green-500">Leading</span> but Missing <span className="text-yellow-500">67%</span> of the Market
+            </>
+          ) : currentRank && currentRank <= 3 ? (
+            <>
+              {businessName} is <span className="text-yellow-500">Close</span> but Missing <span className="text-red-500">{potentialTraffic}</span> of Customers
+            </>
+          ) : (
+            <>
+              {businessName} is{' '}
+              <span className="text-red-500">Losing {potentialTraffic}</span> of
+              Potential Customers
+            </>
+          )}
         </motion.h1>
         
         <motion.p
@@ -56,11 +79,31 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
           transition={{ duration: 0.8, delay: 0.4 }}
           className="text-xl md:text-2xl text-gray-300 mb-8"
         >
-          You're currently ranked <span className="text-red-400 font-bold">#{typeof currentRank === 'number' ? currentRank : '—'}</span>
-          {niche ? <> for <span className="font-semibold">{niche}</span></> : null}
-          {city ? <> in <span className="font-semibold">{city}</span></> : null}
-          <br />
-          while your competitors dominate the Top 3
+          {currentRank === 1 ? (
+            <>
+              You're <span className="text-green-400 font-bold">#1</span>
+              {niche ? <> for <span className="font-semibold">{niche}</span></> : null}
+              {city ? <> in <span className="font-semibold">{city}</span></> : null}
+              <br />
+              but customers still choose other options 67% of the time
+            </>
+          ) : currentRank && currentRank <= 3 ? (
+            <>
+              You're ranked <span className="text-yellow-400 font-bold">#{currentRank}</span>
+              {niche ? <> for <span className="font-semibold">{niche}</span></> : null}
+              {city ? <> in <span className="font-semibold">{city}</span></> : null}
+              <br />
+              just one position away from significantly more traffic
+            </>
+          ) : (
+            <>
+              You're currently ranked <span className="text-red-400 font-bold">#{typeof currentRank === 'number' ? currentRank : '—'}</span>
+              {niche ? <> for <span className="font-semibold">{niche}</span></> : null}
+              {city ? <> in <span className="font-semibold">{city}</span></> : null}
+              <br />
+              while your competitors dominate the Top 3
+            </>
+          )}
         </motion.p>
         {Array.isArray(competitors) && competitors.length > 0 && (
           <motion.p

@@ -129,6 +129,14 @@ export default function HomePage() {
   const handleAnalysisComplete = (results: any) => {
     setAnalysisResults(results);
     setShowModal(false);
+    
+    // Auto-scroll to results after a brief delay to allow the modal to close
+    setTimeout(() => {
+      const resultsSection = document.getElementById('results-section');
+      if (resultsSection) {
+        resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }, 100);
   };
 
   return (
@@ -267,7 +275,15 @@ export default function HomePage() {
 
           {/* Results Section */}
           {analysisResults && (
-            <ResultsSectionV2 results={analysisResults} businessName={businessName} niche={niche} />
+            <div id="results-section">
+              <ResultsSectionV2 
+                results={analysisResults} 
+                businessName={businessName} 
+                niche={niche}
+                city={extractedLocation?.city}
+                state={extractedLocation?.state}
+              />
+            </div>
           )}
 
           {/* Features */}
