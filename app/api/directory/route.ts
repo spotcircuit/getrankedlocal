@@ -12,8 +12,204 @@ export async function GET(request: Request) {
   const slug = searchParams.get('slug');
   const debug = searchParams.get('debug');
   const sort = searchParams.get('sort');
+  const placeId = searchParams.get('place_id'); // Add place_id lookup
+  const businessName = searchParams.get('business_name'); // For name-based matching
+  const businessCity = searchParams.get('city'); // For location-based matching
+  const businessState = searchParams.get('state'); // For location-based matching
 
   try {
+    // PLACE_ID LOOKUP - Check if business exists by place_id
+    if (placeId) {
+      console.log('🔍 Checking place_id:', placeId);
+
+      const existingBusiness = await sql`
+        SELECT
+          id,
+          business_name as name,
+          regexp_replace(LOWER(REPLACE(business_name, ' ', '-')), '[^a-z0-9-]+', '', 'g') as slug,
+          CAST(rating AS float) as rating,
+          CAST(review_count AS int) as "reviewCount",
+          source_directory,
+          city,
+          state
+        FROM leads
+        WHERE place_id = ${placeId}
+        LIMIT 1
+      `;
+
+      console.log('📊 Place_id lookup result:', existingBusiness.length > 0 ? 'FOUND' : 'NOT FOUND');
+
+      if (existingBusiness.length > 0) {
+        const business = existingBusiness[0];
+        // Extract collection name from source_directory
+        const sourceParts = business.source_directory.split('_');
+        const collectionName = sourceParts.slice(2, -1).map((p: string) =>
+          p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+        ).join(' ');
+
+        console.log('✅ Redirecting to:', `/${business.state.toLowerCase()}/${collectionName.toLowerCase().replace(/\s+/g, '-')}/medspas/${business.slug}`);
+
+        return NextResponse.json({
+          exists: true,
+          matchType: 'place_id',
+          business: {
+            id: business.id,
+            name: business.name,
+            slug: business.slug,
+            rating: business.rating,
+            reviewCount: business.reviewCount,
+            collection: collectionName,
+            state: business.state.toLowerCase(),
+            redirectUrl: `/${business.state.toLowerCase()}/${collectionName.toLowerCase().replace(/\s+/g, '-')}/medspas/${business.slug}`,
+            // Add more details for modal
+            source_directory: business.source_directory,
+            city: business.city,
+            snippet: `${business.name} - ${business.reviewCount || 0} reviews${business.rating ? `, ${business.rating}★` : ''} in ${business.city}, ${business.state}`
+          }
+        });
+      }
+
+      console.log('❌ Business not found by place_id, trying name-based matching...');
+
+      // FALLBACK STRATEGY: Multi-layer business matching
+      if (businessName && businessCity && businessState) {
+        console.log('🔍 Fallback matching for:', { businessName, businessCity, businessState });
+
+        // Extract clean business name (remove address from Google Places result)
+        const cleanBusinessName = businessName.split(',')[0].trim();
+        console.log('🧹 Cleaned business name:', cleanBusinessName);
+
+        // Layer 1: Exact business name + city + state match (using clean name)
+        const exactMatch = await sql`
+          SELECT
+            id,
+            business_name as name,
+            regexp_replace(LOWER(REPLACE(business_name, ' ', '-')), '[^a-z0-9-]+', '', 'g') as slug,
+            CAST(rating AS float) as rating,
+            CAST(review_count AS int) as "reviewCount",
+            source_directory,
+            city,
+            state
+          FROM leads
+          WHERE LOWER(TRIM(business_name)) = LOWER(TRIM(${cleanBusinessName}))
+            AND LOWER(TRIM(city)) = LOWER(TRIM(${businessCity}))
+            AND UPPER(TRIM(state)) = UPPER(TRIM(${businessState}))
+          LIMIT 5
+        `;
+
+        console.log('🔍 Exact match query result:', exactMatch.length, 'matches found');
+
+        if (exactMatch.length > 0) {
+          const businesses = exactMatch.map(business => {
+            const sourceParts = business.source_directory.split('_');
+            const collectionName = sourceParts.slice(2, -1).map((p: string) =>
+              p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+            ).join(' ');
+
+            return {
+              id: business.id,
+              name: business.name,
+              slug: business.slug,
+              rating: business.rating,
+              reviewCount: business.reviewCount,
+              collection: collectionName,
+              state: business.state.toLowerCase(),
+              redirectUrl: `/${business.state.toLowerCase()}/${collectionName.toLowerCase().replace(/\s+/g, '-')}/medspas/${business.slug}`,
+              source_directory: business.source_directory,
+              city: business.city,
+              snippet: `${business.name} - ${business.reviewCount || 0} reviews${business.rating ? `, ${business.rating}★` : ''} in ${business.city}, ${business.state}`
+            };
+          });
+
+          console.log('✅ Found', businesses.length, 'exact matches');
+          return NextResponse.json({
+            exists: true,
+            matchType: 'exact_name_location',
+            businesses: businesses
+          });
+        }
+
+        console.log(`❌ No exact match found. Checking what businesses exist in ${businessCity}, ${businessState}...`);
+
+        // Debug: Check what businesses exist in the same city/state
+        const debugQuery = await sql`
+          SELECT business_name, city, state
+          FROM leads
+          WHERE LOWER(TRIM(city)) = LOWER(TRIM(${businessCity}))
+            AND UPPER(TRIM(state)) = UPPER(TRIM(${businessState}))
+          LIMIT 10
+        `;
+        console.log(`🏢 Businesses in ${businessCity}, ${businessState}:`, debugQuery.map(b => b.business_name));
+
+        // Layer 2: Fuzzy business name match within same city/state (using clean name)
+        const fuzzyMatch = await sql`
+          SELECT
+            id,
+            business_name as name,
+            regexp_replace(LOWER(REPLACE(business_name, ' ', '-')), '[^a-z0-9-]+', '', 'g') as slug,
+            CAST(rating AS float) as rating,
+            CAST(review_count AS int) as "reviewCount",
+            source_directory,
+            city,
+            state,
+            -- Simple fuzzy match using LIKE with wildcards for common variations
+            CASE
+              WHEN LOWER(TRIM(business_name)) LIKE LOWER(TRIM(${cleanBusinessName})) || '%' THEN 0.9
+              WHEN LOWER(TRIM(business_name)) LIKE '%' || LOWER(TRIM(${cleanBusinessName})) || '%' THEN 0.7
+              ELSE 0.5
+            END as similarity_score
+          FROM leads
+          WHERE LOWER(TRIM(city)) = LOWER(TRIM(${businessCity}))
+            AND UPPER(TRIM(state)) = UPPER(TRIM(${businessState}))
+            AND (
+              LOWER(TRIM(business_name)) LIKE '%' || LOWER(TRIM(${cleanBusinessName})) || '%'
+              OR LOWER(TRIM(${cleanBusinessName})) LIKE '%' || LOWER(TRIM(business_name)) || '%'
+            )
+          ORDER BY similarity_score DESC
+          LIMIT 5
+        `;
+
+        if (fuzzyMatch.length > 0 && fuzzyMatch[0].similarity_score > 0.6) {
+          console.log('🎯 Fuzzy match found:', fuzzyMatch[0].name, 'Score:', fuzzyMatch[0].similarity_score);
+          const businesses = fuzzyMatch.map(business => {
+            const sourceParts = business.source_directory.split('_');
+            const collectionName = sourceParts.slice(2, -1).map((p: string) =>
+              p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()
+            ).join(' ');
+
+            return {
+              id: business.id,
+              name: business.name,
+              slug: business.slug,
+              rating: business.rating,
+              reviewCount: business.reviewCount,
+              collection: collectionName,
+              state: business.state.toLowerCase(),
+              redirectUrl: `/${business.state.toLowerCase()}/${collectionName.toLowerCase().replace(/\s+/g, '-')}/medspas/${business.slug}`,
+              source_directory: business.source_directory,
+              city: business.city,
+              snippet: `${business.name} - ${business.reviewCount || 0} reviews${business.rating ? `, ${business.rating}★` : ''} in ${business.city}, ${business.state}`
+            };
+          });
+
+          console.log('✅ Found', businesses.length, 'fuzzy matches');
+          return NextResponse.json({
+            exists: true,
+            matchType: 'fuzzy_name',
+            similarity: fuzzyMatch[0].similarity_score,
+            businesses: businesses
+          });
+        }
+
+        console.log('❌ No suitable matches found, will trigger orchestrator');
+      } else {
+        console.log('❌ Missing business details for fallback matching');
+      }
+
+      return NextResponse.json({ exists: false });
+    }
+
+    // ... rest of existing directory logic ...
     if (debug === 'columns') {
       // Return columns in leads table related to rating/review to help pick correct fields
       const cols = await sql`

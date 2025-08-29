@@ -17,9 +17,10 @@ interface ActionPlanProps {
   businessName?: string;
   businessWebsite?: string;
   currentRank?: number;
+  niche?: string;
 }
 
-export default function ActionPlan({ timeline, solutions, actionPlan, businessName = '', businessWebsite = '', currentRank = 9 }: ActionPlanProps) {
+export default function ActionPlan({ timeline, solutions, actionPlan, businessName = '', businessWebsite = '', currentRank = 9, niche }: ActionPlanProps) {
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [hasSubmittedForm, setHasSubmittedForm] = useState(false);
   
@@ -90,8 +91,8 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
     },
     {
       week: "Weeks 5-8",
-      title: "Own 'Med Spa Near Me'",
-      subtitle: "Be everywhere patients look—including AI results",
+      title: `Own '${niche || 'Business'} Near Me'`,
+      subtitle: "Be everywhere customers look—including AI results",
       icon: TrendingUp,
       color: "from-purple-500/20 to-purple-600/10",
       border: "border-purple-500/50",

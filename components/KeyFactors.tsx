@@ -209,9 +209,10 @@ interface KeyFactorsProps {
   businessWebsite?: string;
   city?: string;
   state?: string;
+  onPrimaryClick?: () => void;
 }
 
-export default function KeyFactors({ businessName = '', businessWebsite = '', city = '', state = '' }: KeyFactorsProps = {}) {
+export default function KeyFactors({ businessName = '', businessWebsite = '', city = '', state = '', onPrimaryClick }: KeyFactorsProps = {}) {
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [hasSubmittedForm, setHasSubmittedForm] = useState(false);
   
@@ -228,6 +229,10 @@ export default function KeyFactors({ businessName = '', businessWebsite = '', ci
   };
   
   const handleCTAClick = () => {
+    if (onPrimaryClick) {
+      onPrimaryClick();
+      return;
+    }
     setShowLeadForm(true);
   };
   

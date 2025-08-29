@@ -10,9 +10,10 @@ interface CTASectionProps {
   businessName: string;
   urgency: string;
   businessWebsite?: string;
+  onPrimaryClick?: () => void;
 }
 
-export default function CTASection({ businessName, urgency, businessWebsite = '' }: CTASectionProps) {
+export default function CTASection({ businessName, urgency, businessWebsite = '', onPrimaryClick }: CTASectionProps) {
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [hasSubmittedForm, setHasSubmittedForm] = useState(false);
   
@@ -35,6 +36,10 @@ export default function CTASection({ businessName, urgency, businessWebsite = ''
   };
   
   const handleCTAClick = () => {
+    if (onPrimaryClick) {
+      onPrimaryClick();
+      return;
+    }
     if (!hasSubmittedForm) {
       setShowLeadForm(true);
     } else {

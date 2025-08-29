@@ -34,8 +34,9 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
   const getMapsSearchUrl = () => {
     const city = business?.city || '';
     const state = business?.state || '';
-    const niche = business?.niche || 'med spas';
-    return `https://www.google.com/maps/search/${encodeURIComponent(`${niche} ${city} ${state}`)}`;
+    const niche = business?.niche || business?.industry || '';
+    const searchQuery = [niche, city, state].filter(Boolean).join(' ');
+    return `https://www.google.com/maps/search/${encodeURIComponent(searchQuery)}`;
   };
   
   return (
@@ -51,7 +52,7 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
             Your <span className="text-purple-400">Business Intelligence</span> Report
           </h2>
           <p className="text-center text-gray-400 mb-12 text-lg">
-            Complete competitive analysis for {business?.name} in {business?.city}, {business?.state}
+            Complete competitive analysis for {business?.name}{business?.city ? ` in ${business.city}${business.state ? `, ${business.state}` : ''}` : ''}
           </p>
         </motion.div>
 
@@ -262,7 +263,14 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
             >
               <div className="relative h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
                 <iframe 
-                  src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(`${business?.niche || 'med spas'} ${business?.city || ''} ${business?.state || ''}`)}&zoom=12`}
+                  src={(() => {
+                    const niche = business?.niche || business?.industry;
+                    const displayNiche = niche && niche !== business?.name ? niche : '';
+                    const searchQuery = [displayNiche, business?.city || '', business?.state || ''].filter(Boolean).join(' ');
+                    // If no valid search query, just show the city/state or a default
+                    const finalQuery = searchQuery || business?.name || 'businesses';
+                    return `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(finalQuery)}&zoom=12`;
+                  })()}
                   className="w-full h-full"
                   style={{ border: 0, minHeight: '400px' }}
                   allowFullScreen
@@ -291,22 +299,30 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                   </div>
                 )}
 
-                {/* Digital Presence Overlay - Top Right */}
-                {analysis?.marketIntel?.digital_presence && (
-                  <div className="absolute top-4 right-4 bg-gray-900 rounded-lg p-3 max-w-[180px] border border-gray-700">
-                    <h4 className="text-xs font-bold text-white mb-2">Digital Presence</h4>
+                {/* Market Intelligence Overlay - Top Right */}
+                {analysis?.marketIntel?.market_summary && (
+                  <div className="absolute top-4 right-4 bg-gray-900 rounded-lg p-3 max-w-[200px] border border-gray-700">
+                    <h4 className="text-xs font-bold text-white mb-2">Market Leaders</h4>
                     <div className="space-y-1.5 text-xs">
                       <div className="flex justify-between gap-3">
-                        <span className="text-gray-300">Website</span>
-                        <span className="font-bold text-white">{analysis.marketIntel.digital_presence.with_website}/{analysis.marketIntel.market_summary?.total_businesses || '?'}</span>
+                        <span className="text-gray-300">Total Competitors</span>
+                        <span className="font-bold text-white">{analysis.marketIntel.market_summary.total_businesses || 0}</span>
                       </div>
                       <div className="flex justify-between gap-3">
-                        <span className="text-gray-300">Instagram</span>
-                        <span className="font-bold text-pink-400">{analysis.marketIntel.digital_presence.with_instagram}/{analysis.marketIntel.market_summary?.total_businesses || '?'}</span>
+                        <span className="text-gray-300">Avg Rating</span>
+                        <span className="font-bold text-yellow-400">★{analysis.marketIntel.market_summary.avg_rating || '0.0'}</span>
                       </div>
                       <div className="flex justify-between gap-3">
-                        <span className="text-gray-300">Facebook</span>
-                        <span className="font-bold text-blue-400">{analysis.marketIntel.digital_presence.with_facebook}/{analysis.marketIntel.market_summary?.total_businesses || '?'}</span>
+                        <span className="text-gray-300">Avg Reviews</span>
+                        <span className="font-bold text-blue-400">{Math.round(analysis.marketIntel.market_summary.avg_reviews || 0)}</span>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span className="text-gray-300">Median Reviews</span>
+                        <span className="font-bold text-purple-400">{Math.round(analysis.marketIntel.market_summary.median_reviews || 0)}</span>
+                      </div>
+                      <div className="flex justify-between gap-3">
+                        <span className="text-gray-300">Top Performer</span>
+                        <span className="font-bold text-green-400">{analysis.marketIntel.market_summary.max_reviews || 0}</span>
                       </div>
                     </div>
                   </div>
@@ -388,7 +404,17 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                   <Map className="w-5 h-5 text-blue-400" />
                   <h3 className="text-sm font-bold">Local Market Intelligence</h3>
                   <p className="text-xs text-gray-400">
-                    "{business?.niche || 'med spas'} {business?.city} {business?.state}" Search
+                    {(() => {
+                      const niche = business?.niche || business?.industry;
+                      const city = business?.city;
+                      const state = business?.state;
+                      
+                      // Only show niche if it's not the same as business name
+                      const displayNiche = niche && niche !== business?.name ? niche : '';
+                      
+                      const parts = [displayNiche, city, state].filter(Boolean);
+                      return parts.length > 0 ? `"${parts.join(' ')}" Search` : 'Local Search';
+                    })()}
                   </p>
                 </div>
                 
@@ -402,12 +428,12 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                       <p className="text-xs text-gray-500">Avg Rating</p>
                       <p className="text-sm font-bold text-yellow-400">
                         {analysis.marketIntel.market_summary.avg_rating ? 
-                          analysis.marketIntel.market_summary.avg_rating.toFixed(2) : '0'}★
+                          `${analysis.marketIntel.market_summary.avg_rating}★` : '0★'}
                       </p>
                     </div>
                     <div className="bg-blue-500/20 rounded-lg p-2 text-center">
-                      <p className="text-xs text-gray-500">Median</p>
-                      <p className="text-sm font-bold text-blue-400">{Math.round(analysis.marketIntel.market_summary.median_reviews || 0)}</p>
+                      <p className="text-xs text-gray-500">Avg Reviews</p>
+                      <p className="text-sm font-bold text-blue-400">{Math.round(analysis.marketIntel.market_summary.avg_reviews || 0)}</p>
                     </div>
                     <div className="bg-red-900/30 rounded-lg p-2 text-center">
                       <p className="text-xs text-gray-500">Your Rank</p>

@@ -1,0 +1,18 @@
+        const statusUpdates = [
+          { step: 'searching', progress: 8, message: 'Connecting to Google Business Intelligence API...', delay: 3000 },
+          { step: 'searching', progress: 12, message: 'Scanning local market for competitors in your niche...', delay: 6000 },
+          { step: 'searching', progress: 18, message: 'Identified 47 businesses in your competitive landscape...', delay: 9000 },
+          { step: 'searching', progress: 24, message: 'Extracting Google Maps ranking positions...', delay: 12000 },
+          { step: 'searching', progress: 30, message: 'Analyzing review velocity and sentiment patterns...', delay: 15000 },
+          { step: 'analyzing', progress: 36, message: 'Building competitor intelligence profiles...', delay: 18000 },
+          { step: 'analyzing', progress: 42, message: 'Examining digital presence and social signals...', delay: 21000 },
+          { step: 'analyzing', progress: 48, message: 'Calculating market share distribution...', delay: 24000 },
+          { step: 'analyzing', progress: 54, message: 'Identifying strategic gaps and opportunities...', delay: 27000 },
+          { step: 'processing', progress: 60, message: 'Processing AI-powered competitive insights...', delay: 30000 },
+          { step: 'processing', progress: 66, message: 'Evaluating ranking factors and visibility metrics...', delay: 33000 },
+          { step: 'processing', progress: 72, message: 'Calculating potential revenue impact...', delay: 36000 },
+          { step: 'processing', progress: 78, message: 'Generating personalized growth strategies...', delay: 39000 },
+          { step: 'finalizing', progress: 84, message: 'Compiling comprehensive market analysis...', delay: 42000 },
+          { step: 'finalizing', progress: 90, message: 'Finalizing AI intelligence report...', delay: 45000 },
+          { step: 'finalizing', progress: 95, message: 'Preparing your custom action plan...', delay: 48000 },
+        ];

@@ -48,6 +48,35 @@ img, video, canvas, svg {
   background: #ffffff;
   border: 1px solid #d1d5db; /* gray-300 */
 }
+
+/* Animation classes for Analysis Modal */
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out;
+}
 .intake input::placeholder,
 .intake textarea::placeholder {
   color: #9ca3af; /* gray-400 */
@@ -207,6 +236,23 @@ a:visited {
 .grid-cols-4 {
   grid-template-columns: repeat(4, minmax(0, 1fr));
 }
+
+.grid-cols-12 {
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.col-span-1  { grid-column: span 1 / span 1; }
+.col-span-2  { grid-column: span 2 / span 2; }
+.col-span-3  { grid-column: span 3 / span 3; }
+.col-span-4  { grid-column: span 4 / span 4; }
+.col-span-5  { grid-column: span 5 / span 5; }
+.col-span-6  { grid-column: span 6 / span 6; }
+.col-span-7  { grid-column: span 7 / span 7; }
+.col-span-8  { grid-column: span 8 / span 8; }
+.col-span-9  { grid-column: span 9 / span 9; }
+.col-span-10 { grid-column: span 10 / span 10; }
+.col-span-11 { grid-column: span 11 / span 11; }
+.col-span-12 { grid-column: span 12 / span 12; }
 
 /* Spacing utilities */
 .p-3 {
@@ -492,6 +538,9 @@ a:visited {
 .text-gray-100 { color: #f3f4f6; }
 .text-gray-600 { color: #4b5563; }
 .text-gray-700 { color: #374151; }
+/* Missing darker grayscale utilities used on light-themed pages (e.g., /analysis) */
+.text-gray-800 { color: #1f2937; }
+.text-gray-900 { color: #111827; }
 
 .text-red-400 {
   color: #f87171;
@@ -509,12 +558,20 @@ a:visited {
   color: #22c55e;
 }
 
+.text-green-600 {
+  color: #16a34a;
+}
+
 .text-blue-400 {
   color: #60a5fa;
 }
 
 .text-blue-500 {
   color: #3b82f6;
+}
+
+.text-blue-600 {
+  color: #2563eb;
 }
 
 .text-purple-400 {
@@ -672,6 +729,16 @@ a:visited {
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
+/* Missing gradient stops for light theme pages like /analysis */
+.from-gray-50 {
+  --tw-gradient-from: #f9fafb;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+/* Light blue/green gradient stops for feature cards */
+.from-blue-50 { --tw-gradient-from: #eff6ff; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+.from-blue-100 { --tw-gradient-from: #dbeafe; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to); }
+
 .from-gray-900 {
   --tw-gradient-from: #111827;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
@@ -699,6 +766,18 @@ a:visited {
 
 .from-purple-600 {
   --tw-gradient-from: #9333ea;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+/* Light purple start for reversed Maps gradient */
+.from-purple-300 {
+  --tw-gradient-from: #d8b4fe;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+/* Slightly darker light start for better legibility */
+.from-purple-400 {
+  --tw-gradient-from: #c084fc;
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
 }
 
@@ -750,6 +829,13 @@ a:visited {
   --tw-gradient-to: #000;
 }
 
+.to-white {
+  --tw-gradient-to: #ffffff;
+}
+
+.to-green-50 { --tw-gradient-to: #ecfdf5; }
+.to-green-100 { --tw-gradient-to: #d1fae5; }
+
 .to-gray-900 {
   --tw-gradient-to: #111827;
 }
@@ -768,6 +854,16 @@ a:visited {
 
 .to-purple-600 {
   --tw-gradient-to: #9333ea;
+}
+
+/* Darker purple end for reversed Maps gradient */
+.to-purple-700 {
+  --tw-gradient-to: #7e22ce;
+}
+
+/* Even darker purple for stronger edge contrast */
+.to-purple-800 {
+  --tw-gradient-to: #6b21a8;
 }
 
 .to-purple-900 {

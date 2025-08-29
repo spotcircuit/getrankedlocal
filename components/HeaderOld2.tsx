@@ -99,7 +99,7 @@ export default function Header() {
             <div className="relative bg-gradient-to-b from-gray-900 to-black border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl z-10" style={{maxWidth: "400px", width: "100%"}}>
             <button
               onClick={() => setShowContactModal(false)}
-              className="absolute top-4 right-4 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white transition-colors rounded-full p-2 shadow-lg"
+              className="absolute top-6 right-6 text-gray-400 hover:text-white transition-colors"
             >
               <X className="w-5 h-5" />
             </button>
@@ -107,10 +107,10 @@ export default function Header() {
             {/* Header Section */}
             <div className="text-center mb-8">
               <h2 className="text-3xl font-bold text-white mb-3">
-                Get Your Custom Ranking Plan
+                See Your Google Ranking
               </h2>
               <p className="text-gray-400 text-base">
-                Free in-depth analysis • Personalized strategy • We'll contact you
+                Takes 60 seconds • No credit card • 100% free
               </p>
             </div>
 
@@ -122,7 +122,7 @@ export default function Header() {
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-400">
                 <Clock className="w-4 h-4 text-blue-400" />
-                <span>24hr Response</span>
+                <span>Instant Results</span>
               </div>
               <div className="flex items-center gap-2 text-sm text-gray-400">
                 <TrendingUp className="w-4 h-4 text-purple-400" />
@@ -133,7 +133,7 @@ export default function Header() {
             <form className="space-y-5" onSubmit={(e) => {
               e.preventDefault();
               // Handle form submission
-              alert('Thank you! We\'ll contact you within 24 hours with your personalized ranking plan.');
+              alert('Thank you! Check your email for your ranking report.');
               setShowContactModal(false);
             }}>
               {/* Business Name */}
@@ -145,7 +145,7 @@ export default function Header() {
                   type="text"
                   placeholder="e.g., Austin Med Spa"
                   required
-                  className="w-full px-4 py-4 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  className="w-full px-4 py-3.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
                 />
                 <p className="text-xs text-gray-500 mt-1">As it appears on Google Maps</p>
               </div>
@@ -153,43 +153,28 @@ export default function Header() {
               {/* Email */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Where should we send your plan?
+                  Where should we send your report?
                 </label>
                 <input
                   type="email"
                   placeholder="your@email.com"
                   required
-                  className="w-full px-4 py-4 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  className="w-full px-4 py-3.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
                 />
-                <p className="text-xs text-gray-500 mt-1">We'll email your custom strategy</p>
+                <p className="text-xs text-gray-500 mt-1">We'll never spam or sell your info</p>
               </div>
               
               {/* Phone */}
               <div>
                 <label className="block text-sm font-medium text-gray-300 mb-2">
-                  Best number to reach you?
+                  Best number to reach you? (Optional)
                 </label>
                 <input
                   type="tel"
                   placeholder="(555) 123-4567"
-                  required
-                  className="w-full px-4 py-4 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  className="w-full px-4 py-3.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
                 />
-                <p className="text-xs text-gray-500 mt-1">To discuss your ranking strategy</p>
-              </div>
-              
-              {/* Keyword/Niche */}
-              <div>
-                <label className="block text-sm font-medium text-gray-300 mb-2">
-                  What keywords do you want to rank for?
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g., med spa, botox near me"
-                  required
-                  className="w-full px-4 py-4 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
-                />
-                <p className="text-xs text-gray-500 mt-1">Keywords your customers search for</p>
+                <p className="text-xs text-gray-500 mt-1">For urgent ranking opportunities only</p>
               </div>
               
               {/* Location */}
@@ -201,9 +186,9 @@ export default function Header() {
                   type="text"
                   placeholder="Austin, TX"
                   required
-                  className="w-full px-4 py-4 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
+                  className="w-full px-4 py-3.5 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20 transition-all"
                 />
-                <p className="text-xs text-gray-500 mt-1">Your service area</p>
+                <p className="text-xs text-gray-500 mt-1">So we can check your local rankings</p>
               </div>
               
               {/* Submit Button */}
@@ -211,12 +196,12 @@ export default function Header() {
                 type="submit"
                 className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-xl font-bold text-base hover:shadow-lg hover:shadow-purple-500/25 transition-all hover:scale-[1.02] mt-6"
               >
-                Get My Custom Plan →
+                Get My Free Ranking Report →
               </button>
               
               {/* Privacy Note */}
               <p className="text-xs text-gray-500 text-center mt-4">
-                By submitting, you agree to be contacted about your free analysis and ranking strategy. 
+                By submitting, you agree to receive your ranking report and occasional tips to improve your visibility. 
                 Unsubscribe anytime.
               </p>
             </form>

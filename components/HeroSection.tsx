@@ -106,7 +106,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
           <button className="px-8 py-4 bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg font-bold text-lg hover:scale-105 transition-transform">
             See Why You're Not Ranking #1
           </button>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-gray-400">
             Free competitive analysis • No credit card required
           </p>
         </motion.div>

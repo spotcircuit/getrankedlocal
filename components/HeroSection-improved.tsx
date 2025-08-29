@@ -245,7 +245,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
           <p style={{
             marginTop: '12px',
             fontSize: '14px',
-            color: '#6b7280'
+            color: '#9ca3af'
           }}>
             Free competitive analysis • No credit card required
           </p>
