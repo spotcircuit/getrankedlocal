@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { TrendingDown, AlertCircle, DollarSign, Users, ArrowRight, Phone, CheckCircle } from 'lucide-react';
 
 interface StakeholderHeroProps {
@@ -140,6 +141,39 @@ export default function StakeholderHero({
               </div>
             </div>
           </div>
+        </motion.div>
+
+        {/* Visual Revenue Loss Flow */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.5 }}
+          className="my-12"
+        >
+          <Image
+            src="/revenue-loss-flow.png"
+            alt="How you're losing revenue to competitors"
+            width={1200}
+            height={800}
+            priority
+            className="rounded-xl shadow-2xl mx-auto w-full h-auto"
+          />
+        </motion.div>
+
+        {/* Ranking Ladder Visualization */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6 }}
+          className="my-12"
+        >
+          <Image
+            src="/ranking-ladder-visualization.png"
+            alt="Your current Google Maps ranking position"
+            width={1200}
+            height={800}
+            className="rounded-xl shadow-2xl mx-auto w-full h-auto"
+          />
         </motion.div>
 
         {/* CTA Section */}

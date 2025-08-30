@@ -1,6 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
+import Image from 'next/image';
 import { CheckCircle, TrendingUp, Star, Clock, Shield, ArrowRight, Zap } from 'lucide-react';
 
 interface SimplifiedSolutionProps {
@@ -40,6 +41,24 @@ export default function SimplifiedSolution({
               ROI: 872%
             </div>
           </div>
+        </motion.div>
+
+        {/* Before/After Ranking Slider Visual */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          whileInView={{ opacity: 1, scale: 1 }}
+          viewport={{ once: true }}
+          className="mb-16"
+        >
+          <Image
+            src="/before-after-ranking-slider.png"
+            alt="See your transformation in 90 days"
+            width={1400}
+            height={800}
+            priority
+            className="rounded-xl shadow-2xl mx-auto w-full h-auto"
+          />
         </motion.div>
 
         {/* Main Solution Header */}

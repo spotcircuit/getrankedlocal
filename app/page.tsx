@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Search, MapPin, TrendingUp, Sparkles, Star, ChevronRight, Target, Zap, Trophy, Users, CheckCircle, AlertCircle } from 'lucide-react';
+import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AnalysisModal from '@/components/AnalysisModal';
@@ -338,6 +339,26 @@ export default function HomePage() {
                     </p>
                   </motion.div>
                 </div>
+                
+                {/* Customer Journey Bypass Visual */}
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  className="mt-16"
+                >
+                  <h3 className="text-2xl font-bold text-center text-white mb-6">
+                    Why You're Losing Customers Right Now
+                  </h3>
+                  <Image
+                    src="/customer-journey-bypass.png"
+                    alt="How customers bypass your business"
+                    width={1200}
+                    height={1000}
+                    loading="lazy"
+                    className="rounded-xl shadow-2xl mx-auto w-full h-auto"
+                  />
+                </motion.div>
                 </div>
               </div>
             </section>
