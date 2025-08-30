@@ -1,4 +1,29 @@
-# Sales Funnel App - SEO 2.0 Dynamic Landing Pages
+# GetLocalRanked - Google Maps Ranking Analysis Platform
+
+## 🚀 Project Overview
+
+GetLocalRanked is a sophisticated Google Maps ranking analysis and lead generation platform designed to help local businesses (particularly medical spas, dental practices, and law firms) understand and improve their local search visibility.
+
+## 📊 Current Project Status
+
+### ✅ What's Working
+- **Core Analysis Engine**: Fully functional Google Maps scraping and ranking analysis
+- **Real-time Data**: Live competitor analysis with 100+ businesses tracked per search
+- **AI Intelligence**: Advanced business intelligence extraction using AI
+- **Visual Analytics**: Interactive maps, competitor comparisons, and ranking visualizations
+- **Directory System**: Multi-city business directory with SEO-optimized pages
+- **Railway Backend**: Deployed Python/Flask API for scraping operations
+- **Vercel Frontend**: Next.js 14 app with TypeScript and Tailwind CSS
+
+### 🚧 Current Development Focus
+We're currently transforming the platform from a technical analysis tool into a revenue-generating machine that resonates with business owners. See [TODO.md](./TODO.md) for detailed implementation checklist.
+
+**Active Sprint Goals:**
+1. Simplifying the user experience for non-technical business owners
+2. Adding trust signals and social proof
+3. Implementing ROI-focused messaging
+4. Creating urgency triggers and competitor alerts
+5. Building stakeholder-specific landing pages
 
 ## 🚀 Quick Start (Windows)
 

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useState } from 'react';
-import { ArrowRight, X, Shield, Clock, TrendingUp } from 'lucide-react';
+import { ArrowRight, X, Shield, Clock, TrendingUp, Phone, CheckCircle, Award } from 'lucide-react';
 
 export default function Header() {
   const pathname = usePathname();
@@ -21,6 +21,46 @@ export default function Header() {
 
   return (
     <>
+      {/* Trust Bar */}
+      <div className="bg-black border-b border-gray-800/30">
+        <div className="max-w-7xl mx-auto px-4 py-2">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-4 text-xs">
+              <span className="flex items-center gap-1 text-gray-400">
+                <Shield className="w-3 h-3 text-green-400" />
+                HIPAA Compliant
+              </span>
+              <span className="flex items-center gap-1 text-gray-400">
+                <Award className="w-3 h-3 text-yellow-400" />
+                Google Partner
+              </span>
+              <span className="flex items-center gap-1 text-gray-400">
+                <CheckCircle className="w-3 h-3 text-blue-400" />
+                500+ Ranked #1
+              </span>
+            </div>
+            <div className="flex items-center gap-4">
+              <a 
+                href="tel:1-800-RANK-NOW" 
+                className="flex items-center gap-2 text-green-400 hover:text-green-300 transition-colors font-semibold"
+              >
+                <Phone className="w-4 h-4" />
+                <span className="text-sm">1-800-RANK-NOW</span>
+              </a>
+              <button
+                onClick={() => {
+                  const section = document.querySelector('#booking-section');
+                  section?.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="px-3 py-1 bg-green-600 hover:bg-green-700 text-white text-xs font-bold rounded-full transition-all"
+              >
+                Book Strategy Call
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
       <header className="bg-gradient-to-b from-gray-900 via-black to-black border-b border-gray-800/50">
         <div className="max-w-7xl mx-auto px-4">
           {/* Logo - Centered with better styling */}
