@@ -69,7 +69,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
             backdropFilter: 'blur(10px)'
           }}>
             <AlertCircle className="w-4 h-4" />
-            URGENT: Your Ranking is Costing You Customers
+            {currentRank === 3 ? 'You\'re Just ONE Position Away from 50% More Customers' : 'URGENT: Your Ranking is Costing You Customers'}
           </span>
         </motion.div>
         
@@ -85,16 +85,32 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
             textShadow: '0 4px 6px rgba(0, 0, 0, 0.3)'
           }}
         >
-          {businessName} is{' '}
-          <span style={{
-            background: 'linear-gradient(90deg, #ef4444 0%, #f97316 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text'
-          }}>
-            Losing {potentialTraffic}
-          </span>{' '}
-          of Potential Customers
+          {currentRank === 3 ? (
+            <>
+              2 Competitors Are Taking{' '}
+              <span style={{
+                background: 'linear-gradient(90deg, #ef4444 0%, #f97316 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                220 of Your Monthly Leads
+              </span>
+            </>
+          ) : (
+            <>
+              {businessName} is{' '}
+              <span style={{
+                background: 'linear-gradient(90deg, #ef4444 0%, #f97316 100%)',
+                WebkitBackgroundClip: 'text',
+                WebkitTextFillColor: 'transparent',
+                backgroundClip: 'text'
+              }}>
+                Losing {potentialTraffic}
+              </span>{' '}
+              of Potential Customers
+            </>
+          )}
         </motion.h1>
         
         <motion.p
@@ -108,21 +124,45 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
             lineHeight: '1.6'
           }}
         >
-          You're currently ranked{' '}
-          <span style={{
-            display: 'inline-block',
-            padding: '4px 12px',
-            background: 'rgba(239, 68, 68, 0.2)',
-            border: '1px solid rgba(239, 68, 68, 0.5)',
-            borderRadius: '8px',
-            color: '#fca5a5',
-            fontWeight: '700',
-            fontSize: '1.25em'
-          }}>
-            #{typeof currentRank === 'number' ? currentRank : '??'}
-          </span>{' '}for {niche || 'your niche'} in {city ? `${city}${state ? `, ${state}` : ''}` : 'your area'}
-          <br />
-          while your competitors dominate the Top 3
+          {currentRank === 3 ? (
+            <>
+              Your{' '}
+              <span style={{
+                display: 'inline-inline',
+                padding: '2px 8px',
+                background: 'rgba(34, 197, 94, 0.2)',
+                border: '1px solid rgba(34, 197, 94, 0.5)',
+                borderRadius: '6px',
+                color: '#86efac',
+                fontWeight: '600'
+              }}>
+                5.0★ rating
+              </span>{' '}
+              beats both #1 and #2 competitors
+              <br />
+              <span style={{ color: '#fca5a5', fontWeight: '600' }}>
+                But they still get 2X more customers because of ranking
+              </span>
+            </>
+          ) : (
+            <>
+              You're currently ranked{' '}
+              <span style={{
+                display: 'inline-block',
+                padding: '4px 12px',
+                background: 'rgba(239, 68, 68, 0.2)',
+                border: '1px solid rgba(239, 68, 68, 0.5)',
+                borderRadius: '8px',
+                color: '#fca5a5',
+                fontWeight: '700',
+                fontSize: '1.25em'
+              }}>
+                #{typeof currentRank === 'number' ? currentRank : '??'}
+              </span>{' '}for {niche || 'your niche'} in {city ? `${city}${state ? `, ${state}` : ''}` : 'your area'}
+              <br />
+              while your competitors dominate the Top 3
+            </>
+          )}
         </motion.p>
         {/* Removed inline competitor text list (cards below show details) */}
         {Array.isArray(competitors) && competitors.length > 0 && (
@@ -191,7 +231,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
               fontSize: '16px'
             }}>
               <Search className="w-5 h-5" style={{ color: '#fbbf24' }} />
-              <span>93% of customers never go past the top 3 results</span>
+              <span>{currentRank === 3 ? 'Moving from #3 to #2 = 60 more customers/month' : '93% of customers never go past the top 3 results'}</span>
             </div>
             <div style={{
               display: 'flex',
@@ -201,7 +241,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
               fontSize: '16px'
             }}>
               <TrendingDown className="w-5 h-5" style={{ color: '#f87171' }} />
-              <span>Many patients now search on AI platforms (ChatGPT, Claude)</span>
+              <span>{currentRank === 3 ? 'Every day at #3 = $70 lost to competitors above you' : 'Many customers now search on AI platforms (ChatGPT, Claude)'}</span>
             </div>
           </div>
         </motion.div>
@@ -241,7 +281,7 @@ export default function HeroSection({ businessName, currentRank, potentialTraffi
             e.currentTarget.style.transform = 'scale(1)';
             e.currentTarget.style.boxShadow = '0 4px 15px rgba(139, 92, 246, 0.4)';
           }}>
-            See Why You're Not Ranking #1
+            {currentRank === 3 ? 'See the 3 Things #1 and #2 Do That You Don\'t' : 'See Why You\'re Not Ranking #1'}
           </button>
           <p style={{
             marginTop: '12px',

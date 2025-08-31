@@ -1,6 +1,11 @@
 {
   "permissions": {
     "allow": [
+      "Bash(cd:*)",
+      "Read(/mnt/c/Users/**)",
+      "Bash(cd:*)",
+      "Bash(curl:*)",
+      "Bash(cd:*)",
       "Bash(cd:*)"
     ],
     "deny": [],

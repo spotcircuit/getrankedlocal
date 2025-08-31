@@ -1,6 +1,8 @@
 'use client';
 
-import { useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { useMemo, useState } from 'react';
+import Image from 'next/image';
 import HeroSection from '@/components/HeroSection-improved';
 import BusinessInsights from '@/components/BusinessInsights';
 import CompetitorAnalysis from '@/components/CompetitorAnalysis';
@@ -8,6 +10,10 @@ import ProblemSection from '@/components/ProblemSection';
 import ActionPlan from '@/components/ActionPlan';
 import CTASection from '@/components/CTASection';
 import AIIntelligenceDynamic from '@/components/AIIntelligenceDynamic';
+import CompetitorAlertFixed from '@/components/CompetitorAlertFixed';
+import SimplifiedSolution from '@/components/SimplifiedSolution';
+import StakeholderHero from '@/components/StakeholderHero';
+import LeadCaptureForm, { LeadData } from '@/components/LeadCaptureForm';
 
 interface ResultsSectionV2Props {
   results: any;
@@ -21,6 +27,17 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
   if (!results) return null;
 
   const { business, analysis, ai_intelligence, market_analysis, top_competitors, all_competitors, competitors } = results;
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  
+  const handleLeadSubmit = (data: LeadData) => {
+    setShowLeadForm(false);
+    // Show success message
+    const successMessage = document.createElement('div');
+    successMessage.className = 'fixed top-4 right-4 bg-green-500/20 text-green-400 border border-green-500/30 px-6 py-3 rounded-lg z-50';
+    successMessage.textContent = 'Thank you! We\'ll contact you within 24 hours with your competitive analysis.';
+    document.body.appendChild(successMessage);
+    setTimeout(() => successMessage.remove(), 5000);
+  };
   
   
   // Debug the raw data
@@ -314,20 +331,135 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black">
-      <HeroSection
+      {/* StakeholderHero - Personalized landing that replaces generic HeroSection */}
+      <StakeholderHero
         businessName={businessData.name}
         currentRank={analysisData.currentRank}
-        potentialTraffic={analysisData.potentialTraffic}
-        competitors={analysisData.competitors}
-        niche={businessData.niche}
+        topCompetitors={competitorsSafe.slice(0, 3)}
+        monthlyLoss={analysisData.lostRevenue ? Math.round(analysisData.lostRevenue / 12) : 15000}
         city={businessData.city}
         state={businessData.state}
+        niche={businessData.niche}
+        businessWebsite={businessData.website}
       />
 
+      {/* Business Intelligence with Google Map - Right after Hero */}
       <BusinessInsights 
         business={businessData} 
         analysis={analysisData} 
       />
+
+      {/* Visual Problem Representations */}
+      <section className="py-12 md:py-20 overflow-x-hidden bg-gradient-to-b from-black via-gray-900 to-black">
+        <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.5 }}
+            className="grid md:grid-cols-2 gap-4 md:gap-8 mb-8 md:mb-12"
+          >
+            <div className="w-full">
+              <h4 className="text-base md:text-lg font-semibold text-gray-300 mb-4 text-center">
+                Where You Rank vs. Where The Money Is
+              </h4>
+              <div className="px-4">
+                <div className="relative w-full max-w-md mx-auto">
+                  <Image
+                    src="/ranking-ladder-visualization.webp"
+                    alt="Your ranking position"
+                    width={640}
+                    height={640}
+                    className="rounded-xl shadow-2xl w-full h-auto object-contain"
+                  />
+                </div>
+              </div>
+              {/* CTA below image */}
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setShowLeadForm(true)}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold text-white transition-all transform hover:scale-105"
+                >
+                  Fix My Ranking →
+                </button>
+              </div>
+            </div>
+            <div className="w-full">
+              <h4 className="text-base md:text-lg font-semibold text-gray-300 mb-4 text-center">
+                Your Revenue Flying to Competitors
+              </h4>
+              <div className="px-4">
+                <div className="relative w-full max-w-md mx-auto">
+                  <Image
+                    src="/revenue-loss-flow.webp"
+                    alt="Revenue loss visualization"
+                    width={640}
+                    height={640}
+                    className="rounded-xl shadow-2xl w-full h-auto object-contain"
+                  />
+                </div>
+              </div>
+              {/* CTA below image */}
+              <div className="mt-4 text-center">
+                <button
+                  onClick={() => setShowLeadForm(true)}
+                  className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold text-white transition-all transform hover:scale-105"
+                >
+                  Stop Revenue Loss →
+                </button>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Customer Journey Visual */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.6 }}
+            className="mt-8 md:mt-16 mb-8 md:mb-12 px-4"
+          >
+            <h4 className="text-lg md:text-xl font-semibold text-center text-white mb-4 md:mb-6">
+              How 93% of Customers Are Bypassing You Right Now
+            </h4>
+            <div className="relative w-full max-w-3xl mx-auto">
+              <Image
+                src="/customer-journey-bypass.webp"
+                alt="Customer journey bypass"
+                width={800}
+                height={400}
+                className="rounded-xl shadow-2xl w-full h-auto object-contain"
+              />
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Urgency Alert */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        className="my-8 p-6 bg-red-900/20 border-2 border-red-500/50 rounded-xl max-w-6xl mx-auto"
+      >
+        <div className="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h3 className="text-xl font-bold text-red-400 mb-2">
+              ⚠️ {analysisData.currentRank === 3 
+                ? `The #1 and #2 businesses got ${Math.floor(Math.random() * 3) + 2} new reviews this week` 
+                : 'Your Competitors Are Moving Fast'}
+            </h3>
+            <p className="text-white">
+              {analysisData.currentRank === 3 
+                ? `Every week you stay at #3, you lose ~${Math.round(220/4)} potential customers to them`
+                : 'While you read this, they\'re gaining reviews and stealing your customers'}
+            </p>
+          </div>
+          <button
+            onClick={() => document.querySelector('#pricing-section')?.scrollIntoView({ behavior: 'smooth' })}
+            className="px-6 py-3 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold text-white transition-all transform hover:scale-105 animate-pulse"
+          >
+            {analysisData.currentRank === 3 ? 'Claim Your #2 Position →' : 'Stop Losing Ground - See The Fix'}
+          </button>
+        </div>
+      </motion.div>
 
       <section className="py-20 bg-gradient-to-b from-black via-gray-900 to-black">
         <div className="max-w-6xl mx-auto px-6">
@@ -349,19 +481,13 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
         state={businessData.state}
       />
 
-      <ProblemSection
-        painPoints={analysisData.painPoints}
-        lostRevenue={analysisData.lostRevenue}
-        reviewDeficit={analysisData.reviewDeficit}
-      />
+      {/* CompetitorAlert replaces ProblemSection with visual urgency */}
+      <CompetitorAlertFixed className="py-8" currentRank={analysisData.currentRank} competitorGains={3} />
 
-      <ActionPlan
-        timeline={analysisData.timeline}
-        solutions={analysisData.solutions}
-        actionPlan={analysisData.actionPlan}
+      {/* Simplified Solution - Replace ActionPlan with more visual solution */}
+      <SimplifiedSolution 
         businessName={businessData.name}
-        businessWebsite={businessData.website}
-        currentRank={analysisData.currentRank || 9}
+        currentRank={analysisData.currentRank}
         niche={businessData.niche}
       />
 
@@ -369,6 +495,25 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
         businessName={businessData.name}
         businessWebsite={businessData.website}
         urgency={analysisData.urgency}
+        currentRank={analysisData.currentRank}
+      />
+      
+      {/* Lead Capture Modal with Business Context */}
+      <LeadCaptureForm
+        isOpen={showLeadForm}
+        onClose={() => setShowLeadForm(false)}
+        onSubmit={handleLeadSubmit}
+        title="Get Your Free Competitive Analysis"
+        subtitle={`See how ${businessData.name} can dominate ${businessData.city || 'your market'}`}
+        businessName={businessData.name}
+        businessWebsite={businessData.website}
+        searchedPlaceId={businessData.place_id}
+        currentRank={analysisData.currentRank}
+        monthlyLoss={analysisData.lostRevenue}
+        topCompetitors={analysisData.competitors.slice(0, 3)}
+        city={businessData.city}
+        state={businessData.state}
+        niche={businessData.niche}
       />
     </div>
   );

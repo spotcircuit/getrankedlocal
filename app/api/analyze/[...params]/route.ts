@@ -9,12 +9,15 @@ const pool = new Pool({
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id?: string; name?: string } }
+  { params }: { params: Promise<{ params: string[] }> }
 ) {
   try {
+    const resolvedParams = await params;
     const { searchParams } = new URL(request.url);
-    const id = params.id || searchParams.get('id');
-    const name = searchParams.get('name');
+    // For [...params] routes, the params are in an array
+    const [id, name] = resolvedParams.params || [];
+    const finalId = id || searchParams.get('id');
+    const finalName = name || searchParams.get('name');
     const niche = searchParams.get('niche') || 'med spas';
     const city = searchParams.get('city') || 'Austin';
 

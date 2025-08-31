@@ -185,7 +185,7 @@ export default function SimplifiedResultsView({
                   </div>
                   {idx === 0 && (
                     <div className="text-right">
-                      <p className="text-green-400 font-semibold">+{30} patients/mo</p>
+                      <p className="text-green-400 font-semibold">+{30} customers/mo</p>
                       <p className="text-xs text-gray-500">they're getting</p>
                     </div>
                   )}

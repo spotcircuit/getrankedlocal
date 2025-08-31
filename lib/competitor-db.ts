@@ -31,7 +31,7 @@ function formatCollection(searchTerm: string, destination: string): string {
 
 export async function storeCompetitorSearch(data: CompetitorSearchData) {
   try {
-    console.log('💾 Storing competitor search data...');
+    console.log('💾 Storing competitor search data (v2)...');
     console.log('📍 Search destination:', data.search_destination);
     console.log('🔍 Search term:', data.search_term);
     console.log('🏢 Target business:', data.target_business.name);
@@ -40,6 +40,9 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
     // Generate collection name
     const collection = formatCollection(data.search_term, data.search_destination);
     console.log('📁 Collection format:', collection);
+    
+    // Extract city and state
+    const [city, state] = data.search_destination.split(',').map(s => s.trim());
     
     // Check for existing search by job_id
     const existing = await sql`
@@ -59,12 +62,14 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
     // Log AI intelligence if present
     if (data.ai_intelligence) {
       console.log('🤖 AI Intelligence data present for storage');
-      console.log('   Keys:', Object.keys(data.ai_intelligence));
+      const aiKeys = typeof data.ai_intelligence === 'object' ? Object.keys(data.ai_intelligence) : [];
+      console.log('   Type:', typeof data.ai_intelligence);
+      console.log('   Keys:', aiKeys);
     } else {
       console.log('⚠️ No AI Intelligence data provided');
     }
     
-    // Insert search record
+    // 1. Insert search record into competitor_searches
     const searchResult = await sql`
       INSERT INTO competitor_searches (
         job_id, 
@@ -94,7 +99,101 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
     const searchId = searchResult[0].id;
     console.log('✅ Created search record with ID:', searchId);
     
-    // Prepare competitor records
+    // 2. Insert/Update the searched business in leads table (enriched)
+    if (data.target_business.place_id && data.ai_intelligence) {
+      try {
+        // Parse AI intelligence data
+        let aiData: any = {};
+        try {
+          aiData = typeof data.ai_intelligence === 'string' 
+            ? JSON.parse(data.ai_intelligence) 
+            : data.ai_intelligence;
+        } catch (e) {
+          console.log('⚠️ Could not parse AI intelligence data');
+          aiData = data.ai_intelligence;
+        }
+
+        // Extract structured data from AI intelligence
+        const extractedEmail = aiData.contacts?.emails?.[0] || 
+                              aiData.contact?.match(/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/)?.[1] || 
+                              null;
+        const extractedDomain = aiData.domain || null;
+        const extractedOwner = aiData.owner?.name || 
+                              aiData.staff?.match(/founders?[^:]*?:\s*([A-Z][a-z]+ [A-Z][a-z]+)/)?.[1] || 
+                              null;
+        
+        console.log("📧 Extracted email:", extractedEmail);
+        console.log("👤 Extracted owner:", extractedOwner);
+        console.log("🌐 Domain:", extractedDomain);
+
+        // Check if already exists in leads
+        const existingLead = await sql`
+          SELECT id FROM leads 
+          WHERE place_id = ${data.target_business.place_id}
+        `;
+
+        if (existingLead.length > 0) {
+          // Update existing lead
+          await sql`
+            UPDATE leads SET
+              email = COALESCE(email, ${extractedEmail}),
+              domain = COALESCE(domain, ${extractedDomain}),
+              owner_name = COALESCE(owner_name, ${extractedOwner}),
+              business_name = ${data.target_business.name},
+              search_city = ${city},
+              state = ${state},
+              search_niche = ${data.search_term},
+              source_directory = ${collection},
+              additional_data = ${JSON.stringify(aiData)},
+              updated_at = CURRENT_TIMESTAMP
+            WHERE place_id = ${data.target_business.place_id}
+          `;
+          console.log('✅ Updated existing lead for searched business');
+        } else {
+          // Insert new lead
+          await sql`
+            INSERT INTO leads (
+              place_id,
+              email,
+              domain,
+              owner_name,
+              business_name,
+              search_city,
+              state,
+              search_niche,
+              source_directory,
+              additional_data,
+              lead_score,
+              email_enrichment_status,
+              outreach_status
+            ) VALUES (
+              ${data.target_business.place_id},
+              ${data.target_business.name},
+              ${city},
+              ${state},
+              ${data.search_term},
+              ${collection},
+              ${JSON.stringify(aiData)},
+              100,
+              'completed',
+              'not_started'
+            )
+            ON CONFLICT (place_id) 
+            DO UPDATE SET
+              search_city = EXCLUDED.search_city,
+              state = EXCLUDED.state,
+              search_niche = EXCLUDED.search_niche,
+              additional_data = EXCLUDED.additional_data,
+              updated_at = CURRENT_TIMESTAMP
+          `;
+          console.log('✅ Inserted searched business into leads table');
+        }
+      } catch (leadError) {
+        console.error('⚠️ Error processing lead:', leadError);
+      }
+    }
+    
+    // 3. Insert competitors into prospects table (unenriched, deduplicated)
     let successCount = 0;
     let skipCount = 0;
     
@@ -102,97 +201,111 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
       const c = data.competitors[idx];
       
       // Skip if no place_id (can't dedupe without it)
-      if (!c.place_id) {
-        console.log(`⚠️ Skipping competitor without place_id: ${c.name}`);
+      if (!c.place_id || !c.place_id.startsWith('Ch')) {
+        console.log(`⚠️ Skipping competitor without valid place_id: ${c.name || c.business_name}`);
         skipCount++;
         continue;
       }
       
-      const competitorData = {
-        search_id: searchId,
-        place_id: c.place_id,
-        business_name: c.name || c.business_name,
-        rank: c.rank || idx + 1,
-        rating: c.rating ? parseFloat(c.rating) : null,
-        review_count: c.reviews || c.review_count || 0,
-        street_address: c.address || c.street_address || c.formatted_address || null,
-        city: c.city || null,
-        state: c.state || null,
-        phone: c.phone || null,
-        website: c.website || null,
-        snippet: c.snippet || null,
-        book_online_link: c.book_online_link || c.booking_link || null,
-        search_destination: data.search_destination,
-        source_directory: collection,
-        is_top_3: idx < 3
-      };
+      // Skip if it's the target business itself
+      if (c.place_id === data.target_business.place_id) {
+        console.log(`⚠️ Skipping target business from competitors: ${c.name}`);
+        continue;
+      }
       
       try {
+        // Insert or update in prospects table
         await sql`
-          INSERT INTO competitors (
-            search_id, place_id, business_name, rank, rating, review_count,
-            street_address, city, state, phone, website, snippet, 
-            book_online_link, search_destination, source_directory, is_top_3
+          INSERT INTO prospects (
+            place_id,
+            business_name,
+            rating,
+            review_count,
+            street_address,
+            city,
+            state,
+            phone,
+            website,
+            search_city,
+            search_state,
+            search_niche,
+            source_directory,
+            enrichment_status
           ) VALUES (
-            ${competitorData.search_id}, ${competitorData.place_id}, 
-            ${competitorData.business_name}, ${competitorData.rank}, 
-            ${competitorData.rating}, ${competitorData.review_count},
-            ${competitorData.street_address}, ${competitorData.city}, 
-            ${competitorData.state}, ${competitorData.phone}, 
-            ${competitorData.website}, ${competitorData.snippet},
-            ${competitorData.book_online_link}, ${competitorData.search_destination},
-            ${competitorData.source_directory}, ${competitorData.is_top_3}
+            ${c.place_id},
+            ${c.name || c.business_name},
+            ${c.rating ? parseFloat(c.rating) : null},
+            ${c.reviews || c.review_count || 0},
+            ${c.address || c.street_address || c.formatted_address || null},
+            ${c.city || city},
+            ${c.state || state},
+            ${c.phone || null},
+            ${c.website || null},
+            ${city},
+            ${state},
+            ${data.search_term},
+            ${collection},
+            'pending'
           )
-          ON CONFLICT (search_id, place_id) 
+          ON CONFLICT (place_id) 
           DO UPDATE SET
-            rank = EXCLUDED.rank,
-            rating = EXCLUDED.rating,
-            review_count = EXCLUDED.review_count,
-            is_top_3 = EXCLUDED.is_top_3,
-            snippet = COALESCE(EXCLUDED.snippet, competitors.snippet),
-            website = COALESCE(EXCLUDED.website, competitors.website),
-            phone = COALESCE(EXCLUDED.phone, competitors.phone)
+            rating = COALESCE(prospects.rating, EXCLUDED.rating),
+            review_count = GREATEST(prospects.review_count, EXCLUDED.review_count),
+            updated_at = CURRENT_TIMESTAMP
         `;
-        successCount++;
         
-        if (idx < 3) {
-          console.log(`✅ Stored top competitor #${idx + 1}: ${c.name}`);
-        }
-      } catch (err) {
-        console.error(`❌ Failed to store competitor ${c.name}:`, err);
+        // Track the relationship in junction table
+        await sql`
+          INSERT INTO search_prospects (
+            search_id,
+            prospect_place_id,
+            rank,
+            is_target_business
+          ) VALUES (
+            ${searchId},
+            ${c.place_id},
+            ${c.rank || idx + 1},
+            ${false}
+          )
+          ON CONFLICT (search_id, prospect_place_id) 
+          DO NOTHING
+        `;
+        
+        successCount++;
+      } catch (competitorError) {
+        console.error(`❌ Error inserting competitor ${c.name}:`, competitorError);
+        skipCount++;
       }
     }
     
-    console.log(`\n📊 Storage complete:`);
-    console.log(`   - Stored: ${successCount} competitors`);
-    console.log(`   - Skipped: ${skipCount} (no place_id)`);
-    console.log(`   - Search ID: ${searchId}`);
+    console.log(`✅ Inserted ${successCount} competitors into prospects table`);
+    console.log(`⚠️ Skipped ${skipCount} competitors`);
     
     return {
       success: true,
-      searchId,
-      stored: successCount,
-      skipped: skipCount,
-      total: data.competitors.length
+      searchId: searchId,
+      message: `Search stored successfully. Lead: ${data.target_business.name}, Prospects: ${successCount}`,
+      stats: {
+        searchId,
+        leadProcessed: !!data.target_business.place_id,
+        prospectsInserted: successCount,
+        prospectsSkipped: skipCount
+      }
     };
     
   } catch (error) {
-    console.error('❌ Failed to store competitor search:', error);
+    console.error('Error storing competitor search:', error);
     throw error;
   }
 }
 
-// Get competitor analysis by job_id
+// Get competitor analysis by job_id with new table structure
 export async function getCompetitorAnalysisByJobId(jobId: string) {
   try {
+    // Get the search record
     const searches = await sql`
-      SELECT 
-        cs.*,
-        COUNT(c.id) as competitor_count
-      FROM competitor_searches cs
-      LEFT JOIN competitors c ON c.search_id = cs.id
-      WHERE cs.job_id = ${jobId}
-      GROUP BY cs.id
+      SELECT * FROM competitor_searches 
+      WHERE job_id = ${jobId}
     `;
     
     if (searches.length === 0) {
@@ -201,16 +314,34 @@ export async function getCompetitorAnalysisByJobId(jobId: string) {
     
     const search = searches[0];
     
-    // Get all competitors for this search
+    // Get all prospects for this search from junction table
     const competitors = await sql`
-      SELECT * FROM competitors 
-      WHERE search_id = ${search.id}
-      ORDER BY rank ASC
+      SELECT 
+        p.*,
+        sp.rank,
+        sp.is_target_business
+      FROM search_prospects sp
+      JOIN prospects p ON p.place_id = sp.prospect_place_id
+      WHERE sp.search_id = ${search.id}
+      ORDER BY sp.rank ASC
     `;
+    
+    // Get the lead data if it exists
+    let leadData = null;
+    if (search.target_business_place_id) {
+      const leads = await sql`
+        SELECT * FROM leads 
+        WHERE place_id = ${search.target_business_place_id}
+      `;
+      if (leads.length > 0) {
+        leadData = leads[0];
+      }
+    }
     
     return {
       search,
-      competitors
+      competitors,
+      lead: leadData
     };
   } catch (error) {
     console.error('Error fetching competitor analysis:', error);
@@ -224,9 +355,9 @@ export async function getSearchesByTerm(searchTerm: string) {
     return await sql`
       SELECT 
         cs.*,
-        COUNT(c.id) as competitor_count
+        COUNT(sp.prospect_place_id) as competitor_count
       FROM competitor_searches cs
-      LEFT JOIN competitors c ON c.search_id = cs.id
+      LEFT JOIN search_prospects sp ON sp.search_id = cs.id
       WHERE LOWER(cs.search_term) = LOWER(${searchTerm})
       GROUP BY cs.id
       ORDER BY cs.created_at DESC
@@ -237,46 +368,30 @@ export async function getSearchesByTerm(searchTerm: string) {
   }
 }
 
-// Get competitor by place_id across all searches
-export async function getCompetitorByPlaceId(placeId: string) {
+// Get prospect by place_id across all searches
+export async function getProspectByPlaceId(placeId: string) {
   try {
     return await sql`
       SELECT 
-        c.*,
+        p.*,
         cs.search_term,
         cs.search_destination,
-        cs.created_at as search_date
-      FROM competitors c
-      JOIN competitor_searches cs ON c.search_id = cs.id
-      WHERE c.place_id = ${placeId}
+        cs.created_at as search_date,
+        sp.rank
+      FROM prospects p
+      JOIN search_prospects sp ON sp.prospect_place_id = p.place_id
+      JOIN competitor_searches cs ON cs.id = sp.search_id
+      WHERE p.place_id = ${placeId}
       ORDER BY cs.created_at DESC
     `;
   } catch (error) {
-    console.error('Error fetching competitor by place_id:', error);
+    console.error('Error fetching prospect by place_id:', error);
     throw error;
   }
 }
 
-// Get businesses that appear in searches outside their actual location
-export async function getCrossLocationCompetitors() {
-  try {
-    return await sql`
-      SELECT DISTINCT
-        c.place_id,
-        c.business_name,
-        c.city as actual_city,
-        c.state as actual_state,
-        c.search_destination,
-        COUNT(*) as appearance_count
-      FROM competitors c
-      WHERE c.search_destination != CONCAT(c.city, ', ', c.state)
-        AND c.city IS NOT NULL
-        AND c.state IS NOT NULL
-      GROUP BY c.place_id, c.business_name, c.city, c.state, c.search_destination
-      ORDER BY appearance_count DESC
-    `;
-  } catch (error) {
-    console.error('Error fetching cross-location competitors:', error);
-    throw error;
-  }
-}
+// Export other functions for compatibility
+export { 
+  getProspectByPlaceId as getCompetitorByPlaceId,
+  formatCollection 
+};

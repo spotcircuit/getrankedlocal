@@ -13,8 +13,8 @@ export const REVENUE_CONFIG = {
   industryMetrics: {
     avgMonthlySearchVolume: 1800, // Average monthly searches for "med spa near me" variants
     conversionRate: 0.15, // 15% of clicks convert to leads
-    leadToPatientRate: 0.30, // 30% of leads become patients
-    avgPatientValue: 2500, // Average patient lifetime value for med spa
+    leadToCustomerRate: 0.30, // 30% of leads become customers
+    avgCustomerValue: 2500, // Average customer lifetime value for med spa
     avgTransactionValue: 450, // Average per-visit transaction
   },
   
@@ -30,8 +30,8 @@ export const REVENUE_CONFIG = {
       
       const missedClicks = industryMetrics.avgMonthlySearchVolume * potentialCTR;
       const missedLeads = missedClicks * industryMetrics.conversionRate;
-      const missedPatients = missedLeads * industryMetrics.leadToPatientRate;
-      return Math.round(missedPatients * industryMetrics.avgTransactionValue);
+      const missedCustomers = missedLeads * industryMetrics.leadToCustomerRate;
+      return Math.round(missedCustomers * industryMetrics.avgTransactionValue);
     }
     
     // If outside top 3, calculate what they're missing from top 3
@@ -41,9 +41,9 @@ export const REVENUE_CONFIG = {
     
     const missedClicks = industryMetrics.avgMonthlySearchVolume * missedCTR;
     const missedLeads = missedClicks * industryMetrics.conversionRate;
-    const missedPatients = missedLeads * industryMetrics.leadToPatientRate;
+    const missedCustomers = missedLeads * industryMetrics.leadToCustomerRate;
     
-    return Math.round(missedPatients * industryMetrics.avgTransactionValue);
+    return Math.round(missedCustomers * industryMetrics.avgTransactionValue);
   },
   
   // Calculate yearly lost revenue

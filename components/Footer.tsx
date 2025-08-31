@@ -115,7 +115,7 @@ export default function Footer() {
               </p>
               <button 
                 onClick={() => setShowLeadForm(true)}
-                className="inline-flex items-center gap-2 w-full justify-center px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold rounded-full hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300"
+                className="inline-flex items-center gap-2 w-full justify-center px-4 py-2.5 bg-gradient-to-r from-purple-600 to-pink-600 text-white text-sm font-semibold rounded-full hover:shadow-lg hover:shadow-purple-500/25 transition-all duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 Start Free Analysis
                 <ArrowRight className="w-4 h-4" />
@@ -155,6 +155,19 @@ export default function Footer() {
                 </a>
               </p>
             </div>
+          </div>
+        </div>
+        
+        {/* Trust Badges Section - Centered */}
+        <div className="mt-12 pt-8 border-t border-gray-800/30">
+          <div className="flex justify-center">
+            <Image
+              src="/trust-authority-badges.webp"
+              alt="Certifications and trust badges"
+              width={800}
+              height={200}
+              className="h-14 sm:h-16 w-auto object-contain opacity-60 hover:opacity-80 transition-opacity duration-300"
+            />
           </div>
         </div>
       </div>

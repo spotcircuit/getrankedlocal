@@ -124,7 +124,7 @@ type IntakePayload = {
     disclaimersAccepted: boolean; // rankings fluctuate, no medical claims
   };
   goals: {
-    kpis: { callsPerWeek?: number; bookingsPerWeek?: number; revenuePerNewPatient?: number };
+    kpis: { callsPerWeek?: number; bookingsPerWeek?: number; revenuePerNewCustomer?: number };
     targets: { top3Days?: number; cityExpansion?: string[] };
     offers: { membership?: boolean; promos?: string; financing?: boolean };
     budget?: { monthly?: number };
@@ -191,7 +191,7 @@ const defaultPayload: IntakePayload = {
   assets: { logoUrl: '', brandGuideUrl: '', photoFolderUrl: '', consentOnFile: false, beforeAfterPolicy: '' },
   compliance: { hipaaSensitive: true, allowFirstNameInReviews: true, disclaimersAccepted: false },
   goals: {
-    kpis: { callsPerWeek: undefined, bookingsPerWeek: undefined, revenuePerNewPatient: undefined },
+    kpis: { callsPerWeek: undefined, bookingsPerWeek: undefined, revenuePerNewCustomer: undefined },
     targets: { top3Days: 90, cityExpansion: [] },
     offers: { membership: false, promos: '', financing: true },
     budget: { monthly: undefined },
@@ -521,7 +521,7 @@ export default function LocalSEOIntakeForm(){
       </div>
       <div>
         <Label>Seed Q&A for GBP</Label>
-        <PillInput values={data.gbp.qnaSeeds} onChange={(arr)=>setData({...data, gbp:{...data.gbp, qnaSeeds:arr}})} placeholder='Add common patient questions'/>
+        <PillInput values={data.gbp.qnaSeeds} onChange={(arr)=>setData({...data, gbp:{...data.gbp, qnaSeeds:arr}})} placeholder='Add common customer questions'/>
       </div>
       <div className='grid md:grid-cols-3 gap-4'>
         <Checkbox checked={data.gbp.messagingConsent.smsReviews} onChange={(v)=>setData({...data, gbp:{...data.gbp, messagingConsent:{...data.gbp.messagingConsent, smsReviews:v}}})} label='Allow SMS review requests'/>
@@ -702,8 +702,8 @@ export default function LocalSEOIntakeForm(){
           <TextInput type='number' value={data.goals.kpis.bookingsPerWeek} onChange={(v)=>setData({...data, goals:{...data.goals, kpis:{...data.goals.kpis, bookingsPerWeek: Number(v||0)}}})} placeholder='e.g., 15'/>
         </div>
         <div>
-          <Label>Revenue per new patient ($)</Label>
-          <TextInput type='number' value={data.goals.kpis.revenuePerNewPatient} onChange={(v)=>setData({...data, goals:{...data.goals, kpis:{...data.goals.kpis, revenuePerNewPatient: Number(v||0)}}})} placeholder='e.g., 350'/>
+          <Label>Revenue per new customer ($)</Label>
+          <TextInput type='number' value={data.goals.kpis.revenuePerNewCustomer} onChange={(v)=>setData({...data, goals:{...data.goals, kpis:{...data.goals.kpis, revenuePerNewCustomer: Number(v||0)}}})} placeholder='e.g., 350'/>
         </div>
       </div>
       <div className='grid md:grid-cols-2 gap-4 mt-2'>
@@ -719,7 +719,7 @@ export default function LocalSEOIntakeForm(){
       <div className='grid md:grid-cols-2 gap-4 mt-2'>
         <div>
           <Label>Promos / memberships</Label>
-          <TextInput value={data.goals.offers.promos||''} onChange={(v)=>setData({...data, goals:{...data.goals, offers:{...data.goals.offers, promos:v}}})} placeholder='e.g., New patient special, membership tiers'/>
+          <TextInput value={data.goals.offers.promos||''} onChange={(v)=>setData({...data, goals:{...data.goals, offers:{...data.goals.offers, promos:v}}})} placeholder='e.g., New customer special, membership tiers'/>
         </div>
         <div className='grid grid-cols-1 gap-2'>
           <Checkbox checked={data.goals.offers.membership||false} onChange={(v)=>setData({...data, goals:{...data.goals, offers:{...data.goals.offers, membership:v}}})} label='We offer memberships'/>
@@ -801,7 +801,7 @@ export default function LocalSEOIntakeForm(){
       </div>
 
       <footer className='text-xs text-gray-600 mt-6 leading-relaxed'>
-        <p><strong>Compliance note:</strong> We never confirm a person was a patient or discuss treatment details in public replies. Rankings fluctuate and are not guaranteed; optimization focuses on best practices, relevance, and user experience.</p>
+        <p><strong>Compliance note:</strong> We never confirm a person was a customer or discuss treatment details in public replies. Rankings fluctuate and are not guaranteed; optimization focuses on best practices, relevance, and user experience.</p>
       </footer>
       </div>
     </div>
@@ -834,7 +834,7 @@ const ServiceEditor: React.FC<{ services: Service[]; onChange: (s: Service[]) =>
           </div>
           <div className='mt-3'>
             <Label>Description</Label>
-            <textarea className='w-full rounded-xl border border-gray-300 px-3 py-2' style={{ minHeight: '80px' }} value={s.description||''} onChange={(e)=>patch(i,{description:e.target.value})} placeholder='Short, patient-friendly description'/>
+            <textarea className='w-full rounded-xl border border-gray-300 px-3 py-2' style={{ minHeight: '80px' }} value={s.description||''} onChange={(e)=>patch(i,{description:e.target.value})} placeholder='Short, customer-friendly description'/>
           </div>
           <div className='mt-3 text-right'>
             <button type='button' onClick={()=>remove(i)} className='text-sm text-red-600 hover:underline'>Remove service</button>

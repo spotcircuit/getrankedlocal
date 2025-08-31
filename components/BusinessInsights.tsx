@@ -54,6 +54,15 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
           <p className="text-center text-gray-400 mb-12 text-lg">
             Complete competitive analysis for {business?.name}{business?.city ? ` in ${business.city}${business.state ? `, ${business.state}` : ''}` : ''}
           </p>
+          {analysis?.currentRank === 3 && (
+            <div className="bg-green-900/20 border border-green-500/50 rounded-lg p-4 mb-6 max-w-3xl mx-auto">
+              <div className="text-center">
+                <p className="text-green-400 font-bold text-lg mb-2">✓ Great News: You're SO Close!</p>
+                <p className="text-white">Moving from #3 to #2 typically takes just <span className="font-bold text-green-400">30 days</span> with our system</p>
+                <p className="text-gray-400 text-sm mt-2">That single position jump = +60 customers per month</p>
+              </div>
+            </div>
+          )}
         </motion.div>
 
         {/* Main Intelligence Dashboard */}
@@ -273,7 +282,7 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                     // If we have the business coordinates, center on it
                     if (business?.coordinates?.lat && business?.coordinates?.lng) {
                       // Use place mode to show the specific business
-                      return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${business.coordinates.lat},${business.coordinates.lng}&zoom=13`;
+                      return `https://www.google.com/maps/embed/v1/place?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${business.coordinates.lat},${business.coordinates.lng}&zoom=11`;
                     }
                     
                     // Otherwise use search to show competitors in the area
@@ -290,7 +299,7 @@ export default function BusinessInsights({ business, analysis }: BusinessInsight
                     const searchQuery = searchTerms.join(' ');
                     
                     // Use search mode to show multiple businesses in the area
-                    return `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(searchQuery)}&zoom=12`;
+                    return `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(searchQuery)}&zoom=10`;
                   })()}
                   className="w-full h-full"
                   style={{ border: 0, minHeight: '400px' }}

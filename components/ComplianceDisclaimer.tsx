@@ -17,8 +17,8 @@ export default function ComplianceDisclaimer() {
             </p>
             <p>
               <strong>Medical Compliance:</strong> This service provides marketing support only. We do not make medical claims or 
-              guarantee patient outcomes. All review collection follows HIPAA guidelines - no PHI is collected or stored. 
-              Patient testimonials reflect individual experiences.
+              guarantee customer outcomes. All review collection follows HIPAA guidelines - no PHI is collected or stored. 
+              Customer testimonials reflect individual experiences.
             </p>
             <p>
               <strong>Data Methodology:</strong> Revenue calculations based on industry averages: 1,800 monthly searches, 

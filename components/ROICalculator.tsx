@@ -40,20 +40,23 @@ export default function ROICalculator({
   const [targetRank, setTargetRank] = useState(1);
   const [investmentAmount, setInvestmentAmount] = useState(1997);
 
+  // Position impact data
+  const positionImpact: Record<number, { callMultiplier: number; clickShare: number }> = {
+    1: { callMultiplier: 3.0, clickShare: 0.35 },
+    2: { callMultiplier: 2.2, clickShare: 0.25 },
+    3: { callMultiplier: 1.8, clickShare: 0.18 },
+    4: { callMultiplier: 1.3, clickShare: 0.08 },
+    5: { callMultiplier: 1.0, clickShare: 0.05 },
+    6: { callMultiplier: 0.7, clickShare: 0.03 },
+    7: { callMultiplier: 0.5, clickShare: 0.02 },
+    8: { callMultiplier: 0.3, clickShare: 0.015 },
+    9: { callMultiplier: 0.2, clickShare: 0.01 },
+    10: { callMultiplier: 0.1, clickShare: 0.005 }
+  };
+
+
   // Calculate metrics based on rank
   const calculateMetrics = () => {
-    const positionImpact = {
-      1: { callMultiplier: 3.0, clickShare: 0.35 },
-      2: { callMultiplier: 2.2, clickShare: 0.25 },
-      3: { callMultiplier: 1.8, clickShare: 0.18 },
-      4: { callMultiplier: 1.3, clickShare: 0.08 },
-      5: { callMultiplier: 1.0, clickShare: 0.05 },
-      6: { callMultiplier: 0.7, clickShare: 0.03 },
-      7: { callMultiplier: 0.5, clickShare: 0.02 },
-      8: { callMultiplier: 0.3, clickShare: 0.015 },
-      9: { callMultiplier: 0.2, clickShare: 0.01 },
-      10: { callMultiplier: 0.1, clickShare: 0.005 }
-    };
 
     const currentMetrics = positionImpact[Math.min(currentRank, 10)] || { callMultiplier: 0.05, clickShare: 0.002 };
     const targetMetrics = positionImpact[targetRank] || positionImpact[1];
@@ -311,16 +314,4 @@ export default function ROICalculator({
     </section>
   );
 
-  const positionImpact = {
-    1: { callMultiplier: 3.0, clickShare: 0.35 },
-    2: { callMultiplier: 2.2, clickShare: 0.25 },
-    3: { callMultiplier: 1.8, clickShare: 0.18 },
-    4: { callMultiplier: 1.3, clickShare: 0.08 },
-    5: { callMultiplier: 1.0, clickShare: 0.05 },
-    6: { callMultiplier: 0.7, clickShare: 0.03 },
-    7: { callMultiplier: 0.5, clickShare: 0.02 },
-    8: { callMultiplier: 0.3, clickShare: 0.015 },
-    9: { callMultiplier: 0.2, clickShare: 0.01 },
-    10: { callMultiplier: 0.1, clickShare: 0.005 }
-  };
 }

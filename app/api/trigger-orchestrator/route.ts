@@ -29,6 +29,20 @@ export async function POST(request: NextRequest) {
     const apiUrl = (process.env.RAILWAY_API_URL || 'https://leadfinderparallel-production.up.railway.app').trim();
     
     // Prepare the request payload
+    // Validate keyword/niche is appropriate for the business
+    const businessNameLower = cleanBusinessName.toLowerCase();
+    const nicheLower = niche.toLowerCase();
+    
+    // Prevent inappropriate keyword combinations
+    if ((businessNameLower.includes('hair') || businessNameLower.includes('salon') || businessNameLower.includes('barber')) 
+        && (nicheLower === 'med spa' || nicheLower === 'med spas' || nicheLower === 'medical spa')) {
+      console.error('❌ Invalid keyword combination: Hair/salon business with med spa keyword');
+      return NextResponse.json({ 
+        error: 'Invalid keyword combination',
+        message: 'Please use an appropriate keyword for this business type (e.g., "hair salon", "barber shop", etc.)'
+      }, { status: 400 });
+    }
+    
     const requestPayload = {
       niche: niche,
       location: `${city}, ${state}`,

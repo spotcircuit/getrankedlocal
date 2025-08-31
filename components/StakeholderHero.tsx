@@ -2,7 +2,9 @@
 
 import { motion } from 'framer-motion';
 import Image from 'next/image';
-import { TrendingDown, AlertCircle, DollarSign, Users, ArrowRight, Phone, CheckCircle } from 'lucide-react';
+import { useState } from 'react';
+import { TrendingDown, AlertCircle, DollarSign, Users, ArrowRight, Zap, CheckCircle, TrendingUp } from 'lucide-react';
+import LeadCaptureForm, { LeadData } from './LeadCaptureForm';
 
 interface StakeholderHeroProps {
   businessName: string;
@@ -12,6 +14,7 @@ interface StakeholderHeroProps {
   city?: string;
   state?: string;
   niche?: string;
+  businessWebsite?: string;
 }
 
 export default function StakeholderHero({ 
@@ -21,9 +24,22 @@ export default function StakeholderHero({
   monthlyLoss = 15000,
   city,
   state,
-  niche = 'your industry'
+  niche = 'your industry',
+  businessWebsite = ''
 }: StakeholderHeroProps) {
-  // Calculate potential patient/customer loss based on rank
+  const [showLeadForm, setShowLeadForm] = useState(false);
+  
+  const handleLeadSubmit = (data: LeadData) => {
+    setShowLeadForm(false);
+    // Show success message
+    const successMessage = document.createElement('div');
+    successMessage.className = 'fixed top-4 right-4 bg-green-500/20 text-green-400 border border-green-500/30 px-6 py-3 rounded-lg z-50';
+    successMessage.textContent = 'Thank you! We\'ll contact you within 24 hours with your competitive analysis.';
+    document.body.appendChild(successMessage);
+    setTimeout(() => successMessage.remove(), 5000);
+  };
+
+  // Calculate potential customer loss based on rank
   const calculateMonthlyCustomerLoss = () => {
     if (currentRank <= 3) return 0;
     if (currentRank <= 5) return 10;
@@ -51,7 +67,7 @@ export default function StakeholderHero({
           <div className="inline-flex items-center gap-3 px-6 py-3 bg-red-900/30 border-2 border-red-500/50 rounded-full">
             <AlertCircle className="w-5 h-5 text-red-400 animate-pulse" />
             <span className="text-lg font-semibold text-red-300">
-              Urgent: {topCompetitor?.name || 'Your competitor'} is stealing your {niche === 'med spas' ? 'patients' : 'customers'}
+              Urgent: {topCompetitor?.name || 'Your competitor'} is stealing your customers
             </span>
           </div>
         </motion.div>
@@ -74,6 +90,22 @@ export default function StakeholderHero({
             to competitors in {city}{state ? `, ${state}` : ''}
           </span>
         </motion.h1>
+
+        {/* Quick Action CTA - Early in the flow */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.3 }}
+          className="mb-8"
+        >
+          <button
+            onClick={() => setShowLeadForm(true)}
+            className="px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 rounded-lg font-bold text-lg transition-all transform hover:scale-105 inline-flex items-center gap-2 animate-pulse text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+          >
+            <TrendingUp className="w-5 h-5" />
+            Stop The Bleeding - Get Free Analysis Now
+          </button>
+        </motion.div>
 
         {/* Visual Problem Display */}
         <motion.div
@@ -98,7 +130,7 @@ export default function StakeholderHero({
               {/* Customers Lost */}
               <div className="text-center">
                 <div className="text-5xl font-bold text-yellow-500 mb-2">{customersLost}</div>
-                <p className="text-gray-400">New {niche === 'med spas' ? 'Patients' : 'Customers'}/Month Lost</p>
+                <p className="text-gray-400">New Customers/Month Lost</p>
                 <p className="text-sm text-yellow-400 mt-1">Going to top 3 competitors</p>
               </div>
 
@@ -133,50 +165,27 @@ export default function StakeholderHero({
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-green-400 font-semibold">+{30 - idx * 10} patients/mo</p>
+                      <p className="text-green-400 font-semibold">+{30 - idx * 10} customers/mo</p>
                       <p className="text-xs text-gray-500">from Google</p>
                     </div>
                   </div>
                 ))}
               </div>
+              
+              {/* CTA inside the comparison box */}
+              <div className="mt-6 text-center">
+                <button
+                  onClick={() => setShowLeadForm(true)}
+                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-all text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
+                >
+                  See How to Outrank Them →
+                </button>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Visual Revenue Loss Flow */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.5 }}
-          className="my-12"
-        >
-          <Image
-            src="/revenue-loss-flow.png"
-            alt="How you're losing revenue to competitors"
-            width={1200}
-            height={800}
-            priority
-            className="rounded-xl shadow-2xl mx-auto w-full h-auto"
-          />
-        </motion.div>
-
-        {/* Ranking Ladder Visualization */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="my-12"
-        >
-          <Image
-            src="/ranking-ladder-visualization.png"
-            alt="Your current Google Maps ranking position"
-            width={1200}
-            height={800}
-            className="rounded-xl shadow-2xl mx-auto w-full h-auto"
-          />
-        </motion.div>
-
-        {/* CTA Section */}
+        {/* Final CTA Section */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -196,13 +205,13 @@ export default function StakeholderHero({
               <ArrowRight className="w-5 h-5" />
             </button>
             
-            <a
-              href="tel:1-800-RANK-NOW"
-              className="px-8 py-4 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2"
+            <button
+              onClick={() => setShowLeadForm(true)}
+              className="px-8 py-4 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 rounded-lg font-bold text-lg transition-all flex items-center justify-center gap-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
-              <Phone className="w-5 h-5 text-green-400" />
-              <span>Call for Immediate Help</span>
-            </a>
+              <Zap className="w-5 h-5 text-yellow-400" />
+              <span>Get My Free Analysis</span>
+            </button>
           </div>
 
           <p className="text-gray-400">
@@ -210,6 +219,17 @@ export default function StakeholderHero({
           </p>
         </motion.div>
       </div>
+      
+      {/* Lead Capture Modal */}
+      <LeadCaptureForm
+        isOpen={showLeadForm}
+        onClose={() => setShowLeadForm(false)}
+        onSubmit={handleLeadSubmit}
+        title="Get Your Free Competitive Analysis"
+        subtitle={`See how ${businessName} can dominate ${city || 'your market'}`}
+        businessName={businessName}
+        businessWebsite={businessWebsite}
+      />
     </section>
   );
 }

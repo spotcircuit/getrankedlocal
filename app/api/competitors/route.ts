@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { 
   getCompetitorAnalysisByJobId, 
   getSearchesByTerm,
-  getCompetitorByPlaceId,
-  getCrossLocationCompetitors 
+  getCompetitorByPlaceId
 } from '@/lib/competitor-db';
 
 // Force dynamic rendering for this route
@@ -15,7 +14,6 @@ export async function GET(request: NextRequest) {
     const jobId = searchParams.get('job_id');
     const searchTerm = searchParams.get('search_term');
     const placeId = searchParams.get('place_id');
-    const crossLocation = searchParams.get('cross_location');
     
     // Get by job_id
     if (jobId) {
@@ -49,22 +47,13 @@ export async function GET(request: NextRequest) {
       });
     }
     
-    // Get cross-location competitors
-    if (crossLocation === 'true') {
-      const competitors = await getCrossLocationCompetitors();
-      return NextResponse.json({
-        total: competitors.length,
-        cross_location_competitors: competitors
-      });
-    }
     
     return NextResponse.json({
       message: 'Competitor API',
       endpoints: {
         'GET /api/competitors?job_id={id}': 'Get analysis by job ID',
         'GET /api/competitors?search_term={term}': 'Get all searches for a term',
-        'GET /api/competitors?place_id={id}': 'Get competitor appearances across searches',
-        'GET /api/competitors?cross_location=true': 'Get competitors appearing outside their location'
+        'GET /api/competitors?place_id={id}': 'Get prospect appearances across searches',
       }
     });
     

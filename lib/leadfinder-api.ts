@@ -59,6 +59,30 @@ export interface FreshAnalysis {
   job_status: string;
 }
 
+export interface ExistingSearchResult {
+  found: boolean;
+  searches?: Array<{
+    id: string;
+    job_id: string;
+    search_term: string;
+    created_at: string;
+    competitor_count: number;
+    has_email: boolean;
+    has_owner: boolean;
+  }>;
+  bestResult?: {
+    search_id: string;
+    job_id: string;
+    search_term: string;
+    created_at: string;
+    business: any;
+    competitors: any[];
+    market_analysis: any;
+  };
+  searchTermsUsed?: string[];
+  message: string;
+}
+
 class LeadFinderAPI {
   private baseURL: string;
 
@@ -111,6 +135,14 @@ class LeadFinderAPI {
   // Health check
   async health(): Promise<{ status: string; message: string }> {
     return this.request('/api/health');
+  }
+
+  // Check for existing searches in database
+  async checkExistingSearch(business_name: string, city: string, state: string, place_id?: string): Promise<ExistingSearchResult> {
+    return this.request<ExistingSearchResult>('/api/check-existing-search', {
+      method: 'POST',
+      body: JSON.stringify({ business_name, city, state, place_id }),
+    });
   }
 
   // Trigger orchestrator to scrape and analyze
@@ -237,6 +269,10 @@ export const api = {
   // Analyze business
   analyzeBusiness: (businessName: string, niche: string, city?: string) =>
     leadFinderAPI.analyzeBusiness(businessName, niche, city),
+
+  // Check for existing searches
+  checkExistingSearch: (business_name: string, city: string, state: string, place_id?: string) =>
+    leadFinderAPI.checkExistingSearch(business_name, city, state, place_id),
 
   // Orchestrator functions
   triggerOrchestrator: (request: OrchestratorRequest) =>

@@ -60,7 +60,7 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
     {
       week: "Weeks 1-2",
       title: "Stop the Bleed",
-      subtitle: "Show up where ready-to-book patients look first",
+      subtitle: "Show up where ready-to-book customers look first",
       icon: Rocket,
       color: "from-red-500/20 to-red-600/10",
       border: "border-red-500/50",
@@ -68,8 +68,8 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
       factors: "Factors 1-4",
       actions: [
         { text: "Google Business Profile overhaul", metric: "Map Pack visibility" },
-        { text: "Emergency review sprint", metric: "10+ fast, HIPAA-safe" },
-        { text: "Fresh treatment photos & verticals", metric: "+2× profile clicks" },
+        { text: "Emergency review sprint", metric: "10+ fast, privacy-safe" },
+        { text: "Recent work photos & verticals", metric: "+2× profile clicks" },
         { text: "Claim/clean top directories", metric: "Block competitor hijacking" }
       ]
     },
@@ -83,9 +83,9 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
       impact: "+40% conversion lift",
       factors: "Factors 5-11",
       actions: [
-        { text: "Provider bios, credentials & badges", metric: "Medical trust" },
+        { text: "Team bios, credentials & badges", metric: "Trust signals" },
         { text: "Site speed (mobile-first)", metric: "Fewer bounces" },
-        { text: "Service pages (Botox, Filler, PDO)", metric: "Keyword capture" },
+        { text: "Service pages for your top offerings", metric: "Keyword capture" },
         { text: "1-click online booking", metric: "24/7 appointment capture" }
       ]
     },
@@ -116,7 +116,7 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
       factors: "Factors 21-23",
       actions: [
         { text: "Adjacent-city rollout", metric: "Multi-location playbook" },
-        { text: "Video testimonials & clinic tour", metric: "Premium positioning" },
+        { text: "Video testimonials & business tour", metric: "Premium positioning" },
         { text: "Voice search optimization", metric: "Future-proof rankings" },
         { text: "Competitor monitoring", metric: "Stay 3 steps ahead" }
       ]
@@ -137,7 +137,7 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
             Your <span className="text-green-400">90-Day Revenue Recovery</span> Plan
           </h2>
           <p className="text-lg sm:text-xl text-gray-400 max-w-3xl mx-auto mb-4">
-            We fix the 23 ranking factors that decide who gets the patients in your city—so you stop leaking calls and start owning demand.
+            We fix the 23 ranking factors that decide who gets the customers in your city—so you stop leaking calls and start owning demand.
           </p>
           <div className="flex flex-wrap justify-center gap-3">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-full">
@@ -166,8 +166,13 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className={`bg-gradient-to-br ${phase.color} border ${phase.border} rounded-xl p-6 relative overflow-hidden`}
+                className={`bg-gradient-to-br ${phase.color} border ${phase.border} rounded-xl p-6 relative `}
               >
+                {/* Phase Number Overlay - positioned top-right */}
+                <div className="absolute -top-3 -right-3 w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg z-10">
+                  {index + 1}
+                </div>
+
                 {/* Phase Header */}
                 <div className="mb-4">
                   <div className="flex items-center justify-between mb-2">
@@ -223,12 +228,12 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
           viewport={{ once: true }}
           className="bg-gradient-to-r from-purple-600/20 to-blue-600/20 border border-purple-500/30 rounded-xl p-8 text-center"
         >
-          <h3 className="text-2xl font-bold mb-2">White Glove Service for Medical Professionals</h3>
+          <h3 className="text-2xl font-bold mb-2">White Glove Service for Service Businesses</h3>
           <p className="text-yellow-400 font-semibold mb-4">
-            Zero time required from your practice
+            Zero time required from your team
           </p>
           <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
-            We handle the technical work of improving your online presence while you focus on patient care. 
+            We handle the technical work of improving your online presence while you focus on running your business. 
             Track your progress with weekly updates. Performance-based partnership.
           </p>
           
@@ -284,7 +289,7 @@ export default function ActionPlan({ timeline, solutions, actionPlan, businessNa
 
           <button 
             onClick={handleCTAClick}
-            className="mt-6 px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold hover:scale-105 transition-transform">
+            className="mt-6 px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold hover:scale-105 transition-transform text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black">
             Claim Your Market Now →
           </button>
         </motion.div>

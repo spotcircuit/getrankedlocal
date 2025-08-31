@@ -8,9 +8,10 @@ interface ProblemSectionProps {
   painPoints: PainPoint[];
   lostRevenue: number;
   reviewDeficit?: number;
+  currentRank?: number;
 }
 
-export default function ProblemSection({ painPoints, lostRevenue, reviewDeficit }: ProblemSectionProps) {
+export default function ProblemSection({ painPoints, lostRevenue, reviewDeficit, currentRank }: ProblemSectionProps) {
   return (
     <section className="py-12 px-4 sm:px-6 bg-black">
       <div className="max-w-6xl mx-auto">
@@ -22,10 +23,16 @@ export default function ProblemSection({ painPoints, lostRevenue, reviewDeficit 
           className="text-center mb-8"
         >
           <h2 className="text-3xl sm:text-4xl md:text-5xl font-bold mb-3">
-            The <span className="text-red-500">Two Threats</span> Killing Your Business
+            {currentRank === 3 ? (
+              <>Why <span className="text-red-500">#1 and #2</span> Get Your Customers</>
+            ) : (
+              <>The <span className="text-red-500">Two Threats</span> Killing Your Business</>
+            )}
           </h2>
           <p className="text-lg sm:text-xl text-gray-400">
-            While you're reading this, customers are finding your competitors instead
+            {currentRank === 3 
+              ? "Here's what they have that you don't (yet)"
+              : "While you're reading this, customers are finding your competitors instead"}
           </p>
         </motion.div>
 
@@ -87,7 +94,7 @@ export default function ProblemSection({ painPoints, lostRevenue, reviewDeficit 
                 </div>
               </div>
               <div className="bg-black/40 rounded-lg p-3 border border-red-500/20">
-                <p className="text-sm text-red-300 font-semibold">Most patients never see you</p>
+                <p className="text-sm text-red-300 font-semibold">Most customers never see you</p>
               </div>
             </div>
           </motion.div>
@@ -137,15 +144,23 @@ export default function ProblemSection({ painPoints, lostRevenue, reviewDeficit 
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">The Fix Clinic:</span>
-                <span className="text-lg font-bold text-red-400">#7</span>
+                <span className="text-sm text-gray-400">
+                  {currentRank === 3 ? 'Recent Success:' : 'The Fix Clinic:'}
+                </span>
+                <span className="text-lg font-bold text-red-400">
+                  {currentRank === 3 ? '#3' : '#7'}
+                </span>
                 <ChevronRight className="w-4 h-4 text-gray-500" />
                 <span className="text-lg font-bold text-green-400">#1</span>
-                <span className="text-xs text-gray-500">in 73 days</span>
+                <span className="text-xs text-gray-500">
+                  {currentRank === 3 ? 'in 47 days' : 'in 73 days'}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-4 text-xs sm:text-sm">
-              <span className="text-green-400">+312% calls</span>
+              <span className="text-green-400">
+                {currentRank === 3 ? '+150% calls' : '+312% calls'}
+              </span>
               <span className="text-gray-500">•</span>
               <span className="text-green-400">-85% cost</span>
               <span className="text-gray-500">•</span>

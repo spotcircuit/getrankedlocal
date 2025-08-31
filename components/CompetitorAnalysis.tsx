@@ -318,7 +318,7 @@ export default function CompetitorAnalysis({ competitors, businessName, business
               </p>
               <button
                 onClick={handleCTAClick}
-                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold transition-all transform hover:scale-105 text-white shadow-lg text-lg"
+                className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold transition-all transform hover:scale-105 text-white shadow-lg text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
               >
                 <Zap className="w-6 h-6" />
                 Get My Visibility Improvement Plan

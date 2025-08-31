@@ -252,7 +252,7 @@ export default function ResultsSection({ results, businessName }: ResultsSection
             <div className="lg:col-span-2">
               <div className="relative h-[400px] lg:h-[500px] rounded-lg overflow-hidden">
                 <iframe 
-                  src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(`${business?.niche || 'business'} near ${business?.address || `${business?.city}, ${business?.state}`}`)}&zoom=12`}
+                  src={`https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodeURIComponent(`${business?.niche || 'business'} near ${business?.address || `${business?.city}, ${business?.state}`}`)}&zoom=10`}
                   className="w-full h-full"
                   style={{ border: 0 }}
                   allowFullScreen

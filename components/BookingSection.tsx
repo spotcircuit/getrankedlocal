@@ -64,7 +64,7 @@ export default function BookingSection({ businessName, currentRank }: BookingSec
             
             <p className="text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
               Get your personalized 90-day roadmap to #1. 
-              See exactly how we'll get {businessName || 'you'} more patients.
+              See exactly how we'll get {businessName || 'you'} more customers.
             </p>
 
             {/* Single CTA Button */}

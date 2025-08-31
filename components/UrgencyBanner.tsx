@@ -275,7 +275,7 @@ export function CompetitorAlert({
                 </span>
               </div>
             </div>
-            <button className="w-full mt-3 px-4 py-2 bg-white text-red-900 rounded-lg font-bold text-sm hover:bg-gray-100 transition-all">
+            <button className="w-full mt-3 px-4 py-2 bg-gray-800 text-white border border-gray-600 rounded-lg font-bold text-sm hover:bg-gray-700 transition-all">
               See How to Beat Them →
             </button>
           </div>
@@ -317,7 +317,7 @@ export function LimitedOfferBanner({
       <p className="font-bold">
         <Zap className="w-4 h-4 inline mr-2" />
         LIMITED TIME: {offerText} - {timeLeft}
-        <button className="ml-4 px-3 py-1 bg-white text-green-600 rounded-full text-sm font-bold hover:bg-gray-100">
+        <button className="ml-4 px-3 py-1 bg-gray-800 text-white border border-gray-600 rounded-full text-sm font-bold hover:bg-gray-700">
           Claim Now
         </button>
       </p>

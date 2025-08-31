@@ -13,7 +13,7 @@ interface CaseStudy {
   afterRank: number;
   timeframe: string;
   reviewIncrease: number;
-  newPatients: number;
+  newCustomers: number;
   revenueIncrease: string;
   testimonial: string;
   owner: string;
@@ -29,7 +29,7 @@ const caseStudies: CaseStudy[] = [
     afterRank: 1,
     timeframe: "67 days",
     reviewIncrease: 147,
-    newPatients: 47,
+    newCustomers: 47,
     revenueIncrease: "$84,600",
     testimonial: "We went from barely visible to completely dominating our market. The phone doesn't stop ringing now. Best investment we've ever made.",
     owner: "Dr. Sarah Mitchell",
@@ -43,9 +43,9 @@ const caseStudies: CaseStudy[] = [
     afterRank: 2,
     timeframe: "84 days",
     reviewIncrease: 92,
-    newPatients: 31,
+    newCustomers: 31,
     revenueIncrease: "$127,000",
-    testimonial: "Our new patient flow increased by 300%. We had to hire two more hygienists to keep up with demand.",
+    testimonial: "Our new customer flow increased by 300%. We had to hire two more hygienists to keep up with demand.",
     owner: "Dr. James Chen",
     image: "/testimonials/elite-dental.jpg"
   },
@@ -57,7 +57,7 @@ const caseStudies: CaseStudy[] = [
     afterRank: 1,
     timeframe: "92 days",
     reviewIncrease: 203,
-    newPatients: 62,
+    newCustomers: 62,
     revenueIncrease: "$156,000",
     testimonial: "From invisible to #1 in 3 months. Our ROI was 872% in the first year. Absolutely game-changing.",
     owner: "Maria Rodriguez",
@@ -168,15 +168,15 @@ export default function CaseStudySection() {
               <h4 className="text-xl font-bold text-white mb-6">The Results</h4>
               
               <div className="space-y-4">
-                {/* New Patients */}
+                {/* New Customers */}
                 <div className="bg-gray-900/50 rounded-lg p-4">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Users className="w-5 h-5 text-blue-400" />
-                      <span className="text-gray-300">New Patients/Month</span>
+                      <span className="text-gray-300">New Customers/Month</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <span className="text-2xl font-bold text-blue-400">+{study.newPatients}</span>
+                      <span className="text-2xl font-bold text-blue-400">+{study.newCustomers}</span>
                       <ArrowUp className="w-5 h-5 text-green-400" />
                     </div>
                   </div>

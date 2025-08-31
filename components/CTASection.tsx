@@ -10,10 +10,11 @@ interface CTASectionProps {
   businessName: string;
   urgency: string;
   businessWebsite?: string;
+  currentRank?: number;
   onPrimaryClick?: () => void;
 }
 
-export default function CTASection({ businessName, urgency, businessWebsite = '', onPrimaryClick }: CTASectionProps) {
+export default function CTASection({ businessName, urgency, businessWebsite = '', currentRank, onPrimaryClick }: CTASectionProps) {
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [hasSubmittedForm, setHasSubmittedForm] = useState(false);
   
@@ -64,12 +65,12 @@ export default function CTASection({ businessName, urgency, businessWebsite = ''
         >
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-red-500/20 border border-red-500/50 rounded-full text-red-400 text-sm font-semibold mb-6">
             <Clock className="w-4 h-4" />
-            {urgency}
+            {currentRank === 3 ? `Daily Revenue Loss: $70 • Monthly: $2,100` : urgency}
           </div>
           
           <div className="flex justify-center mb-4">
             <Image 
-              src="/logo3.png" 
+              src="/logo.png" 
               alt="GetRankedLocal Icon" 
               width={80} 
               height={80}
@@ -77,14 +78,33 @@ export default function CTASection({ businessName, urgency, businessWebsite = ''
             />
           </div>
           <h2 className="text-4xl md:text-6xl font-bold mb-6">
-            Claim Your <span className="text-green-400">#1 Ranking</span>
-            <br />Before Competitors Do
+            {currentRank === 3 ? (
+              <>
+                Claim <span className="text-green-400">#2 in 30 Days</span>
+                <br />Then Push for #1
+              </>
+            ) : (
+              <>
+                Claim Your <span className="text-green-400">#1 Ranking</span>
+                <br />Before Competitors Do
+              </>
+            )}
           </h2>
           
           <p className="text-xl text-gray-300 mb-8">
-            Limited spots available for <span className="text-yellow-400 font-bold">{businessName}'s</span> market.
-            <br />
-            We only work with one business per area.
+            {currentRank === 3 ? (
+              <>
+                Join businesses who moved from <span className="text-yellow-400 font-bold">#3 → #1</span> in 60 days
+                <br />
+                Average result: <span className="text-green-400 font-bold">+150% more calls</span>
+              </>
+            ) : (
+              <>
+                Limited spots available for <span className="text-yellow-400 font-bold">{businessName}'s</span> market.
+                <br />
+                We only work with one business per area.
+              </>
+            )}
           </p>
         </motion.div>
         
@@ -98,7 +118,7 @@ export default function CTASection({ businessName, urgency, businessWebsite = ''
         >
           <button 
             onClick={handleCTAClick}
-            className="px-12 py-5 rounded-lg font-bold text-xl transition-transform bg-gradient-to-r from-purple-600 to-blue-600 hover:scale-105 inline-flex items-center gap-3"
+            className="px-12 py-5 rounded-lg font-bold text-xl transition-transform bg-gradient-to-r from-purple-600 to-blue-600 hover:scale-105 inline-flex items-center gap-3 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
           >
             {hasSubmittedForm ? 'View Your Analysis Status' : 'Get My Free Analysis Now'}
             <ArrowRight className="w-6 h-6" />

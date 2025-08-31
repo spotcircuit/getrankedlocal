@@ -5,9 +5,9 @@ const jobStore = new Map();
 
 export async function GET(
   request: Request,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
-  const jobId = params.jobId;
+  const { jobId } = await params;
 
   // Always return completed status for any job ID
   const job = {

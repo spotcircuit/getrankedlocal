@@ -19,8 +19,8 @@ export default function SimplifiedSolution({
   const isIndustryRegulated = niche === 'med spas' || niche === 'dental' || niche === 'medical';
   
   return (
-    <section id="solution-section" className="py-20 px-6 bg-gradient-to-b from-gray-900 via-black to-gray-900">
-      <div className="max-w-5xl mx-auto">
+    <section id="solution-section" className="py-12 md:py-20 overflow-x-hidden bg-gradient-to-b from-gray-900 via-black to-gray-900">
+      <div className="w-full max-w-6xl mx-auto px-4 sm:px-6">
         
         {/* Success Story Banner */}
         <motion.div
@@ -34,7 +34,7 @@ export default function SimplifiedSolution({
               <p className="text-green-400 font-semibold mb-1">Similar Success Story:</p>
               <p className="text-white text-lg">
                 "Auveau Aesthetics went from #{currentRank} to #1 in 67 days → 
-                <span className="text-green-400 font-bold"> +47 new patients first month</span>"
+                <span className="text-green-400 font-bold"> +47 new customers first month</span>"
               </p>
             </div>
             <div className="text-2xl font-bold text-green-400">
@@ -49,16 +49,18 @@ export default function SimplifiedSolution({
           animate={{ opacity: 1, scale: 1 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="mb-16"
+          className="mb-8 md:mb-16 px-4"
         >
-          <Image
-            src="/before-after-ranking-slider.png"
-            alt="See your transformation in 90 days"
-            width={1400}
-            height={800}
-            priority
-            className="rounded-xl shadow-2xl mx-auto w-full h-auto"
-          />
+          <div className="relative w-full max-w-3xl mx-auto">
+            <Image
+              src="/before-after-ranking-slider.webp"
+              alt="See your transformation in 90 days"
+              width={800}
+              height={400}
+              priority
+              className="rounded-xl shadow-2xl w-full h-auto object-contain"
+            />
+          </div>
         </motion.div>
 
         {/* Main Solution Header */}
@@ -77,16 +79,16 @@ export default function SimplifiedSolution({
         </motion.div>
 
         {/* 3-Step Process */}
-        <div className="grid md:grid-cols-3 gap-8 mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-16">
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="relative"
+            className="relative overflow-visible"
           >
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 h-full">
-              <div className="absolute -top-4 -left-4 w-12 h-12 bg-green-600 rounded-full flex items-center justify-center font-bold text-xl">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 h-full relative">
+              <div className="absolute -top-3 right-3 w-10 h-10 bg-green-600 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg z-10">
                 1
               </div>
               <h3 className="text-xl font-bold text-white mb-3 mt-2">Days 1-30: Foundation</h3>
@@ -121,10 +123,10 @@ export default function SimplifiedSolution({
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="relative"
+            className="relative overflow-visible"
           >
-            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 h-full">
-              <div className="absolute -top-4 -left-4 w-12 h-12 bg-yellow-600 rounded-full flex items-center justify-center font-bold text-xl">
+            <div className="bg-gray-800/50 backdrop-blur-sm rounded-xl p-6 border border-gray-700 h-full relative">
+              <div className="absolute -top-3 right-3 w-10 h-10 bg-yellow-600 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg z-10">
                 2
               </div>
               <h3 className="text-xl font-bold text-white mb-3 mt-2">Days 31-60: Acceleration</h3>
@@ -157,10 +159,10 @@ export default function SimplifiedSolution({
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.3 }}
-            className="relative"
+            className="relative overflow-visible"
           >
-            <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-xl p-6 border-2 border-purple-500/50 h-full">
-              <div className="absolute -top-4 -left-4 w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center font-bold text-xl">
+            <div className="bg-gradient-to-br from-purple-900/30 to-blue-900/30 rounded-xl p-6 border-2 border-purple-500/50 h-full relative">
+              <div className="absolute -top-3 right-3 w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center font-bold text-lg text-white shadow-lg z-10">
                 3
               </div>
               <h3 className="text-xl font-bold text-white mb-3 mt-2">Days 61-90: Domination</h3>
@@ -189,7 +191,46 @@ export default function SimplifiedSolution({
           </motion.div>
         </div>
 
-        {/* ROI Calculator */}
+        {/* 90 Day Success Roadmap */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="mt-8 md:mt-16 mb-8 md:mb-12 px-4"
+        >
+          <h3 className="text-xl md:text-2xl font-bold text-center text-white mb-4 md:mb-8">
+            Your Proven 90-Day Journey to #1
+          </h3>
+          <div className="relative w-full max-w-3xl mx-auto">
+            <Image 
+              src="/90-day-success-roadmap.webp"
+              alt="90-day transformation roadmap"
+              width={800}
+              height={400}
+              className="rounded-xl shadow-2xl w-full h-auto object-contain"
+            />
+          </div>
+        </motion.div>
+
+        {/* 90 Day ROI Visual */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="my-8 md:my-12 px-4"
+        >
+          <div className="relative w-full max-w-3xl mx-auto">
+            <Image 
+              src="/90dayROI.webp"
+              alt="90-day ROI breakdown - See your return on investment"
+              width={800}
+              height={400}
+              className="rounded-xl shadow-2xl w-full h-auto object-contain"
+            />
+          </div>
+        </motion.div>
+
+        {/* ROI Calculator Text */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -206,7 +247,7 @@ export default function SimplifiedSolution({
             </div>
             <div>
               <p className="text-3xl font-bold text-yellow-400">+23</p>
-              <p className="text-gray-400">New Patients/Month</p>
+              <p className="text-gray-400">New Customers/Month</p>
             </div>
             <div>
               <p className="text-3xl font-bold text-purple-400">$42,000</p>
@@ -245,7 +286,7 @@ export default function SimplifiedSolution({
               See Investment Options
               <ArrowRight className="w-5 h-5" />
             </button>
-            <button className="px-8 py-4 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 rounded-lg font-bold text-lg transition-all">
+            <button className="px-8 py-4 bg-gray-800 hover:bg-gray-700 border-2 border-gray-600 rounded-lg font-bold text-lg text-white transition-all">
               Schedule Strategy Call
             </button>
           </div>

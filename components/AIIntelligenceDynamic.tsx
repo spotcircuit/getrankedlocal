@@ -350,7 +350,7 @@ export default function AIIntelligenceDynamic({ aiData, businessName }: AIIntell
           )}
 
           {/* Dynamic Sections */}
-          {Object.entries(sections).map(([key, content]) => {
+          {sections && typeof sections === 'object' && Object.entries(sections).map(([key, content]) => {
             // Skip if already displayed above or if content is too short/duplicate
             if (['founder', 'pricing', 'social'].includes(key)) return null;
             if (!content || typeof content !== 'string' || content.length < 10) return null;

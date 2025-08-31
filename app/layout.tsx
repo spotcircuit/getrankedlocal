@@ -26,8 +26,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={inter.className}
-        style={{ backgroundColor: '#000000', color: '#ffffff' }}
+        className={`${inter.className} overflow-x-hidden`}
+        style={{ backgroundColor: '#000000', color: '#ffffff', overflowX: 'hidden' }}
       >
         <script
           type="application/ld+json"
@@ -37,7 +37,7 @@ export default function RootLayout({
               '@type': 'Organization',
               name: 'GetRankedLocal',
               url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-              logo: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/logo1.png',
+              logo: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/logo.png',
               sameAs: [
                 'https://www.linkedin.com/company/getrankedlocal',
               ],

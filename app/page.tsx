@@ -7,43 +7,118 @@ import Image from 'next/image';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import AnalysisModal from '@/components/AnalysisModal';
+import ExistingSearchModal from '@/components/ExistingSearchModal';
 import ResultsSectionV2 from '@/components/ResultsSectionV2';
+import SocialProofImage from '@/components/SocialProofImage';
 
 export default function HomePage() {
   const [businessName, setBusinessName] = useState('');
   const [niche, setNiche] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showExistingSearchModal, setShowExistingSearchModal] = useState(false);
+  const [existingSearchData, setExistingSearchData] = useState<any>(null);
+  const [hasExistingData, setHasExistingData] = useState(false);
   const [analysisResults, setAnalysisResults] = useState<any>(null);
   const [extractedLocation, setExtractedLocation] = useState<any>(null);
   const [isValidBusiness, setIsValidBusiness] = useState(false);
   const [validationError, setValidationError] = useState('');
   const businessInputRef = useRef<HTMLInputElement>(null);
+  const autocompleteRef = useRef<any>(null);
+  const checkSearchesRef = useRef<any>(null);
+
+  // Check for existing searches in database
+  const checkForExistingSearches = async (businessName: string, location: any) => {
+    try {
+      console.log('🔍 Checking for existing searches for:', businessName, location);
+      
+      // Use local API endpoint directly
+      const response = await fetch('/api/check-existing-search', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          business_name: businessName,
+          city: location.city,
+          state: location.state,
+          place_id: location.placeId
+        })
+      });
+      
+      const existingSearch = await response.json();
+
+      if (existingSearch.found && existingSearch.bestResult) {
+        console.log('🎯 Found existing search data:', existingSearch);
+        setExistingSearchData(existingSearch);
+        setHasExistingData(true);
+        
+        // Show a notification or indicator that we have existing data
+        const searchTerms = existingSearch.searchTermsUsed?.join(', ') || 'various keywords';
+        setValidationError(''); // Clear any errors
+        
+        // You could set a success message here instead
+        console.log(`✅ Found existing data for ${searchTerms}`);
+        
+        // Store the data but don't show modal yet - let user decide when to search
+        return true;
+      }
+      setHasExistingData(false);
+      return false;
+    } catch (error) {
+      console.error('Error checking existing searches:', error);
+      setHasExistingData(false);
+      return false;
+    }
+  };
+  
+  // Store the function in a ref so it can be accessed from within useEffect
+  checkSearchesRef.current = checkForExistingSearches;
+
+  // Check for existing searches when a valid business is selected
+  useEffect(() => {
+    console.log('📍 useEffect triggered:', { isValidBusiness, extractedLocation, businessName });
+    if (isValidBusiness && extractedLocation && businessName) {
+      console.log('🔍 Valid business selected, checking for existing searches...');
+      checkForExistingSearches(businessName, extractedLocation);
+    }
+  }, [isValidBusiness, extractedLocation?.placeId]); // Only depend on placeId to avoid re-runs
 
   // Initialize Google Places Autocomplete
   useEffect(() => {
-    const loadGoogleMapsScript = () => {
-      const existing = document.querySelector('script[data-gma="places"]');
-      if (existing) return;
+    let autocompleteInstance: any = null;
 
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
-      script.dataset.gma = 'places';
-      script.async = true;
-      script.defer = true;
+    const initializeAutocomplete = () => {
+      if (!businessInputRef.current) return;
       
-      script.onload = () => {
-        if (!businessInputRef.current || !(window as any).google) return;
-        
-        const autocomplete = new (window as any).google.maps.places.Autocomplete(
+      if (!(window as any).google?.maps?.places) {
+        // Google Maps not loaded yet, retry
+        setTimeout(initializeAutocomplete, 500);
+        return;
+      }
+      
+      // Clean up any existing autocomplete
+      if (autocompleteRef.current) {
+        try {
+          (window as any).google?.maps?.event?.clearInstanceListeners(autocompleteRef.current);
+        } catch {}
+        autocompleteRef.current = null;
+      }
+      
+      try {
+        console.log('🟢 Creating new Autocomplete instance');
+        autocompleteInstance = new (window as any).google.maps.places.Autocomplete(
           businessInputRef.current,
           {
             types: ['establishment'],
             fields: ['name', 'place_id', 'formatted_address', 'address_components', 'geometry']
           }
         );
+        console.log('🟢 Autocomplete instance created successfully');
 
-        autocomplete.addListener('place_changed', () => {
-          const place = autocomplete.getPlace();
+        autocompleteRef.current = autocompleteInstance;
+
+        autocompleteInstance.addListener('place_changed', () => {
+          console.log('🔴 PLACE_CHANGED EVENT FIRED!');
+          const place = autocompleteInstance.getPlace();
+          console.log('🔵 Place data:', place);
           
           // Check if a valid place was selected
           if (!place || !place.place_id) {
@@ -62,28 +137,181 @@ export default function HomePage() {
             if (comp.types.includes('administrative_area_level_1')) state = comp.short_name;
           }
 
-          setExtractedLocation({
+          const locationData = {
             placeId: place.place_id,
             name: place.name,
             formattedAddress: place.formatted_address,
             city,
             state,
             geometry: place.geometry
+          };
+          
+          console.log('📍 Place selected from autocomplete:', {
+            name: place.name,
+            placeId: place.place_id,
+            city,
+            state
           });
+          
+          setExtractedLocation(locationData);
 
           // Update input with full name and address
           const displayName = place.name + (place.formatted_address ? ', ' + place.formatted_address : '');
           setBusinessName(displayName);
           setIsValidBusiness(true);
           setValidationError('');
+          
+          // Check for existing searches immediately when place is selected
+          console.log('🚀 Checking for existing searches after place selection');
+          
+          // Call the local API directly
+          fetch('/api/check-existing-search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              business_name: displayName,
+              city: locationData.city,
+              state: locationData.state,
+              place_id: locationData.placeId
+            })
+          }).then(response => response.json()).then(existingSearch => {
+              if (existingSearch.found && existingSearch.bestResult) {
+                console.log('🎯 Found existing search data:', existingSearch);
+                setExistingSearchData(existingSearch);
+                setHasExistingData(true);
+                
+                // Show a notification that we have existing data
+                const searchTerms = existingSearch.searchTermsUsed?.join(', ') || 'various keywords';
+                console.log(`✅ Found existing data for ${searchTerms}`);
+              } else {
+                console.log('❌ No existing search found');
+                setHasExistingData(false);
+              }
+            }).catch(error => {
+              console.error('Error checking existing searches:', error);
+              setHasExistingData(false);
+            });
         });
+        
+        console.log('Google Places Autocomplete initialized');
+      } catch (error) {
+        console.error('Failed to initialize autocomplete:', error);
+      }
+    };
+    
+    const loadGoogleMapsScript = () => {
+      const existing = document.querySelector('script[src*="maps.googleapis.com"]');
+      if (existing) {
+        // Script already loaded, just initialize
+        initializeAutocomplete();
+        return;
+      }
+
+      const script = document.createElement('script');
+      script.src = `https://maps.googleapis.com/maps/api/js?key=${process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}&libraries=places`;
+      script.async = true;
+      script.defer = true;
+      
+      script.onload = () => {
+        console.log('Google Maps script loaded');
+        initializeAutocomplete();
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load Google Maps script');
       };
 
       document.head.appendChild(script);
     };
 
     loadGoogleMapsScript();
+    // Ensure the Google Places dropdown is above all UI
+    const styleId = 'pac-z-index-patch';
+    if (!document.getElementById(styleId)) {
+      const style = document.createElement('style');
+      style.id = styleId;
+      style.innerHTML = `.pac-container{z-index:9999 !important}`;
+      document.head.appendChild(style);
+    }
+    
+    // Cleanup
+    return () => {
+      if (autocompleteRef.current) {
+        try {
+          (window as any).google?.maps?.event?.clearInstanceListeners(autocompleteRef.current);
+        } catch {}
+        autocompleteRef.current = null;
+      }
+    };
   }, []);
+
+  // Fallback: if user focuses input before init completes, initialize on focus
+  const handleBusinessFocus = () => {
+    if (!autocompleteRef.current && (window as any).google?.maps?.places && businessInputRef.current) {
+      try {
+        const ac = new (window as any).google.maps.places.Autocomplete(
+          businessInputRef.current,
+          { types: ['establishment'], fields: ['name','place_id','formatted_address','address_components','geometry'] }
+        );
+        autocompleteRef.current = ac;
+        ac.addListener('place_changed', () => {
+          const place = ac.getPlace();
+          if (!place || !place.place_id) return;
+          const components = place.address_components || [];
+          let city = '', state = '';
+          for (const comp of components) {
+            if (comp.types.includes('locality')) city = comp.long_name;
+            if (comp.types.includes('administrative_area_level_1')) state = comp.short_name;
+          }
+          const locationData = {
+            placeId: place.place_id,
+            name: place.name,
+            formattedAddress: place.formatted_address,
+            city,
+            state,
+            geometry: place.geometry,
+          };
+          setExtractedLocation(locationData);
+          const displayName = place.name + (place.formatted_address ? ', ' + place.formatted_address : '');
+          setBusinessName(displayName);
+          setIsValidBusiness(true);
+          setValidationError('');
+          
+          console.log('📍 Place selected from fallback autocomplete');
+          // Check for existing searches immediately when place is selected
+          console.log('🚀 Checking for existing searches after place selection');
+          
+          // Call the local API directly
+          fetch('/api/check-existing-search', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              business_name: displayName,
+              city: locationData.city,
+              state: locationData.state,
+              place_id: locationData.placeId
+            })
+          }).then(response => response.json()).then(existingSearch => {
+              if (existingSearch.found && existingSearch.bestResult) {
+                console.log('🎯 Found existing search data:', existingSearch);
+                setExistingSearchData(existingSearch);
+                setHasExistingData(true);
+                
+                // Show a notification that we have existing data
+                const searchTerms = existingSearch.searchTermsUsed?.join(', ') || 'various keywords';
+                console.log(`✅ Found existing data for ${searchTerms}`);
+              } else {
+                console.log('❌ No existing search found');
+                setHasExistingData(false);
+              }
+            }).catch(error => {
+              console.error('Error checking existing searches:', error);
+              setHasExistingData(false);
+            });
+        });
+      } catch {}
+    }
+  };
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -96,12 +324,50 @@ export default function HomePage() {
     
     if (!businessName.trim()) return;
 
-    // Set default niche if empty
-    const searchNiche = niche.trim() || 'med spas';
+    // Validate niche/keyword is provided
+    const searchNiche = niche.trim();
+    if (!searchNiche) {
+      setValidationError('Please enter a search keyword/service (e.g., hair salon, med spa, dentist)');
+      return;
+    }
     setNiche(searchNiche);
 
-    // Open modal immediately
-    setShowModal(true);
+    // Check if we already have existing search data (from autocomplete selection)
+    if (existingSearchData && existingSearchData.found && existingSearchData.bestResult) {
+      // We already found existing data when the business was selected
+      console.log('🎯 Using pre-fetched existing search data');
+      setShowExistingSearchModal(true);
+      setShowModal(false);
+      return;
+    }
+    
+    // If not pre-fetched, check for existing searches now
+    try {
+      const { api } = await import('@/lib/leadfinder-api');
+      const existingSearch = await api.checkExistingSearch(
+        businessName,
+        extractedLocation.city,
+        extractedLocation.state,
+        extractedLocation.placeId
+      );
+
+      if (existingSearch.found && existingSearch.bestResult) {
+        // Show existing search modal - DO NOT show analysis modal
+        console.log('🎯 Found existing search - showing modal:', existingSearch);
+        setExistingSearchData(existingSearch);
+        setShowExistingSearchModal(true);
+        setShowModal(false); // Make sure analysis modal is NOT shown
+        return; // Stop here - don't proceed to new search
+      } else {
+        // No existing search, proceed with new search
+        console.log('❌ No existing search found - proceeding with new search');
+        setShowModal(true);
+      }
+    } catch (error) {
+      console.error('Error checking existing search:', error);
+      // Proceed with new search on error
+      setShowModal(true);
+    }
   };
 
   const handleBusinessInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -112,6 +378,8 @@ export default function HomePage() {
     if (value !== businessName) {
       setIsValidBusiness(false);
       setExtractedLocation(null);
+      setHasExistingData(false);
+      setExistingSearchData(null);
       if (value.trim()) {
         setValidationError('Please select a business from the suggestions');
       } else {
@@ -124,6 +392,16 @@ export default function HomePage() {
     // Check validation on blur
     if (businessName.trim() && !isValidBusiness) {
       setValidationError('Please select a valid business from the dropdown');
+    }
+  };
+
+  const handleBusinessKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      const pac = document.querySelector('.pac-container') as HTMLElement | null;
+      if (pac && getComputedStyle(pac).display !== 'none') {
+        e.preventDefault();
+        e.stopPropagation();
+      }
     }
   };
 
@@ -146,6 +424,7 @@ export default function HomePage() {
       
       <div className="flex flex-col min-h-screen">
         <main className="flex-grow bg-gradient-to-b from-gray-900 to-black text-white pt-16">
+          
           
           {/* Hero Section */}
           <section className="px-8 pt-12 pb-32">
@@ -198,7 +477,7 @@ export default function HomePage() {
               >
                 <form onSubmit={handleSearch} className="bg-gray-900 shadow-xl border border-gray-700 rounded-2xl p-8">
                   
-                  <div className="space-y-4 mb-6">
+                  <div className="space-y-6 mb-6">
                     {/* Business Name Input */}
                     <div>
                       <label className="block text-sm font-medium text-gray-300 mb-2">
@@ -210,6 +489,8 @@ export default function HomePage() {
                         value={businessName}
                         onChange={handleBusinessInputChange}
                         onBlur={handleBusinessInputBlur}
+                        onKeyDown={handleBusinessKeyDown}
+                        onFocus={handleBusinessFocus}
                         placeholder="Start typing to search..."
                         className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-lg text-white placeholder-gray-400 focus:outline-none transition-colors ${
                           validationError 
@@ -218,6 +499,11 @@ export default function HomePage() {
                               ? 'border-green-500 focus:border-green-500'
                               : 'border-gray-600 focus:border-purple-500'
                         }`}
+                        autoComplete="off"
+                        autoCapitalize="off"
+                        autoCorrect="off"
+                        spellCheck={false}
+                        name="business"
                         required
                       />
                       {validationError && (
@@ -227,10 +513,25 @@ export default function HomePage() {
                         </p>
                       )}
                       {isValidBusiness && extractedLocation && (
-                        <p className="mt-2 text-sm text-green-400 flex items-center gap-1">
-                          <CheckCircle className="w-4 h-4" />
-                          Valid business selected - {extractedLocation.city}, {extractedLocation.state}
-                        </p>
+                        <>
+                          <p className="mt-2 text-sm text-green-400 flex items-center gap-1">
+                            <CheckCircle className="w-4 h-4" />
+                            Valid business selected - {extractedLocation.city}, {extractedLocation.state}
+                          </p>
+                          {hasExistingData && existingSearchData && (
+                            <div className="mt-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
+                              <p className="text-sm text-blue-400 flex items-center gap-2">
+                                <Sparkles className="w-4 h-4" />
+                                <span className="font-semibold">Previous data found!</span>
+                              </p>
+                              <p className="text-xs text-gray-400 mt-1">
+                                {existingSearchData.uniqueSearchCount || existingSearchData.searches?.length || 0} previous {(existingSearchData.uniqueSearchCount || existingSearchData.searches?.length) === 1 ? 'search' : 'searches'} • 
+                                {existingSearchData.totalCompetitorCount || existingSearchData.bestResult?.competitors?.length || 0} competitors analyzed • 
+                                Keywords: {existingSearchData.searchTermsUsed?.join(', ') || 'various'}
+                              </p>
+                            </div>
+                          )}
+                        </>
                       )}
                     </div>
                     
@@ -243,7 +544,15 @@ export default function HomePage() {
                         type="text"
                         value={niche}
                         onChange={(e) => setNiche(e.target.value)}
-                        placeholder="e.g., med spa, botox, dental implants"
+                        placeholder={
+                          businessName.toLowerCase().includes('hair') || businessName.toLowerCase().includes('salon')
+                            ? "e.g., hair salon, haircut, hair color, barber"
+                            : businessName.toLowerCase().includes('dental') || businessName.toLowerCase().includes('dentist')
+                            ? "e.g., dentist, dental implants, teeth whitening"
+                            : businessName.toLowerCase().includes('law') || businessName.toLowerCase().includes('attorney')
+                            ? "e.g., lawyer, attorney, personal injury lawyer"
+                            : "e.g., med spa, botox, dental implants"
+                        }
                         className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none"
                       />
                     </div>
@@ -274,6 +583,9 @@ export default function HomePage() {
             </div>
           </section>
 
+
+          {/* Social Proof Image */}
+          {!analysisResults && <SocialProofImage />}
           {/* Results Section */}
           {analysisResults && (
             <div id="results-section">
@@ -351,7 +663,7 @@ export default function HomePage() {
                     Why You're Losing Customers Right Now
                   </h3>
                   <Image
-                    src="/customer-journey-bypass.png"
+                    src="/customer-journey-bypass.webp"
                     alt="How customers bypass your business"
                     width={1200}
                     height={1000}
@@ -406,6 +718,23 @@ export default function HomePage() {
             geometry: extractedLocation.geometry
           } : undefined}
           onComplete={handleAnalysisComplete}
+        />
+        
+        {/* Existing Search Modal */}
+        <ExistingSearchModal
+          isOpen={showExistingSearchModal}
+          onClose={() => setShowExistingSearchModal(false)}
+          existingSearchData={existingSearchData}
+          businessName={businessName}
+          niche={niche}
+          onRunNewSearch={() => {
+            setShowExistingSearchModal(false);
+            setShowModal(true);
+          }}
+          onUseExisting={(data) => {
+            setShowExistingSearchModal(false);
+            handleAnalysisComplete(data);
+          }}
         />
 
         <Footer />

@@ -166,7 +166,7 @@ export default function DirectoryPage() {
               </div>
               
               <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold mb-6">
-                <span className="block">Your Patients</span>
+                <span className="block">Your Customers</span>
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400">
                   Are Searching
                 </span>
@@ -174,7 +174,7 @@ export default function DirectoryPage() {
               </h1>
               
               <p className="text-base sm:text-xl md:text-2xl text-gray-300 mb-10 max-w-3xl mx-auto">
-                90% of patients never scroll past the first 3 results. 
+                90% of customers never scroll past the first 3 results. 
                 <span className="text-white font-semibold"> We get med spas there in 90 days.</span>
               </p>
 
@@ -249,7 +249,7 @@ export default function DirectoryPage() {
                 {
                   icon: <DollarSign className="w-8 h-8" />,
                   title: "ROI You Can Measure",
-                  description: "Track new patient calls, form fills, and appointment bookings",
+                  description: "Track new customer calls, form fills, and appointment bookings",
                   stat: "$47 return per $1"
                 },
                 {
@@ -490,7 +490,7 @@ export default function DirectoryPage() {
                   <Stethoscope className="w-12 h-12 text-purple-400 mb-4" />
                   <h3 className="text-2xl font-bold mb-3">For Med Spas</h3>
                   <p className="text-gray-400 mb-6">
-                    Stop losing patients to competitors. Get your free competitive analysis and custom 90-day roadmap to #1.
+                    Stop losing customers to competitors. Get your free competitive analysis and custom 90-day roadmap to #1.
                   </p>
                   <ul className="space-y-2 mb-6">
                     {[
@@ -515,19 +515,19 @@ export default function DirectoryPage() {
                 </div>
               </div>
 
-              {/* For Patients */}
+              {/* For Customers */}
               <div className="relative group">
                 <div className="absolute inset-0 bg-gradient-to-r from-blue-600/20 to-cyan-600/20 rounded-2xl blur-xl group-hover:blur-2xl transition-all" />
                 <div className="relative bg-gradient-to-br from-blue-900/30 to-blue-900/10 border border-blue-500/30 rounded-2xl p-8">
                   <Users className="w-12 h-12 text-blue-400 mb-4" />
-                  <h3 className="text-2xl font-bold mb-3">For Patients</h3>
+                  <h3 className="text-2xl font-bold mb-3">For Customers</h3>
                   <p className="text-gray-400 mb-6">
                     Find the best-rated med spas in your area. Real reviews, verified rankings, instant booking.
                   </p>
                   <ul className="space-y-2 mb-6">
                     {[
                       'Top-rated med spas only',
-                      'Verified patient reviews',
+                      'Verified customer reviews',
                       'Compare by specialty',
                       'Book appointments directly'
                     ].map((item, i) => (

@@ -3,9 +3,9 @@ import { getJobResults, hasJobResults } from '@/lib/job-store';
 
 export async function GET(
   request: Request,
-  { params }: { params: { jobId: string } }
+  { params }: { params: Promise<{ jobId: string }> }
 ) {
-  const jobId = params.jobId;
+  const { jobId } = await params;
 
   console.log(`🔍 Looking for results for job ${jobId}`);
 

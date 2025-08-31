@@ -13,6 +13,14 @@ interface LeadCaptureFormProps {
   subtitle?: string;
   businessName?: string;
   businessWebsite?: string;
+  // Business context for linking
+  searchedPlaceId?: string;
+  currentRank?: number;
+  monthlyLoss?: number;
+  topCompetitors?: any[];
+  city?: string;
+  state?: string;
+  niche?: string;
 }
 
 export interface LeadData {
@@ -21,6 +29,14 @@ export interface LeadData {
   email: string;
   phone: string;
   website?: string;
+  // Business context
+  searchedPlaceId?: string;
+  currentRank?: number;
+  monthlyLoss?: number;
+  topCompetitors?: any[];
+  city?: string;
+  state?: string;
+  niche?: string;
 }
 
 export default function LeadCaptureForm({ 
@@ -30,14 +46,28 @@ export default function LeadCaptureForm({
   title = "Get Your Free Competitive Analysis",
   subtitle = "See exactly how to outrank your competitors",
   businessName = "",
-  businessWebsite = ""
+  businessWebsite = "",
+  searchedPlaceId,
+  currentRank,
+  monthlyLoss,
+  topCompetitors,
+  city,
+  state,
+  niche
 }: LeadCaptureFormProps) {
   const [formData, setFormData] = useState<LeadData>({
     businessName: businessName || '',
     name: '',
     email: '',
     phone: '',
-    website: businessWebsite || ''
+    website: businessWebsite || '',
+    searchedPlaceId,
+    currentRank,
+    monthlyLoss,
+    topCompetitors,
+    city,
+    state,
+    niche
   });
   
   const [errors, setErrors] = useState<Partial<LeadData>>({});
@@ -52,10 +82,17 @@ export default function LeadCaptureForm({
       setFormData(prev => ({ 
         ...prev, 
         businessName: businessName || prev.businessName || '',
-        website: businessWebsite || prev.website || ''
+        website: businessWebsite || prev.website || '',
+        searchedPlaceId,
+        currentRank,
+        monthlyLoss,
+        topCompetitors,
+        city,
+        state,
+        niche
       }));
     }
-  }, [businessName, businessWebsite, isOpen]);
+  }, [businessName, businessWebsite, isOpen, searchedPlaceId, currentRank, monthlyLoss, topCompetitors, city, state, niche]);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -109,11 +146,27 @@ export default function LeadCaptureForm({
     
     try {
       // Store lead data
-      await fetch('/api/leads', {
+      // Try the enhanced endpoint first with business context
+      const enhancedResponse = await fetch('/api/leads/enhanced', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
-      });
+      }).catch(() => null);
+
+      // If enhanced endpoint fails, fallback to original endpoint
+      if (!enhancedResponse || !enhancedResponse.ok) {
+        await fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            businessName: formData.businessName,
+            name: formData.name,
+            email: formData.email,
+            phone: formData.phone,
+            website: formData.website
+          })
+        });
+      }
       
       // Store in localStorage for persistence
       localStorage.setItem('leadCaptured', JSON.stringify({

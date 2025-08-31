@@ -107,7 +107,7 @@ export default function PricingSection({ businessName = '', businessData, busine
             Average ROI: 1,247% in first year
           </p>
           <p className="text-lg text-gray-500">
-            One new patient covers your monthly investment
+            One new customer covers your monthly investment
           </p>
         </motion.div>
 
@@ -173,7 +173,7 @@ export default function PricingSection({ businessName = '', businessData, busine
 
                 <button 
                   onClick={handlePricingClick}
-                  className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 ${
+                  className={`w-full py-3 rounded-lg font-bold text-white transition-all flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black ${
                   plan.popular
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 hover:scale-105'
                     : 'bg-gray-700 hover:bg-gray-600'
@@ -210,7 +210,7 @@ export default function PricingSection({ businessName = '', businessData, busine
             <div className="text-center">
               <p className="text-3xl font-bold text-red-400">$3,000+</p>
               <p className="text-sm text-gray-300 font-semibold">Social Media Agency</p>
-              <p className="text-sm text-gray-400 mt-2">Likes don't equal patients</p>
+              <p className="text-sm text-gray-400 mt-2">Likes don't equal customers</p>
             </div>
             <div className="text-center">
               <p className="text-3xl font-bold text-green-400">Results-Based</p>
@@ -261,7 +261,7 @@ export default function PricingSection({ businessName = '', businessData, busine
             </p>
             <button 
               onClick={handlePricingClick}
-              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold text-lg hover:scale-105 transition-transform inline-flex items-center gap-2"
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold text-lg hover:scale-105 transition-transform inline-flex items-center gap-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
             >
               Get Started Today
               <ArrowRight className="w-5 h-5" />

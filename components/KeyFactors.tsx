@@ -65,7 +65,7 @@ const critical: FactorSection = {
     {
       title: 'Website Mobile Speed',
       theyHave: 'Loads < 3 seconds on mobile',
-      whyItWins: 'Poor speed = lost rankings and patients',
+      whyItWins: 'Poor speed = lost rankings and customers',
       yourFix: 'Compress images, upgrade hosting, remove bloat',
     },
   ],
@@ -252,7 +252,7 @@ export default function KeyFactors({ businessName = '', businessWebsite = '', ci
         {/* CTA Button Before Factors */}
         <button 
           onClick={handleCTAClick}
-          className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold text-lg hover:scale-105 transition-transform shadow-lg inline-flex items-center gap-2"
+          className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold text-lg hover:scale-105 transition-transform shadow-lg inline-flex items-center gap-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           <Zap className="w-5 h-5" />
           Get Your Custom Fix Priority Plan
@@ -281,11 +281,11 @@ export default function KeyFactors({ businessName = '', businessWebsite = '', ci
       {/* CTA Button in Middle of Factors */}
       <div className="bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-xl p-6 text-center my-8">
         <p className="text-lg font-semibold text-white mb-4">
-          Stop Losing Patients to These Missing Factors
+          Stop Losing Customers to These Missing Factors
         </p>
         <button 
           onClick={handleCTAClick}
-          className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold hover:scale-105 transition-transform inline-flex items-center gap-2"
+          className="px-8 py-3 bg-gradient-to-r from-purple-600 to-blue-600 rounded-lg font-bold hover:scale-105 transition-transform inline-flex items-center gap-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           Analyze My Gaps Now
           <ArrowRight className="w-5 h-5" />
@@ -344,7 +344,7 @@ export default function KeyFactors({ businessName = '', businessWebsite = '', ci
         </p>
         <button 
           onClick={handleCTAClick}
-          className="px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 rounded-lg font-bold text-lg hover:scale-105 transition-transform shadow-lg inline-flex items-center gap-2"
+          className="px-8 py-4 bg-gradient-to-r from-red-600 to-orange-600 rounded-lg font-bold text-lg hover:scale-105 transition-transform shadow-lg inline-flex items-center gap-2 text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         >
           <Zap className="w-5 h-5" />
           Get Your Custom Fix Priority Plan
