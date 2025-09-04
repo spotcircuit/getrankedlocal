@@ -1,0 +1,230 @@
+{
+  "status": "ok",
+  "seo_implementation_plan": {
+    "canonical_url_strategy": {
+      "primary_rule": "Service-first URLs are ALWAYS canonical",
+      "rationale": "Service-first matches user search intent (users search 'medical spas in Texas' not 'Texas medical spas')",
+      "implementation": {
+        "location_first_pattern": "/state/city/service",
+        "service_first_pattern": "/directory/service/state/city",
+        "canonical_mapping": [
+          {
+            "from": "/tx/frisco/medspas",
+            "to": "/directory/medical-spas/tx/frisco",
+            "page_file": "app/[state]/[city]/[niche]/page.tsx"
+          },
+          {
+            "from": "/ca/los-angeles/wellness",
+            "to": "/directory/wellness-centers/ca/los-angeles",
+            "page_file": "app/[state]/[city]/[niche]/page.tsx"
+          }
+        ]
+      }
+    },
+    "meta_tag_optimization": {
+      "title_templates": {
+        "service_city": "Best {service} in {city}, {state} - Top-Rated Providers | GetLocalRanked",
+        "service_state": "{service} in {state} - Find Top-Rated Providers Near You | GetLocalRanked",
+        "service_hub": "Top {service} Directory - Find Local Providers | GetLocalRanked",
+        "city_collection": "{city} Business Directory - Local Services in {state} | GetLocalRanked",
+        "state_hub": "{state} Business Directory - Find Local Services | GetLocalRanked"
+      },
+      "description_templates": {
+        "service_city": "Find the best {service_lower} in {city}, {state_full}. Compare top-rated providers with verified reviews, ratings, and detailed service information. {service_description}",
+        "service_state": "Discover top-rated {service_lower} across {state_full}. Browse verified providers by city with reviews, ratings, and comprehensive service details.",
+        "service_hub": "Find trusted {service_lower} near you. Browse our comprehensive directory of verified providers with reviews, ratings, and detailed business information."
+      },
+      "character_limits": {
+        "title": 60,
+        "description": 160
+      }
+    },
+    "structured_data_schemas": {
+      "collection_pages": {
+        "schema_type": "CollectionPage",
+        "required_properties": ["name", "description", "url", "mainEntity"],
+        "mainEntity_type": "ItemList",
+        "item_type": "LocalBusiness"
+      },
+      "business_pages": {
+        "schema_type": "LocalBusiness",
+        "subtypes": {
+          "medical-spas": "MedicalSpa",
+          "dental-practices": "Dentist",
+          "health-clinics": "MedicalClinic",
+          "law-firms": "LegalService",
+          "home-services": "HomeAndConstructionBusiness"
+        },
+        "required_properties": ["name", "address", "aggregateRating", "description"],
+        "recommended_properties": ["telephone", "openingHours", "priceRange", "image"]
+      },
+      "breadcrumb": {
+        "schema_type": "BreadcrumbList",
+        "implementation": "All pages must include breadcrumb schema"
+      },
+      "organization": {
+        "schema_type": "Organization",
+        "implementation": "Homepage only",
+        "properties": {
+          "name": "GetLocalRanked",
+          "url": "https://getlocalranked.com",
+          "logo": "https://getlocalranked.com/logo.png"
+        }
+      }
+    },
+    "page_specific_implementations": [
+      {
+        "file": "app/[state]/[city]/[niche]/page.tsx",
+        "type": "location_first_service",
+        "canonical_behavior": "MUST point to service-first URL",
+        "implementation_status": "completed",
+        "changes": [
+          "Added canonical URL generation using service-first pattern",
+          "Implemented proper meta tags with keyword optimization",
+          "Added CollectionPage and BreadcrumbList schemas",
+          "Updated H1 to match service-first intent"
+        ]
+      },
+      {
+        "file": "app/directory/[service]/[state]/[city]/page.tsx",
+        "type": "service_first_canonical",
+        "canonical_behavior": "Self-canonical (this is the target)",
+        "implementation_status": "completed",
+        "changes": [
+          "Already has proper canonical implementation",
+          "Includes LocalBusiness schema for listings",
+          "Has proper breadcrumb structure"
+        ]
+      },
+      {
+        "file": "app/[state]/page.tsx",
+        "type": "state_hub",
+        "canonical_behavior": "Self-canonical (no service context)",
+        "implementation_status": "needs_update",
+        "required_changes": [
+          "Add proper meta descriptions",
+          "Implement CollectionPage schema",
+          "Add state-specific keywords"
+        ]
+      },
+      {
+        "file": "app/[state]/[city]/page.tsx",
+        "type": "city_collection",
+        "canonical_behavior": "Self-canonical (no service context)",
+        "implementation_status": "needs_update",
+        "required_changes": [
+          "Add proper meta descriptions",
+          "Enhance structured data",
+          "Add city-specific keywords"
+        ]
+      }
+    ],
+    "technical_seo_checklist": {
+      "canonical_tags": {
+        "status": "implemented",
+        "verification_method": "Check <link rel='canonical'> in page source",
+        "test_cases": [
+          {
+            "url": "/tx/dallas/medspas",
+            "expected_canonical": "https://getlocalranked.com/directory/medical-spas/tx/dallas"
+          },
+          {
+            "url": "/directory/medical-spas/tx/dallas",
+            "expected_canonical": "https://getlocalranked.com/directory/medical-spas/tx/dallas"
+          }
+        ]
+      },
+      "robots_meta": {
+        "status": "implemented",
+        "default": "index,follow",
+        "exceptions": []
+      },
+      "sitemap": {
+        "status": "needs_implementation",
+        "requirements": [
+          "Include both URL patterns",
+          "Set priority higher for service-first URLs",
+          "Update frequency: weekly for listings, monthly for hubs"
+        ]
+      },
+      "page_speed": {
+        "status": "needs_review",
+        "recommendations": [
+          "Lazy load business listings",
+          "Optimize image sizes",
+          "Implement proper caching headers"
+        ]
+      }
+    },
+    "internal_linking_strategy": {
+      "principles": [
+        "Always link to canonical (service-first) URLs when possible",
+        "Use descriptive anchor text with keywords",
+        "Create topic clusters around services"
+      ],
+      "link_flow": {
+        "from_location_pages": "Link to service-first URLs",
+        "from_service_pages": "Link to other service variations",
+        "breadcrumbs": "Can use location-first for user navigation"
+      }
+    },
+    "keyword_optimization": {
+      "primary_patterns": [
+        "{service} in {city}",
+        "{service} near me",
+        "best {service} {city}",
+        "top rated {service} {state}"
+      ],
+      "long_tail_examples": [
+        "affordable medical spas in dallas texas",
+        "botox treatments frisco tx",
+        "wellness centers with IV therapy houston"
+      ],
+      "content_guidelines": [
+        "Include primary keyword in H1",
+        "Use variations in H2/H3 tags",
+        "Natural keyword density 1-2%",
+        "Include related entities and synonyms"
+      ]
+    },
+    "monitoring_and_maintenance": {
+      "canonical_validation": {
+        "frequency": "weekly",
+        "tool": "Google Search Console",
+        "check_for": ["Duplicate content warnings", "Canonical mismatches"]
+      },
+      "ranking_tracking": {
+        "primary_keywords": "Track service+city combinations",
+        "competitor_analysis": "Monitor top 3 competitors per market"
+      },
+      "technical_audits": {
+        "frequency": "monthly",
+        "tools": ["Screaming Frog", "Google PageSpeed Insights"],
+        "focus_areas": ["404 errors", "Redirect chains", "Page speed"]
+      }
+    }
+  },
+  "implementation_priority": {
+    "immediate": [
+      "Canonical URL implementation on all location-first pages",
+      "Meta tag optimization for service pages",
+      "Structured data implementation"
+    ],
+    "short_term": [
+      "Internal linking audit and updates",
+      "Content optimization for featured snippets",
+      "Sitemap generation with both URL patterns"
+    ],
+    "long_term": [
+      "Page speed optimization",
+      "Schema markup expansion",
+      "Local SEO citation building"
+    ]
+  },
+  "risk_notes": [
+    "CRITICAL: Never change canonical URLs once indexed without proper redirects",
+    "Monitor for duplicate content penalties during transition",
+    "Ensure all internal links are updated to avoid redirect chains",
+    "Test structured data with Google's Rich Results Test before deployment"
+  ]
+}

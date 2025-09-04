@@ -9,6 +9,7 @@
 
 html {
   scroll-behavior: smooth;
+  height: 100%;
 }
 
 body {
@@ -18,10 +19,13 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Mobile: prevent sideways scroll from wide elements */
-  overflow-x: hidden;
+  /* Ensure proper viewport height */
+  min-height: 100vh;
   /* Improve text sizing behavior on mobile */
   -webkit-text-size-adjust: 100%;
+  /* Allow vertical scroll but prevent horizontal */
+  overflow-x: auto;
+  overflow-y: auto;
 }
 
 /* Media elements scale within viewport */
@@ -30,15 +34,20 @@ img, video, canvas, svg {
   height: auto;
 }
 
-/* Prevent any element from causing horizontal scroll */
-* {
-  max-width: 100vw;
+/* Main content container pattern */
+.main-content,
+main {
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
 }
 
-/* Ensure sections don't overflow */
+/* Ensure sections don't overflow but remain in viewport */
 section {
-  overflow-x: hidden;
   width: 100%;
+  position: relative;
+  /* Allow content to be scrollable if needed */
+  overflow-x: auto;
 }
 
 /* Avoid long strings causing overflow on small screens */
@@ -98,6 +107,73 @@ section {
 a {
   color: inherit;
   text-decoration: none;
+}
+
+/* Viewport utilities - ensure content stays in viewable area */
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.h-screen {
+  height: 100vh;
+}
+
+.flex {
+  display: flex;
+}
+
+.flex-col {
+  flex-direction: column;
+}
+
+.flex-grow {
+  flex-grow: 1;
+}
+
+/* Proper padding to keep content in viewport */
+.px-4 { padding-left: 1rem; padding-right: 1rem; }
+.px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+.px-8 { padding-left: 2rem; padding-right: 2rem; }
+.py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+.py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+.py-20 { padding-top: 5rem; padding-bottom: 5rem; }
+.pt-12 { padding-top: 3rem; }
+.pt-16 { padding-top: 4rem; }
+.pb-32 { padding-bottom: 8rem; }
+
+/* Max width utilities */
+.max-w-4xl { max-width: 56rem; }
+.max-w-5xl { max-width: 64rem; }
+.max-w-6xl { max-width: 72rem; }
+.max-w-7xl { max-width: 80rem; }
+.mx-auto { margin-left: auto; margin-right: auto; }
+
+/* Background gradients */
+.bg-gradient-to-b { background-image: linear-gradient(to bottom, var(--tw-gradient-stops)); }
+.from-gray-900 { --tw-gradient-from: #111827; --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(17, 24, 39, 0)); }
+.to-black { --tw-gradient-to: #000000; }
+.via-gray-900 { --tw-gradient-stops: var(--tw-gradient-from), #111827, var(--tw-gradient-to, rgba(17, 24, 39, 0)); }
+
+/* Text colors */
+.text-white { color: #ffffff; }
+.text-gray-300 { color: #d1d5db; }
+.text-gray-400 { color: #9ca3af; }
+.text-gray-500 { color: #6b7280; }
+.text-gray-600 { color: #4b5563; }
+.text-purple-400 { color: #a78bfa; }
+.text-purple-500 { color: #8b5cf6; }
+.text-purple-600 { color: #7c3aed; }
+
+/* Responsive utilities */
+@media (min-width: 640px) {
+  .sm\:px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+}
+
+@media (min-width: 768px) {
+  .md\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+  .md\:py-20 { padding-top: 5rem; padding-bottom: 5rem; }
 }
 a:hover {
   text-decoration: none;

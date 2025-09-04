@@ -1,4 +1,5 @@
 import sql from './db';
+import { normalizeCollection, parseDestination } from './collection-utils';
 
 interface CompetitorSearchData {
   job_id: string;
@@ -8,6 +9,15 @@ interface CompetitorSearchData {
     name: string;
     place_id?: string;
     rank?: number;
+    rating?: string | number;
+    review_count?: number;
+    reviews?: number;
+    address?: string;
+    street_address?: string;
+    city?: string;
+    state?: string;
+    website?: string;
+    phone?: string;
   };
   competitors: any[];
   market_analysis?: any;
@@ -119,7 +129,8 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
                               null;
         const extractedDomain = aiData.domain || null;
         const extractedOwner = aiData.owner?.name || 
-                              aiData.staff?.match(/founders?[^:]*?:\s*([A-Z][a-z]+ [A-Z][a-z]+)/)?.[1] || 
+                              aiData.owner?.names?.join(', ') ||
+                              (typeof aiData.staff === 'string' ? aiData.staff?.match(/founders?[^:]*?:\s*([A-Z][a-z]+ [A-Z][a-z]+)/)?.[1] : null) || 
                               null;
         
         console.log("📧 Extracted email:", extractedEmail);
@@ -133,24 +144,31 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
         `;
 
         if (existingLead.length > 0) {
-          // Update existing lead
+          // Update existing lead including rating and review_count
           await sql`
             UPDATE leads SET
               email = COALESCE(email, ${extractedEmail}),
               domain = COALESCE(domain, ${extractedDomain}),
               owner_name = COALESCE(owner_name, ${extractedOwner}),
               business_name = ${data.target_business.name},
+              rating = COALESCE(rating, ${data.target_business.rating ? parseFloat(String(data.target_business.rating)) : null}),
+              review_count = GREATEST(COALESCE(review_count, 0), ${data.target_business.review_count || data.target_business.reviews || 0}),
+              street_address = COALESCE(street_address, ${data.target_business.address || data.target_business.street_address || null}),
+              city = COALESCE(city, ${data.target_business.city || city}),
+              state = COALESCE(state, ${data.target_business.state || state}),
+              website = COALESCE(website, ${data.target_business.website || extractedDomain || null}),
+              phone = COALESCE(phone, ${data.target_business.phone || null}),
               search_city = ${city},
-              state = ${state},
+              search_state = ${state},
               search_niche = ${data.search_term},
               source_directory = ${collection},
               additional_data = ${JSON.stringify(aiData)},
               updated_at = CURRENT_TIMESTAMP
             WHERE place_id = ${data.target_business.place_id}
           `;
-          console.log('✅ Updated existing lead for searched business');
+          console.log('✅ Updated existing lead for searched business with rating/reviews');
         } else {
-          // Insert new lead
+          // Insert new lead with correct column mapping
           await sql`
             INSERT INTO leads (
               place_id,
@@ -158,8 +176,15 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
               domain,
               owner_name,
               business_name,
-              search_city,
+              rating,
+              review_count,
+              street_address,
+              city,
               state,
+              website,
+              phone,
+              search_city,
+              search_state,
               search_niche,
               source_directory,
               additional_data,
@@ -168,7 +193,17 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
               outreach_status
             ) VALUES (
               ${data.target_business.place_id},
+              ${extractedEmail},
+              ${extractedDomain},
+              ${extractedOwner},
               ${data.target_business.name},
+              ${data.target_business.rating ? parseFloat(String(data.target_business.rating)) : null},
+              ${data.target_business.review_count || data.target_business.reviews || 0},
+              ${data.target_business.address || data.target_business.street_address || null},
+              ${data.target_business.city || city},
+              ${data.target_business.state || state},
+              ${data.target_business.website || extractedDomain || null},
+              ${data.target_business.phone || null},
               ${city},
               ${state},
               ${data.search_term},
@@ -180,13 +215,50 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
             )
             ON CONFLICT (place_id) 
             DO UPDATE SET
+              email = COALESCE(leads.email, EXCLUDED.email),
+              domain = COALESCE(leads.domain, EXCLUDED.domain),
+              owner_name = COALESCE(leads.owner_name, EXCLUDED.owner_name),
+              rating = COALESCE(leads.rating, EXCLUDED.rating),
+              review_count = GREATEST(leads.review_count, EXCLUDED.review_count),
               search_city = EXCLUDED.search_city,
-              state = EXCLUDED.state,
+              search_state = EXCLUDED.search_state,
               search_niche = EXCLUDED.search_niche,
               additional_data = EXCLUDED.additional_data,
               updated_at = CURRENT_TIMESTAMP
           `;
-          console.log('✅ Inserted searched business into leads table');
+          console.log('✅ Inserted searched business into leads table with rating/reviews');
+        }
+        
+        // Insert into lead_collections for the target business
+        // First, get the lead ID
+        const leadResult = await sql`
+          SELECT id FROM leads WHERE place_id = ${data.target_business.place_id}
+        `;
+        
+        if (leadResult.length > 0) {
+          const leadId = leadResult[0].id;
+          const normalizedCollection = normalizeCollection(data.search_term);
+          
+          console.log(`📁 Adding to lead_collections: ${normalizedCollection} in ${data.search_destination}`);
+          
+          await sql`
+            INSERT INTO lead_collections (
+              lead_id,
+              search_collection,
+              search_destination,
+              search_term
+            ) VALUES (
+              ${leadId},
+              ${normalizedCollection},
+              ${data.search_destination},
+              ${data.search_term}
+            )
+            ON CONFLICT (lead_id, search_collection, search_destination)
+            DO UPDATE SET
+              search_term = EXCLUDED.search_term,
+              updated_at = CURRENT_TIMESTAMP
+          `;
+          console.log('✅ Added lead to lead_collections');
         }
       } catch (leadError) {
         console.error('⚠️ Error processing lead:', leadError);
@@ -224,6 +296,8 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
             street_address,
             city,
             state,
+            latitude,
+            longitude,
             phone,
             website,
             search_city,
@@ -239,6 +313,8 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
             ${c.address || c.street_address || c.formatted_address || null},
             ${c.city || city},
             ${c.state || state},
+            ${c.latitude ? parseFloat(c.latitude) : null},
+            ${c.longitude ? parseFloat(c.longitude) : null},
             ${c.phone || null},
             ${c.website || null},
             ${city},
@@ -251,6 +327,8 @@ export async function storeCompetitorSearch(data: CompetitorSearchData) {
           DO UPDATE SET
             rating = COALESCE(prospects.rating, EXCLUDED.rating),
             review_count = GREATEST(prospects.review_count, EXCLUDED.review_count),
+            latitude = COALESCE(prospects.latitude, EXCLUDED.latitude),
+            longitude = COALESCE(prospects.longitude, EXCLUDED.longitude),
             updated_at = CURRENT_TIMESTAMP
         `;
         

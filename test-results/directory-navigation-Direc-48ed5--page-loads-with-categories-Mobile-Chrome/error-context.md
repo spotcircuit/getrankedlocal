@@ -1,0 +1,150 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e5]:
+    - generic [ref=e6]:
+      - img [ref=e7]
+      - text: HIPAA Compliant
+    - generic [ref=e9]:
+      - img [ref=e10]
+      - text: Google Partner
+    - generic [ref=e13]:
+      - img [ref=e14]
+      - text: "500+ Ranked #1"
+  - banner [ref=e17]:
+    - generic [ref=e18]:
+      - link "GetRankedLocal" [ref=e20] [cursor=pointer]:
+        - /url: /
+        - img "GetRankedLocal" [ref=e22] [cursor=pointer]
+      - navigation [ref=e24]:
+        - generic [ref=e25]:
+          - link "Rank Analysis" [ref=e26] [cursor=pointer]:
+            - /url: /
+          - link "Directory" [ref=e27] [cursor=pointer]:
+            - /url: /directory
+          - button "Get Started" [ref=e28]:
+            - text: Get Started
+            - img [ref=e29]
+  - link "Check Where You Stand Free instant analysis - See your Google Maps ranking now" [ref=e33] [cursor=pointer]:
+    - /url: /
+    - generic [ref=e34] [cursor=pointer]:
+      - img [ref=e38] [cursor=pointer]
+      - generic [ref=e41] [cursor=pointer]:
+        - paragraph [ref=e42] [cursor=pointer]: Check Where You Stand
+        - paragraph [ref=e43] [cursor=pointer]: Free instant analysis - See your Google Maps ranking now
+    - img [ref=e44] [cursor=pointer]
+  - main [ref=e47]:
+    - generic [ref=e50]:
+      - generic [ref=e51]:
+        - img [ref=e52]
+        - generic [ref=e54]: 6,500+ Businesses Indexed
+      - heading "Business Directory Find What's Best Near You" [level=1] [ref=e55]:
+        - generic [ref=e56]: Business Directory
+        - generic [ref=e57]: Find What's Best
+        - generic [ref=e58]: Near You
+      - paragraph [ref=e59]:
+        - text: Discover top-rated businesses across 9 industries in 200+ locations.
+        - generic [ref=e60]: Real reviews. Verified rankings.
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - generic [ref=e63]: "9"
+          - generic [ref=e64]: Industries
+        - generic [ref=e65]:
+          - generic [ref=e66]: 200+
+          - generic [ref=e67]: Cities
+        - generic [ref=e68]:
+          - generic [ref=e69]: 6,511
+          - generic [ref=e70]: Businesses
+        - generic [ref=e71]:
+          - generic [ref=e72]: 4.7★
+          - generic [ref=e73]: Avg Rating
+    - generic [ref=e76]:
+      - heading "Browse by Industry" [level=2] [ref=e77]
+      - paragraph [ref=e78]: Explore businesses across different industries and locations
+    - generic [ref=e144]:
+      - generic [ref=e145]:
+        - heading "Why Choose Our Directory" [level=2] [ref=e146]:
+          - text: Why Choose
+          - generic [ref=e147]: Our Directory
+        - paragraph [ref=e148]: Verified data. Real reviews. Trusted rankings.
+      - generic [ref=e149]:
+        - generic [ref=e152]:
+          - img [ref=e154]
+          - heading "Verified Listings" [level=3] [ref=e156]
+          - paragraph [ref=e157]: All businesses verified through multiple data sources and regular updates
+          - generic [ref=e158]: 100% verified
+        - generic [ref=e161]:
+          - img [ref=e163]
+          - heading "Real Reviews" [level=3] [ref=e165]
+          - paragraph [ref=e166]: Authentic customer reviews from Google, Yelp, and other trusted platforms
+          - generic [ref=e167]: 25k+ reviews
+        - generic [ref=e170]:
+          - img [ref=e172]
+          - heading "Comprehensive Coverage" [level=3] [ref=e175]
+          - paragraph [ref=e176]: Nationwide coverage across multiple industries and service categories
+          - generic [ref=e177]: 200+ cities
+    - generic [ref=e182]:
+      - heading "Own a Business?" [level=3] [ref=e183]
+      - paragraph [ref=e184]: Get your free ranking analysis and see where you stand against competitors. Improve your visibility and attract more customers.
+      - link "Get Free Analysis" [ref=e185] [cursor=pointer]:
+        - /url: /
+        - text: Get Free Analysis
+        - img [ref=e186] [cursor=pointer]
+  - contentinfo [ref=e188]:
+    - generic [ref=e190]:
+      - generic [ref=e192]:
+        - img "GetRankedLocal" [ref=e194]
+        - paragraph [ref=e195]: Dominate local search with AI-powered SEO strategies that deliver measurable results.
+        - generic [ref=e196]:
+          - generic [ref=e197]:
+            - img [ref=e198]
+            - img [ref=e200]
+            - img [ref=e202]
+            - img [ref=e204]
+            - img [ref=e206]
+          - generic [ref=e208]: 500+ Success Stories
+      - generic [ref=e209]:
+        - heading "Quick Links" [level=3] [ref=e210]
+        - list [ref=e211]:
+          - listitem [ref=e212]:
+            - link "Home" [ref=e213] [cursor=pointer]:
+              - /url: /
+          - listitem [ref=e214]:
+            - link "Get Ranked Local" [ref=e215] [cursor=pointer]:
+              - /url: /getrankedlocal
+          - listitem [ref=e216]:
+            - link "Free Analysis" [ref=e217] [cursor=pointer]:
+              - /url: /analysis
+          - listitem [ref=e218]:
+            - link "Contact Us" [ref=e219] [cursor=pointer]:
+              - /url: /contact
+      - generic [ref=e220]:
+        - heading "Services" [level=3] [ref=e221]
+        - list [ref=e222]:
+          - listitem [ref=e223]: Local SEO Optimization
+          - listitem [ref=e224]: Google Business Profile
+          - listitem [ref=e225]: AI Content Strategy
+          - listitem [ref=e226]: Review Management
+      - generic [ref=e228]:
+        - heading "Ready to Dominate?" [level=3] [ref=e229]:
+          - img [ref=e230]
+          - text: Ready to Dominate?
+        - paragraph [ref=e232]: Get your free competitive analysis and 90-day action plan.
+        - button "Start Free Analysis" [ref=e233]:
+          - text: Start Free Analysis
+          - img [ref=e234]
+    - generic [ref=e236]:
+      - generic [ref=e238]:
+        - paragraph [ref=e240]: © 2025 GetRankedLocal. All rights reserved.
+        - generic [ref=e241]:
+          - link "Privacy Policy" [ref=e242] [cursor=pointer]:
+            - /url: /privacy
+          - link "Terms of Service" [ref=e243] [cursor=pointer]:
+            - /url: /terms
+        - paragraph [ref=e245]:
+          - text: Powered by
+          - link "SpotCircuit AI" [ref=e246] [cursor=pointer]:
+            - /url: https://spotcircuit.com
+      - img "Certifications and trust badges" [ref=e249]
+```

@@ -47,6 +47,11 @@ export default function HomePage() {
 
       if (existingSearch.found && existingSearch.bestResult) {
         console.log('🎯 Found existing search data:', existingSearch);
+        console.log('📊 Business details from API:', {
+          rating: existingSearch.bestResult.business?.rating,
+          review_count: existingSearch.bestResult.business?.review_count,
+          fullBusiness: existingSearch.bestResult.business
+        });
         setExistingSearchData(existingSearch);
         setHasExistingData(true);
         
@@ -334,11 +339,46 @@ export default function HomePage() {
 
     // Check if we already have existing search data (from autocomplete selection)
     if (existingSearchData && existingSearchData.found && existingSearchData.bestResult) {
-      // We already found existing data when the business was selected
-      console.log('🎯 Using pre-fetched existing search data');
-      setShowExistingSearchModal(true);
-      setShowModal(false);
-      return;
+      // Check if the search keyword matches any previous searches
+      const searchTermsUsed = existingSearchData.searchTermsUsed || [];
+      const exactMatch = searchTermsUsed.some((term: string) => 
+        term.toLowerCase().trim() === searchNiche.toLowerCase().trim()
+      );
+      
+      if (exactMatch) {
+        // Exact keyword match - go directly to results
+        console.log('🎯 Exact keyword match found - going directly to results');
+        
+        // Format the data properly for ResultsSectionV2
+        const formattedData = {
+          business: {
+            ...existingSearchData.bestResult.business,
+            rating: existingSearchData.bestResult.business?.rating || 0,
+            review_count: existingSearchData.bestResult.business?.review_count || 0
+          },
+          competitors: existingSearchData.bestResult.competitors || [],
+          all_competitors: existingSearchData.bestResult.competitors || [],
+          top_competitors: (existingSearchData.bestResult.competitors || []).slice(0, 3).map((c: any) => ({
+            name: c.business_name || c.name || 'Competitor',
+            rank: c.rank || 999,
+            reviews: c.review_count || 0,
+            rating: c.rating || 0,
+            website: c.website || '',
+            phone: c.phone || ''
+          })),
+          ai_intelligence: existingSearchData.bestResult.business?.ai_intelligence || null,
+          market_analysis: existingSearchData.bestResult.market_analysis || null
+        };
+        
+        handleAnalysisComplete(formattedData);
+        return;
+      } else {
+        // Different keyword - show modal to ask if they want new search
+        console.log('🔍 Different keyword - showing modal to offer new search');
+        setShowExistingSearchModal(true);
+        setShowModal(false);
+        return;
+      }
     }
     
     // If not pre-fetched, check for existing searches now
@@ -352,12 +392,46 @@ export default function HomePage() {
       );
 
       if (existingSearch.found && existingSearch.bestResult) {
-        // Show existing search modal - DO NOT show analysis modal
-        console.log('🎯 Found existing search - showing modal:', existingSearch);
         setExistingSearchData(existingSearch);
-        setShowExistingSearchModal(true);
-        setShowModal(false); // Make sure analysis modal is NOT shown
-        return; // Stop here - don't proceed to new search
+        
+        // Check if keyword matches
+        const searchTermsUsed = existingSearch.searchTermsUsed || [];
+        const exactMatch = searchTermsUsed.some((term: string) => 
+          term.toLowerCase().trim() === searchNiche.toLowerCase().trim()
+        );
+        
+        if (exactMatch) {
+          // Exact match - go directly to results
+          console.log('🎯 Exact keyword match - using existing data');
+          
+          const formattedData = {
+            business: {
+              ...existingSearch.bestResult.business,
+              rating: existingSearch.bestResult.business?.rating || 0,
+              review_count: existingSearch.bestResult.business?.review_count || 0
+            },
+            competitors: existingSearch.bestResult.competitors || [],
+            all_competitors: existingSearch.bestResult.competitors || [],
+            top_competitors: (existingSearch.bestResult.competitors || []).slice(0, 3).map((c: any) => ({
+              name: c.business_name || c.name || 'Competitor',
+              rank: c.rank || 999,
+              reviews: c.review_count || 0,
+              rating: c.rating || 0,
+              website: c.website || '',
+              phone: c.phone || ''
+            })),
+            ai_intelligence: existingSearch.bestResult.business?.ai_intelligence || null,
+            market_analysis: existingSearch.bestResult.market_analysis || null
+          };
+          
+          handleAnalysisComplete(formattedData);
+        } else {
+          // Different keyword - show modal
+          console.log('🔍 Different keyword - showing modal');
+          setShowExistingSearchModal(true);
+          setShowModal(false);
+        }
+        return;
       } else {
         // No existing search, proceed with new search
         console.log('❌ No existing search found - proceeding with new search');
@@ -519,15 +593,87 @@ export default function HomePage() {
                             Valid business selected - {extractedLocation.city}, {extractedLocation.state}
                           </p>
                           {hasExistingData && existingSearchData && (
-                            <div className="mt-2 p-3 bg-blue-900/20 border border-blue-500/30 rounded-lg">
-                              <p className="text-sm text-blue-400 flex items-center gap-2">
-                                <Sparkles className="w-4 h-4" />
-                                <span className="font-semibold">Previous data found!</span>
-                              </p>
-                              <p className="text-xs text-gray-400 mt-1">
-                                {existingSearchData.uniqueSearchCount || existingSearchData.searches?.length || 0} previous {(existingSearchData.uniqueSearchCount || existingSearchData.searches?.length) === 1 ? 'search' : 'searches'} • 
-                                {existingSearchData.totalCompetitorCount || existingSearchData.bestResult?.competitors?.length || 0} competitors analyzed • 
-                                Keywords: {existingSearchData.searchTermsUsed?.join(', ') || 'various'}
+                            <div className="mt-4 space-y-3">
+                              <div className="p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
+                                <p className="text-base text-green-400 flex items-center gap-2 mb-2 tracking-wide">
+                                  <CheckCircle className="w-5 h-5" />
+                                  <span className="font-semibold">Previous analysis available!</span>
+                                </p>
+                                <p className="text-sm text-gray-300 mb-3 tracking-wide">
+                                  {existingSearchData.totalCompetitorCount || existingSearchData.bestResult?.competitors?.length || 0} competitors analyzed • 
+                                  Keywords: {existingSearchData.searchTermsUsed?.join(', ') || 'various'}
+                                </p>
+                                <button
+                                  type="button"
+                                  className="w-full py-3 px-4 bg-gradient-to-r from-purple-600 to-green-600 hover:from-purple-700 hover:to-green-700 text-white font-semibold rounded-lg transition-all shadow-lg hover:shadow-purple-600/25 flex items-center justify-center gap-2 tracking-wide"
+                                  onClick={() => {
+                                    // Use the first search term from existing data
+                                    const firstKeyword = existingSearchData.searchTermsUsed?.[0] || 'hair salons';
+                                    setNiche(firstKeyword);
+                                    
+                                    // Format and show results immediately
+                                    const formattedData = {
+                                      business: {
+                                        ...existingSearchData.bestResult.business,
+                                        rating: existingSearchData.bestResult.business?.rating || 0,
+                                        review_count: existingSearchData.bestResult.business?.review_count || 0
+                                      },
+                                      competitors: (existingSearchData.bestResult.competitors || []).map((c: any) => ({
+                                        name: c.business_name || c.name || 'Competitor',
+                                        business_name: c.business_name || c.name || 'Competitor',
+                                        rank: c.rank || 999,
+                                        reviews: c.review_count || 0,
+                                        review_count: c.review_count || 0,
+                                        rating: c.rating || 0,
+                                        website: c.website || c.domain || '',
+                                        phone: c.phone || '',
+                                        address: c.street_address || '',
+                                        city: c.city || '',
+                                        state: c.state || '',
+                                        place_id: c.place_id || ''
+                                      })),
+                                      all_competitors: (existingSearchData.bestResult.competitors || []).map((c: any) => ({
+                                        name: c.business_name || c.name || 'Competitor',
+                                        business_name: c.business_name || c.name || 'Competitor',
+                                        rank: c.rank || 999,
+                                        reviews: c.review_count || 0,
+                                        review_count: c.review_count || 0,
+                                        rating: c.rating || 0,
+                                        website: c.website || c.domain || '',
+                                        phone: c.phone || '',
+                                        address: c.street_address || '',
+                                        city: c.city || '',
+                                        state: c.state || '',
+                                        place_id: c.place_id || ''
+                                      })),
+                                      top_competitors: (existingSearchData.bestResult.competitors || []).slice(0, 3).map((c: any) => ({
+                                        name: c.business_name || c.name || 'Competitor',
+                                        rank: c.rank || 999,
+                                        reviews: c.review_count || 0,
+                                        rating: c.rating || 0,
+                                        advantages: [],
+                                        website: c.website || c.domain || '',
+                                        phone: c.phone || ''
+                                      })),
+                                      ai_intelligence: existingSearchData.bestResult.business?.ai_intelligence || null,
+                                      market_analysis: existingSearchData.bestResult.market_analysis || null
+                                    };
+                                    
+                                    console.log('🔍 Formatted data being passed to ResultsSectionV2:', {
+                                      businessName: formattedData.business?.name,
+                                      rating: formattedData.business?.rating,
+                                      review_count: formattedData.business?.review_count,
+                                      businessObject: formattedData.business
+                                    });
+                                    handleAnalysisComplete(formattedData);
+                                  }}
+                                >
+                                  <Sparkles className="w-5 h-5" />
+                                  View Results for "{existingSearchData.searchTermsUsed?.[0] || 'hair salons'}"
+                                </button>
+                              </div>
+                              <p className="text-sm text-gray-400 text-center tracking-wide">
+                                — or enter a different keyword below to search —
                               </p>
                             </div>
                           )}
@@ -733,7 +879,54 @@ export default function HomePage() {
           }}
           onUseExisting={(data) => {
             setShowExistingSearchModal(false);
-            handleAnalysisComplete(data);
+            // Restructure the data to match what ResultsSectionV2 expects
+            const formattedData = {
+              business: {
+                ...data.business,
+                rating: data.business?.rating || 0,
+                review_count: data.business?.review_count || 0
+              },
+              competitors: (data.competitors || []).map((c: any) => ({
+                name: c.business_name || c.name || 'Competitor',
+                business_name: c.business_name || c.name || 'Competitor',
+                rank: c.rank || 999,
+                reviews: c.review_count || 0,
+                review_count: c.review_count || 0,
+                rating: c.rating || 0,
+                website: c.website || c.domain || '',
+                phone: c.phone || '',
+                address: c.street_address || '',
+                city: c.city || '',
+                state: c.state || '',
+                place_id: c.place_id || ''
+              })),
+              all_competitors: (data.competitors || []).map((c: any) => ({
+                name: c.business_name || c.name || 'Competitor',
+                business_name: c.business_name || c.name || 'Competitor',
+                rank: c.rank || 999,
+                reviews: c.review_count || 0,
+                review_count: c.review_count || 0,
+                rating: c.rating || 0,
+                website: c.website || c.domain || '',
+                phone: c.phone || '',
+                address: c.street_address || '',
+                city: c.city || '',
+                state: c.state || '',
+                place_id: c.place_id || ''
+              })),
+              top_competitors: (data.competitors || []).slice(0, 3).map((c: any) => ({
+                name: c.business_name || c.name || 'Competitor',
+                rank: c.rank || 999,
+                reviews: c.review_count || 0,
+                rating: c.rating || 0,
+                advantages: [],
+                website: c.website || c.domain || '',
+                phone: c.phone || ''
+              })),
+              ai_intelligence: data.business?.ai_intelligence || null,
+              market_analysis: data.market_analysis || null
+            };
+            handleAnalysisComplete(formattedData);
           }}
         />
 

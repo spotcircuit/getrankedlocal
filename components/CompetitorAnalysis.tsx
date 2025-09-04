@@ -1,5 +1,6 @@
 'use client';
 
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Trophy, TrendingUp, Star, Users, CheckCircle, XCircle, Calculator, DollarSign, Globe, Phone, Clock, MapPin, ArrowRight, Zap } from 'lucide-react';
 import { useState, useEffect } from 'react';
@@ -206,10 +207,10 @@ export default function CompetitorAnalysis({ competitors, businessName, business
                 const actualRank = (competitor as any).display_rank || (index + 4);
                 
                 return (
-                  <>
+                  <React.Fragment key={`competitor-${index}-${competitor.name}`}>
                     {/* Show separator if business is outside top 10 */}
                     {showSeparator && (
-                      <div key={`separator-${competitor.name}`} className="col-span-full text-center py-4 my-2">
+                      <div className="col-span-full text-center py-4 my-2">
                         <div className="flex items-center justify-center gap-4">
                           <div className="h-px bg-gray-700 flex-1"></div>
                           <span className="text-gray-500 text-sm px-4">
@@ -220,7 +221,6 @@ export default function CompetitorAnalysis({ competitors, businessName, business
                       </div>
                     )}
                     <motion.div
-                      key={competitor.name}
                       initial={{ opacity: 0, y: 20 }}
                       whileInView={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.5, delay: index * 0.1 }}
@@ -248,7 +248,7 @@ export default function CompetitorAnalysis({ competitors, businessName, business
                         )}
                       </div>
                     </motion.div>
-                  </>
+                  </React.Fragment>
                 );
               })}
             </div>

@@ -1,0 +1,334 @@
+/* CSS Reset - Mobile-First Foundation */
+
+/* ===== Box Model Reset ===== */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Root & Body Setup ===== */
+html {
+  /* Prevent font size adjustments on mobile orientation change */
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  
+  /* Enable smooth scrolling */
+  scroll-behavior: smooth;
+  
+  /* Set base font size for rem calculations */
+  font-size: 16px;
+  
+  /* Improve text rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  
+  /* Prevent horizontal scroll on mobile */
+  overflow-x: hidden;
+  
+  /* Full height */
+  height: 100%;
+}
+
+body {
+  /* Inherit from tokens */
+  font-family: var(--font-sans);
+  font-size: var(--text-base);
+  line-height: var(--leading-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  
+  /* Minimum height for proper layout */
+  min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for mobile */
+  
+  /* Prevent horizontal overflow */
+  overflow-x: hidden;
+  overflow-y: auto;
+  
+  /* Reset webkit tap highlight */
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* ===== Typography Reset ===== */
+h1, h2, h3, h4, h5, h6 {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+/* ===== Link Reset ===== */
+a {
+  color: inherit;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+a:active,
+a:hover {
+  outline-width: 0;
+}
+
+/* ===== List Reset ===== */
+ul,
+ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* ===== Form Elements Reset ===== */
+button,
+input,
+optgroup,
+select,
+textarea {
+  font-family: inherit;
+  font-size: 100%;
+  line-height: inherit;
+  color: inherit;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+button,
+input {
+  overflow: visible;
+}
+
+button,
+select {
+  text-transform: none;
+}
+
+button,
+[type="button"],
+[type="reset"],
+[type="submit"] {
+  -webkit-appearance: button;
+  appearance: button;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color: inherit;
+  
+  /* Ensure minimum touch target size on mobile */
+  min-height: var(--touch-target-min);
+  min-width: var(--touch-target-min);
+}
+
+button::-moz-focus-inner,
+[type="button"]::-moz-focus-inner,
+[type="reset"]::-moz-focus-inner,
+[type="submit"]::-moz-focus-inner {
+  border-style: none;
+  padding: 0;
+}
+
+/* ===== Input & Textarea Specific ===== */
+input,
+textarea,
+select {
+  /* Remove default styling */
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  
+  /* Ensure minimum touch target size on mobile */
+  min-height: var(--touch-target-min);
+  
+  /* Prevent zoom on focus (iOS) */
+  font-size: 16px;
+}
+
+textarea {
+  overflow: auto;
+  resize: vertical;
+}
+
+/* Remove spinner from number inputs */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* Search input reset */
+input[type="search"] {
+  -webkit-appearance: textfield;
+  outline-offset: -2px;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button {
+  -webkit-appearance: none;
+}
+
+/* ===== Media Elements Reset ===== */
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+img {
+  border-style: none;
+  /* Prevent image dragging on mobile */
+  -webkit-user-drag: none;
+  user-drag: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+svg {
+  overflow: hidden;
+  vertical-align: middle;
+}
+
+/* ===== Table Reset ===== */
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+td,
+th {
+  padding: 0;
+}
+
+/* ===== Details/Summary Reset ===== */
+details {
+  display: block;
+}
+
+summary {
+  display: list-item;
+  cursor: pointer;
+}
+
+/* ===== Dialog Reset ===== */
+dialog {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+/* ===== Fieldset Reset ===== */
+fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  min-width: 0;
+}
+
+legend {
+  padding: 0;
+  display: table;
+  max-width: 100%;
+  white-space: normal;
+}
+
+/* ===== Progress Reset ===== */
+progress {
+  vertical-align: baseline;
+}
+
+/* ===== Hidden Attribute ===== */
+[hidden] {
+  display: none !important;
+}
+
+/* ===== Disabled State ===== */
+[disabled] {
+  cursor: not-allowed !important;
+  opacity: 0.6 !important;
+}
+
+/* ===== Focus Visible (Accessibility) ===== */
+:focus-visible {
+  outline: 2px solid var(--color-brand-primary);
+  outline-offset: 2px;
+}
+
+/* Remove focus outline for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ===== Selection Styles ===== */
+::selection {
+  background-color: var(--color-purple-500);
+  color: white;
+}
+
+::-moz-selection {
+  background-color: var(--color-purple-500);
+  color: white;
+}
+
+/* ===== Scrollbar Styles (Webkit) ===== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-purple-500);
+  background: linear-gradient(135deg, var(--color-purple-500) 0%, var(--color-blue-500) 100%);
+  border-radius: var(--radius-md);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-purple-600);
+}
+
+/* ===== Print Styles ===== */
+@media print {
+  *,
+  *::before,
+  *::after {
+    background: transparent !important;
+    color: #000 !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  a,
+  a:visited {
+    text-decoration: underline;
+  }
+
+  img {
+    max-width: 100% !important;
+  }
+
+  @page {
+    margin: 2cm;
+  }
+}

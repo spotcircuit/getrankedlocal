@@ -47,52 +47,169 @@ export async function GET(req: Request) {
     // Data holders
     let lead: any = null;
     let currentRank: number | null = null;
-    let collectionDir = `med_spas_${collection.replace(/ /g, '_')}_${state}`;
+    let collectionDir: string | null = null;
+    let searchDestination: string | null = null;
     let allBusinesses: any[] = [];
     let foundByName = false;
 
-    // If id is provided, fetch the lead directly and derive its source_directory
+    // If id is provided, fetch the lead directly and get its collection info
     if (idParam) {
       const idNum = Number(idParam);
       if (!Number.isNaN(idNum)) {
         const rows = await sql`SELECT 
-            id::int AS id, business_name, rating, review_count::int AS review_count,
-            city, state, website, phone, street_address,
-            owner_name, medical_director_name,
-            search_niche, lead_score, source_directory,
-            instagram_handle, facebook_handle, twitter_handle,
-            tiktok_handle, youtube_handle
-          FROM leads WHERE id = ${idNum} LIMIT 1`;
+            l.id::int AS id, l.business_name, l.rating, l.review_count::int AS review_count,
+            l.city, l.state, l.website, l.phone, l.street_address,
+            l.owner_name, l.medical_director_name,
+            l.lead_score,
+            lc.search_collection,
+            lc.search_destination,
+            l.additional_data
+          FROM leads l
+          LEFT JOIN lead_collections lc ON l.id = lc.lead_id
+          WHERE l.id = ${idNum} 
+          LIMIT 1`;
         lead = rows[0] || null;
-        if (lead?.source_directory) {
-          collectionDir = String(lead.source_directory);
+        if (lead?.search_collection) {
+          collectionDir = String(lead.search_collection);
+          searchDestination = String(lead.search_destination);
         }
       }
     }
+    
+    // If no collection found yet, try to find it from the city/state parameters
+    if (!collectionDir && collection && state) {
+      // Format search destination to match what's in the database
+      searchDestination = `${collection.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ')}, ${state}`;
+      
+      // Find what collection exists for this city/state and niche
+      const collectionRows = await sql`
+        SELECT DISTINCT search_collection, search_term 
+        FROM lead_collections 
+        WHERE search_destination = ${searchDestination}
+          AND (search_term = ${niche} OR search_collection LIKE ${'%' + niche + '%'})
+        LIMIT 1
+      `;
+      
+      if (collectionRows[0]) {
+        collectionDir = collectionRows[0].search_collection;
+        // If the search_term doesn't match the collection, use the search_term for prospects
+        if (collectionRows[0].search_term && collectionRows[0].search_term !== collectionDir) {
+          console.log(`Collection mismatch: collection="${collectionDir}" but search_term="${collectionRows[0].search_term}"`);
+        }
+      } else {
+        // No collection found - use the niche as the collection name
+        // This allows us to still show prospects even if no leads exist
+        collectionDir = niche;
+        console.log(`No collection found for ${niche} in ${searchDestination}, using niche as collection`);
+      }
+    }
 
-    console.log('Looking for business in collection:', collectionDir);
+    console.log('Looking for business in collection:', collectionDir, 'destination:', searchDestination);
+    console.log('Niche param:', niche);
+    console.log('Collection search term for prospects:', collectionDir === 'medspas' ? 'med spas' : collectionDir?.replace(/-/g, ' ') || niche);
 
-    // Load the collection's businesses after determining the directory
+    // Load the collection's businesses if we have a destination
+    if (!searchDestination) {
+      return NextResponse.json({ 
+        error: 'Location not specified',
+        details: `Please provide city and state parameters`,
+        searchDestination,
+        collectionDir
+      }, { status: 400 });
+    }
+    
+    // If no collection found, we'll still try to load prospects
+    if (!collectionDir) {
+      collectionDir = niche; // Use the niche as collection fallback
+      console.log(`Using niche "${niche}" as collection fallback`);
+    }
+    
+    // Get ALL businesses - both leads and prospects
     allBusinesses = await sql`
-      SELECT 
-        id::int AS id, business_name, CAST(rating AS float) AS rating, review_count::int AS review_count,
-        city, state, website, phone, street_address, 
-        owner_name, medical_director_name,
-        search_niche, lead_score, source_directory,
-        instagram_handle, facebook_handle, twitter_handle,
-        tiktok_handle, youtube_handle,
+      WITH combined_businesses AS (
+        -- Get leads (promoted businesses)
+        SELECT 
+          CAST(l.id AS VARCHAR) AS id,
+          l.place_id,
+          l.business_name, 
+          CAST(l.rating AS float) AS rating, 
+          l.review_count::int AS review_count,
+          l.city, 
+          l.state, 
+          l.website, 
+          l.phone, 
+          l.street_address, 
+          l.owner_name, 
+          l.medical_director_name,
+          l.lead_score,
+          l.additional_data,
+          'lead' as business_type
+        FROM leads l
+        INNER JOIN lead_collections lc ON l.id = lc.lead_id
+        WHERE lc.search_collection = ${collectionDir}
+          AND lc.search_destination = ${searchDestination}
+          AND l.business_name !~* 'sponsored'
+        
+        UNION ALL
+        
+        -- Get prospects (not yet promoted)
+        SELECT 
+          p.place_id as id,  -- prospects use place_id as primary key
+          p.place_id,
+          p.business_name,
+          CAST(p.rating AS float) AS rating,
+          p.review_count::int AS review_count,
+          p.city,
+          p.state,
+          p.website,
+          p.phone,
+          p.street_address,
+          p.owner_name,
+          NULL as medical_director_name,
+          NULL as lead_score,
+          p.additional_data,
+          'prospect' as business_type
+        FROM prospects p
+        WHERE (
+            -- Handle various niche formats - be very flexible with matching
+            LOWER(p.search_niche) IN (
+              LOWER(${niche}),
+              LOWER(${collectionDir}),
+              LOWER(${collectionDir.replace(/-/g, ' ')}),
+              CASE 
+                WHEN LOWER(${niche}) = 'medspas' THEN 'med spas'
+                WHEN LOWER(${niche}) = 'med spas' THEN 'medspas'
+                WHEN LOWER(${niche}) = 'marketing' THEN 'marketing'
+                WHEN LOWER(${niche}) = 'marketing agencies' THEN 'marketing'
+                WHEN LOWER(${niche}) = 'marketing-agencies' THEN 'marketing'
+                WHEN LOWER(${niche}) = 'hair salons' THEN 'hair salons'
+                WHEN LOWER(${niche}) = 'hairsalons' THEN 'hair salons'
+                WHEN LOWER(${niche}) = 'hair-salons' THEN 'hair salons'
+                ELSE LOWER(${niche})
+              END
+            )
+          )
+          AND LOWER(p.search_city) = LOWER(${searchDestination.split(',')[0].trim()})
+          AND p.search_state = ${searchDestination.split(',')[1]?.trim() || state}
+          AND p.business_name !~* 'sponsored'
+          AND (p.enrichment_status != 'promoted' OR p.enrichment_status IS NULL)
+          -- Exclude if already in leads
+          AND NOT EXISTS (
+            SELECT 1 FROM leads l WHERE l.place_id = p.place_id
+          )
+      )
+      SELECT *,
         (ROW_NUMBER() OVER (
           ORDER BY review_count DESC NULLS LAST, rating DESC NULLS LAST
         ))::int as collection_rank
-      FROM leads
-      WHERE source_directory = ${collectionDir}
-        AND business_name !~* 'sponsored'
+      FROM combined_businesses
       ORDER BY collection_rank
     `;
 
     // If lead was fetched by id, compute its rank within this collection
     if (lead && !currentRank) {
-      const found = allBusinesses.find(b => Number(b.id) === Number(lead.id));
+      // Lead IDs are numbers, but in the combined query they're strings
+      const found = allBusinesses.find(b => String(b.id) === String(lead.id));
       currentRank = typeof found?.collection_rank === 'number' ? found.collection_rank : (found ? Number(found.collection_rank) : null);
     }
 
@@ -105,7 +222,9 @@ export async function GET(req: Request) {
                    ORDER BY review_count::int DESC NULLS LAST, CAST(rating AS float) DESC NULLS LAST
                  ) AS rnk
           FROM leads
-          WHERE source_directory = ${collectionDir}
+          INNER JOIN lead_collections lc ON leads.id = lc.lead_id
+          WHERE lc.search_collection = ${collectionDir}
+            AND lc.search_destination = ${searchDestination}
             AND business_name !~* 'sponsored'
         ) t WHERE id = ${Number(lead.id)}
         LIMIT 1
@@ -116,9 +235,14 @@ export async function GET(req: Request) {
     }
 
     if (!lead && name) {
+      // Handle URL slugs and variations
+      const slugToName = (s: string) => s.replace(/-/g, ' ').trim();
+      const normalizedSearchName = slugToName(name.toLowerCase());
+      
       // First try exact match (case insensitive)
       for (const biz of allBusinesses) {
-        if (biz.business_name.toLowerCase() === name.toLowerCase()) {
+        if (biz.business_name.toLowerCase() === name.toLowerCase() ||
+            biz.business_name.toLowerCase() === normalizedSearchName) {
           lead = biz;
           currentRank = biz.collection_rank;
           foundByName = true;
@@ -126,12 +250,16 @@ export async function GET(req: Request) {
         }
       }
       
-      // If no exact match, try partial match
+      // If no exact match, try with slug variations
       if (!lead) {
         for (const biz of allBusinesses) {
-          // Handle URL slugs like "-ed-pa" which might be part of a business name
-          const searchTerm = name.toLowerCase().replace(/-/g, ' ').trim();
-          if (searchTerm.length >= 2 && biz.business_name.toLowerCase().includes(searchTerm)) {
+          const bizNameLower = biz.business_name.toLowerCase();
+          const bizNameSlug = bizNameLower.replace(/[^a-z0-9]+/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+          
+          // Check if the slug matches or if the normalized name matches
+          if (bizNameSlug === name.toLowerCase() ||
+              bizNameLower.replace(/[^a-z0-9]+/g, '') === name.toLowerCase().replace(/-/g, '') ||
+              (normalizedSearchName.length >= 2 && bizNameLower.includes(normalizedSearchName))) {
             lead = biz;
             currentRank = biz.collection_rank;
             foundByName = true;

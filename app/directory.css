@@ -1,0 +1,252 @@
+/* Directory-specific styles - Dark theme */
+
+/* Root directory pages should have dark background */
+.directory-page {
+  background: #000000 !important;
+  color: #ffffff !important;
+  min-height: 100vh;
+}
+
+/* Override the main element background */
+.directory-page main {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+/* Override section backgrounds */
+.directory-page section {
+  background: transparent !important;
+}
+
+/* Fix text colors */
+.directory-page h1,
+.directory-page h2, 
+.directory-page h3,
+.directory-page h4,
+.directory-page h5,
+.directory-page h6 {
+  color: #ffffff !important;
+}
+
+.directory-page p {
+  color: #d1d5db !important;
+}
+
+/* Fix the hero sections */
+.directory-page .hero-section {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+}
+
+.directory-page .hero-section h1,
+.directory-page .hero-section p {
+  color: white !important;
+}
+
+/* Collection cards */
+.directory-collection-card {
+  background: rgba(31, 41, 55, 0.5) !important;
+  border: 1px solid rgba(75, 85, 99, 0.3) !important;
+  border-radius: 12px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.directory-collection-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+  border-color: #8b5cf6 !important;
+  background: rgba(31, 41, 55, 0.8) !important;
+}
+
+/* Business cards */
+.directory-business-card {
+  background: rgba(31, 41, 55, 0.5) !important;
+  border: 1px solid rgba(75, 85, 99, 0.3) !important;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.directory-business-card:hover {
+  box-shadow: 0 10px 20px rgba(139, 92, 246, 0.3);
+  border-color: #8b5cf6 !important;
+}
+
+/* Search bars */
+.directory-search-input {
+  background: rgba(31, 41, 55, 0.8) !important;
+  border: 2px solid rgba(75, 85, 99, 0.5) !important;
+  color: #ffffff !important;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  font-size: 16px;
+}
+
+.directory-search-input:focus {
+  border-color: #8b5cf6 !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+  background: rgba(31, 41, 55, 1) !important;
+}
+
+.directory-search-input::placeholder {
+  color: #9ca3af !important;
+}
+
+/* Buttons */
+.directory-button-primary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+  color: white !important;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.directory-button-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+.directory-button-secondary {
+  background: transparent !important;
+  color: #a78bfa !important;
+  border: 2px solid #8b5cf6 !important;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.directory-button-secondary:hover {
+  background: rgba(139, 92, 246, 0.1) !important;
+}
+
+/* Stats section */
+.directory-stats {
+  background: rgba(31, 41, 55, 0.5) !important;
+  border-radius: 12px;
+  padding: 2rem;
+  margin: 2rem 0;
+  backdrop-filter: blur(10px);
+}
+
+.directory-stat-number {
+  color: #a78bfa !important;
+  font-size: 2rem;
+  font-weight: 700;
+}
+
+.directory-stat-label {
+  color: #9ca3af !important;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+/* Loading states */
+.directory-skeleton {
+  background: linear-gradient(90deg, #1f2937 25%, #374151 50%, #1f2937 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 4px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .directory-page {
+    padding: 0;
+  }
+  
+  .directory-collection-card {
+    padding: 1rem;
+  }
+  
+  .directory-business-card {
+    padding: 0.75rem;
+  }
+}
+
+/* Fix gradient backgrounds to be lighter */
+.directory-page .bg-gradient-to-r {
+  opacity: 0.1 !important;
+}
+
+.directory-page .bg-gradient-to-br {
+  opacity: 0.05 !important;
+}
+
+/* Navigation */
+.directory-nav {
+  background: rgba(17, 24, 39, 0.95) !important;
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(75, 85, 99, 0.3) !important;
+  padding: 1rem;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+}
+
+/* Breadcrumbs */
+.directory-breadcrumbs {
+  color: #9ca3af !important;
+  font-size: 0.875rem;
+  padding: 1rem 0;
+}
+
+.directory-breadcrumbs a {
+  color: #a78bfa !important;
+  text-decoration: none;
+}
+
+.directory-breadcrumbs a:hover {
+  text-decoration: underline;
+  color: #c4b5fd !important;
+}
+
+/* Filter panel */
+.directory-filter-panel {
+  background: rgba(31, 41, 55, 0.5) !important;
+  border: 1px solid rgba(75, 85, 99, 0.3) !important;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  backdrop-filter: blur(10px);
+}
+
+/* Grid layout */
+.directory-grid {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .directory-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .directory-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1280px) {
+  .directory-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}

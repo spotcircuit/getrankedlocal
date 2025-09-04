@@ -1,0 +1,94 @@
+{
+  "timestamp": "2025-09-02T14:40:21.785Z",
+  "testedUrls": [
+    "/directory",
+    "/directory/medspas",
+    "/directory/hair-salons",
+    "/directory/marketing-agencies",
+    "/directory/mexican-restaurants",
+    "/directory/plumber",
+    "/directory/roofing",
+    "/directory/seo-services",
+    "/directory/dumpster-rental",
+    "/directory/waste-removal"
+  ],
+  "issues": [
+    {
+      "type": "broken-image",
+      "url": "/directory",
+      "src": "http://172.20.240.1:3001/_next/image?url=%2Ftrust-authority-badges.webp&w=1920&q=75"
+    },
+    {
+      "type": "console-error",
+      "url": "http://172.20.240.1:3001/directory",
+      "message": "Error fetching directory data: JSHandle@error"
+    },
+    {
+      "type": "console-error",
+      "url": "http://172.20.240.1:3001/directory",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console-error",
+      "url": "http://172.20.240.1:3001/directory",
+      "message": "Error fetching directory data: JSHandle@error"
+    },
+    {
+      "type": "console-error",
+      "url": "http://172.20.240.1:3001/directory",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+    },
+    {
+      "type": "console-error",
+      "url": "http://172.20.240.1:3001/directory",
+      "message": "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+    }
+  ],
+  "brokenLinks": [
+    {
+      "url": "http://172.20.240.1:3001/",
+      "text": "Breadcrumb: Home",
+      "from": "http://172.20.240.1:3001/directory/plumber",
+      "error": "net::ERR_CONNECTION_REFUSED at http://172.20.240.1:3001/"
+    },
+    {
+      "url": "http://172.20.240.1:3001/directory",
+      "text": "Breadcrumb: Directory",
+      "from": "http://172.20.240.1:3001/directory/plumber",
+      "error": "net::ERR_CONNECTION_REFUSED at http://172.20.240.1:3001/directory"
+    },
+    {
+      "url": "http://172.20.240.1:3001/directory/plumber",
+      "text": "1 businessesplumber1 locations • 1 statesPopular in:TX (1)Explore plumber",
+      "error": "Protocol error (Page.captureScreenshot): Cannot take screenshot with 0 width."
+    },
+    {
+      "url": "http://172.20.240.1:3001/directory/roofing",
+      "text": "1 businessesroofing1 locations • 1 statesPopular in:TX (1)Explore roofing",
+      "error": "net::ERR_CONNECTION_REFUSED at http://172.20.240.1:3001/directory/roofing"
+    },
+    {
+      "url": "http://172.20.240.1:3001/directory/seo-services",
+      "text": "1 businessesseo-services1 locations • 1 statesPopular in:TX (1)Explore seo-services",
+      "error": "net::ERR_CONNECTION_REFUSED at http://172.20.240.1:3001/directory/seo-services"
+    },
+    {
+      "url": "http://172.20.240.1:3001/directory/dumpster-rental",
+      "text": "1 businessesdumpster-rental1 locations • 1 statesPopular in:TX (1)Explore dumpster-rental",
+      "error": "net::ERR_CONNECTION_REFUSED at http://172.20.240.1:3001/directory/dumpster-rental"
+    },
+    {
+      "url": "http://172.20.240.1:3001/directory/waste-removal",
+      "text": "1 businesseswaste-removal1 locations • 1 statesPopular in:TX (1)Explore waste-removal",
+      "error": "net::ERR_CONNECTION_REFUSED at http://172.20.240.1:3001/directory/waste-removal"
+    }
+  ],
+  "summary": {
+    "totalIssues": 6,
+    "totalBrokenLinks": 7,
+    "issueTypes": {
+      "broken-image": 1,
+      "console-error": 5
+    }
+  }
+}

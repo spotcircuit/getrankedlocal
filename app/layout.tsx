@@ -26,8 +26,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.className} overflow-x-hidden`}
-        style={{ backgroundColor: '#000000', color: '#ffffff', overflowX: 'hidden' }}
+        className={inter.className}
+        style={{ backgroundColor: '#000000', color: '#ffffff', minHeight: '100vh' }}
       >
         <script
           type="application/ld+json"

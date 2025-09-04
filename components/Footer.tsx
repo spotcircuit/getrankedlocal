@@ -160,13 +160,13 @@ export default function Footer() {
         
         {/* Trust Badges Section - Centered */}
         <div className="mt-12 pt-8 border-t border-gray-800/30">
-          <div className="flex justify-center">
+          <div className="flex justify-center px-4">
             <Image
               src="/trust-authority-badges.webp"
               alt="Certifications and trust badges"
               width={800}
               height={200}
-              className="h-14 sm:h-16 w-auto object-contain opacity-60 hover:opacity-80 transition-opacity duration-300"
+              className="h-14 sm:h-16 w-auto max-w-full object-contain opacity-60 hover:opacity-80 transition-opacity duration-300"
             />
           </div>
         </div>

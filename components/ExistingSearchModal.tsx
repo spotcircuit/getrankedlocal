@@ -36,8 +36,8 @@ export default function ExistingSearchModal({
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
       
-      {/* Modal */}
-      <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-2xl shadow-2xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto border border-gray-800">
+      {/* Modal - Fixed width to be responsive */}
+      <div className="relative bg-gradient-to-br from-gray-900 to-black rounded-2xl shadow-2xl w-[90%] max-w-3xl mx-4 max-h-[85vh] overflow-y-auto border border-gray-800">
         {/* Header */}
         <div className="sticky top-0 bg-gray-900/95 backdrop-blur-sm p-6 border-b border-gray-800">
           <button

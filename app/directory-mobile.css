@@ -1,0 +1,712 @@
+/* Mobile-First Directory CSS Architecture */
+/* Extends globals.css with directory-specific optimizations */
+
+/* ===================================
+   CUSTOM PROPERTIES (CSS VARIABLES)
+   =================================== */
+:root {
+  /* Breakpoints */
+  --mobile-sm: 320px;
+  --mobile-lg: 480px;
+  --tablet: 768px;
+  --desktop: 1024px;
+  --desktop-lg: 1440px;
+  
+  /* Directory Spacing */
+  --dir-spacing-xs: 4px;
+  --dir-spacing-sm: 8px;
+  --dir-spacing-md: 12px;
+  --dir-spacing-lg: 16px;
+  --dir-spacing-xl: 20px;
+  --dir-spacing-2xl: 24px;
+  
+  /* Touch Targets */
+  --touch-target-min: 44px;
+  --touch-target-comfortable: 48px;
+  
+  /* Z-index scale */
+  --z-header: 100;
+  --z-mobile-nav: 1000;
+  --z-modal: 2000;
+  --z-tooltip: 3000;
+}
+
+/* ===================================
+   ENHANCED MOBILE BREAKPOINTS
+   =================================== */
+
+/* Small Mobile: 320px - 479px */
+@media (min-width: 320px) {
+  .sm\:text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+  .sm\:text-base { font-size: 1rem; line-height: 1.5rem; }
+  .sm\:p-2 { padding: 0.5rem; }
+  .sm\:p-3 { padding: 0.75rem; }
+  .sm\:gap-1 { gap: 0.25rem; }
+  .sm\:gap-2 { gap: 0.5rem; }
+  .sm\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+}
+
+/* Large Mobile: 480px - 767px */
+@media (min-width: 480px) {
+  .mobile\:text-lg { font-size: 1.125rem; line-height: 1.75rem; }
+  .mobile\:p-4 { padding: 1rem; }
+  .mobile\:gap-3 { gap: 0.75rem; }
+  .mobile\:gap-4 { gap: 1rem; }
+  .mobile\:grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+  .mobile\:flex-row { flex-direction: row; }
+  .mobile\:justify-between { justify-content: space-between; }
+}
+
+/* ===================================
+   DIRECTORY LAYOUT COMPONENTS
+   =================================== */
+
+/* Directory Container - Main wrapper for directory pages */
+.directory-container {
+  min-height: 100vh;
+  background: #ffffff;
+  position: relative;
+  overflow-x: hidden;
+  padding-bottom: 80px; /* Space for mobile nav */
+}
+
+@media (min-width: 1024px) {
+  .directory-container {
+    padding-bottom: 0;
+  }
+}
+
+/* Directory Header - Sticky header with search */
+.directory-header {
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  color: #1a1a1a;
+  padding: var(--dir-spacing-md);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-header);
+  border-bottom: 1px solid #e0e0e0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 480px) {
+  .directory-header {
+    padding: var(--dir-spacing-lg);
+  }
+}
+
+@media (min-width: 768px) {
+  .directory-header {
+    padding: var(--dir-spacing-xl);
+  }
+}
+
+/* Directory Search Bar */
+.directory-search {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  font-size: 16px; /* Prevents zoom on iOS */
+  width: 100%;
+  max-width: 400px;
+  margin: var(--dir-spacing-md) auto 0;
+  display: block;
+  color: #1a1a1a;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.directory-search:focus {
+  outline: none;
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+@media (min-width: 768px) {
+  .directory-search {
+    max-width: 500px;
+  }
+}
+
+/* ===================================
+   BUSINESS LISTINGS GRID
+   =================================== */
+
+/* Directory Grid - Responsive grid for business listings */
+.directory-grid {
+  display: grid;
+  gap: var(--dir-spacing-sm);
+  padding: var(--dir-spacing-md);
+  /* Mobile: Single column */
+  grid-template-columns: 1fr;
+  max-width: 100%;
+  margin: 0 auto;
+  background: transparent;
+}
+
+/* Large Mobile */
+@media (min-width: 480px) {
+  .directory-grid {
+    gap: var(--dir-spacing-md);
+    padding: var(--dir-spacing-lg);
+  }
+}
+
+/* Tablet: Two columns */
+@media (min-width: 768px) {
+  .directory-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--dir-spacing-lg);
+    padding: var(--dir-spacing-xl);
+    max-width: 800px;
+  }
+}
+
+/* Desktop: Three columns */
+@media (min-width: 1024px) {
+  .directory-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--dir-spacing-xl);
+    padding: var(--dir-spacing-2xl);
+    max-width: 1200px;
+  }
+}
+
+/* Large Desktop: Four columns */
+@media (min-width: 1440px) {
+  .directory-grid {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1400px;
+  }
+}
+
+/* ===================================
+   BUSINESS CARD COMPONENT
+   =================================== */
+
+/* Business Card - Individual business listing */
+.business-card {
+  background: rgba(31, 41, 55, 0.5);
+  border: 1px solid rgba(75, 85, 99, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  padding: var(--dir-spacing-lg);
+  transition: all 0.2s ease;
+  cursor: pointer;
+  position: relative;
+  min-height: var(--touch-target-min);
+  display: flex;
+  flex-direction: column;
+  gap: var(--dir-spacing-sm);
+  
+  /* Performance optimizations */
+  contain: layout style paint;
+  will-change: transform, box-shadow;
+  
+  /* Touch optimizations */
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.business-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  transform: translateY(-2px);
+}
+
+.business-card:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* Business Card Header */
+.business-card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--dir-spacing-sm);
+}
+
+/* Business Name */
+.business-name {
+  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.3;
+  margin: 0;
+  flex: 1;
+}
+
+/* Business Rating */
+.business-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+}
+
+.rating-stars {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  width: 14px;
+  height: 14px;
+  color: #FFB800;
+  fill: currentColor;
+}
+
+@media (min-width: 480px) {
+  .star {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+.rating-text {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-left: 4px;
+}
+
+.review-count {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  margin-left: 2px;
+}
+
+/* Business Details */
+.business-details {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.business-address {
+  font-size: 0.875rem;
+  color: #d1d5db;
+  line-height: 1.4;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.address-icon {
+  width: 14px;
+  height: 14px;
+  color: #9ca3af;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.business-phone {
+  font-size: 0.875rem;
+  color: #007AFF;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 500;
+}
+
+.business-phone:hover {
+  text-decoration: underline;
+}
+
+.phone-icon {
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+}
+
+/* Business Categories */
+.business-categories {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.category-tag {
+  background: #f0f0f0;
+  color: #666;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+/* ===================================
+   MOBILE NAVIGATION
+   =================================== */
+
+.mobile-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 1px solid #e0e0e0;
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  z-index: var(--z-mobile-nav);
+}
+
+.nav-items {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 12px;
+  min-width: var(--touch-target-min);
+  text-decoration: none;
+  color: #666;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: color 0.2s ease;
+  position: relative;
+}
+
+.nav-item:active {
+  color: #007AFF;
+}
+
+.nav-item.active {
+  color: #007AFF;
+}
+
+.nav-icon {
+  width: 20px;
+  height: 20px;
+  margin-bottom: 2px;
+  flex-shrink: 0;
+}
+
+/* Hide mobile nav on desktop */
+@media (min-width: 1024px) {
+  .mobile-nav {
+    display: none;
+  }
+}
+
+/* ===================================
+   DARK THEME FOR DIRECTORY
+   =================================== */
+
+/* Dark theme for directory pages */
+.directory-container main {
+  background: #000000 !important;
+  color: #ffffff !important;
+}
+
+.directory-container section {
+  background: transparent !important;
+}
+
+.directory-container h1,
+.directory-container h2,
+.directory-container h3,
+.directory-container h4 {
+  color: #ffffff !important;
+}
+
+.directory-container p {
+  color: #d1d5db !important;
+}
+
+.directory-container .text-gray-300 {
+  color: #d1d5db !important;
+}
+
+.directory-container .text-gray-400 {
+  color: #9ca3af !important;
+}
+
+.directory-container .text-gray-500 {
+  color: #6b7280 !important;
+}
+
+.directory-container .bg-black {
+  background: #000000 !important;
+}
+
+.directory-container .bg-gray-900\/30 {
+  background: rgba(17, 24, 39, 0.3) !important;
+}
+
+.directory-container .border-gray-700 {
+  border-color: #374151 !important;
+}
+
+.directory-container .border-gray-800 {
+  border-color: #1f2937 !important;
+}
+
+.directory-container .bg-gray-800\/50 {
+  background: rgba(31, 41, 55, 0.5) !important;
+}
+
+.directory-container .bg-gray-900\/50 {
+  background: rgba(17, 24, 39, 0.5) !important;
+}
+
+/* ===================================
+   FILTER & SORT PANEL
+   =================================== */
+
+.filter-panel {
+  background: white;
+  border-bottom: 1px solid #e0e0e0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+  position: relative;
+}
+
+.filter-panel.collapsed {
+  max-height: 60px;
+}
+
+.filter-panel.expanded {
+  max-height: 400px;
+}
+
+.filter-toggle {
+  background: #f8f9fa;
+  border: none;
+  padding: var(--dir-spacing-md) var(--dir-spacing-lg);
+  width: 100%;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: 500;
+  cursor: pointer;
+  min-height: var(--touch-target-min);
+  font-size: 1rem;
+  color: #333;
+}
+
+.filter-toggle:hover {
+  background: #e9ecef;
+}
+
+.filter-content {
+  padding: var(--dir-spacing-lg);
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--dir-spacing-md);
+}
+
+@media (min-width: 480px) {
+  .filter-content {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Tablet and up: Always expanded */
+@media (min-width: 768px) {
+  .filter-panel {
+    max-height: none !important;
+  }
+  
+  .filter-toggle {
+    display: none;
+  }
+  
+  .filter-content {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: var(--dir-spacing-xl);
+    padding: var(--dir-spacing-xl);
+  }
+}
+
+/* Filter Select Inputs */
+.filter-select {
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 14px;
+  width: 100%;
+  color: #333;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 8px center;
+  background-repeat: no-repeat;
+  background-size: 16px;
+  padding-right: 32px;
+}
+
+.filter-select:focus {
+  outline: none;
+  border-color: #007AFF;
+  box-shadow: 0 0 0 3px rgba(0, 122, 255, 0.1);
+}
+
+/* ===================================
+   LOADING & SKELETON STATES
+   =================================== */
+
+.skeleton-item {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-card {
+  background: white;
+  border-radius: 12px;
+  padding: var(--dir-spacing-lg);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.skeleton-title {
+  height: 20px;
+  margin-bottom: 12px;
+  border-radius: 4px;
+}
+
+.skeleton-text {
+  height: 14px;
+  margin-bottom: 8px;
+  border-radius: 4px;
+}
+
+.skeleton-text:last-child {
+  width: 60%;
+}
+
+/* Lazy Load Trigger */
+.lazy-load-trigger {
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f8f9fa;
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid #f3f3f3;
+  border-top: 3px solid #007AFF;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* ===================================
+   PERFORMANCE OPTIMIZATIONS
+   =================================== */
+
+/* Virtual Scrolling Container */
+.virtual-scroll-container {
+  height: 100vh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  position: relative;
+}
+
+.virtual-scroll-item {
+  contain: layout;
+  will-change: transform;
+}
+
+/* Image Loading Optimization */
+.business-image {
+  width: 100%;
+  height: 120px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: #f0f0f0;
+  transition: opacity 0.2s ease;
+}
+
+.business-image[data-loaded="false"] {
+  opacity: 0;
+}
+
+.business-image[data-loaded="true"] {
+  opacity: 1;
+}
+
+/* ===================================
+   ACCESSIBILITY IMPROVEMENTS
+   =================================== */
+
+/* Focus indicators */
+.business-card:focus {
+  outline: 3px solid #007AFF;
+  outline-offset: 2px;
+}
+
+.filter-select:focus,
+.directory-search:focus {
+  outline: 3px solid #007AFF;
+  outline-offset: 2px;
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .business-card {
+    border: 2px solid #000;
+  }
+  
+  .category-tag {
+    border: 1px solid #666;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .business-card,
+  .filter-panel,
+  .loading-spinner {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* ===================================
+   PRINT STYLES
+   =================================== */
+
+@media print {
+  .mobile-nav,
+  .filter-panel,
+  .directory-header {
+    display: none;
+  }
+  
+  .directory-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  
+  .business-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+  }
+}

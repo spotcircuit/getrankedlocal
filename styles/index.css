@@ -1,0 +1,49 @@
+/* Main CSS Entry Point - Import Order Matters */
+
+/* 1. Design Tokens (CSS Custom Properties) */
+@import './tokens.css';
+
+/* 2. CSS Reset */
+@import './reset.css';
+
+/* 3. Base Styles */
+@import './base.css';
+
+/* 4. Layout System */
+@import './layout.css';
+
+/* 5. Component Styles */
+@import './components/business-card.module.css';
+@import './components/directory-grid.module.css';
+@import './components/breadcrumb.module.css';
+@import './components/stats-bar.module.css';
+
+/* 6. Utility Classes (Last for highest specificity) */
+@import './utilities.css';
+
+/* ===== CSS Layers (for browsers that support @layer) ===== */
+@layer reset, tokens, base, layout, components, utilities;
+
+@layer reset {
+  /* Reset layer has lowest priority */
+}
+
+@layer tokens {
+  /* Design tokens */
+}
+
+@layer base {
+  /* Base element styles */
+}
+
+@layer layout {
+  /* Layout and grid systems */
+}
+
+@layer components {
+  /* Component-specific styles */
+}
+
+@layer utilities {
+  /* Utility classes have highest priority */
+}

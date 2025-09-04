@@ -1,0 +1,307 @@
+{
+  "timestamp": "2025-09-02T14:51:28.709Z",
+  "visualIssues": [
+    {
+      "page": "/directory",
+      "viewport": "Laptop",
+      "type": "card-inconsistency",
+      "description": "Collection cards have inconsistent heights",
+      "heights": [
+        60,
+        60,
+        60,
+        60,
+        186,
+        186,
+        186,
+        186,
+        186,
+        186,
+        186,
+        186,
+        186,
+        240,
+        240,
+        240,
+        222.875,
+        222.875,
+        222.875,
+        222.875
+      ]
+    },
+    {
+      "page": "/directory",
+      "viewport": "Laptop",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "SPAN"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Laptop",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Laptop",
+      "type": "excessive-padding",
+      "description": "Section 2 has excessive padding",
+      "padding": "48px top, 128px bottom"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Laptop",
+      "type": "loading-state",
+      "description": "Loading skeletons still visible",
+      "count": 9
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "card-visibility",
+      "description": "Too few collection cards visible without scrolling",
+      "visibleCards": 0,
+      "totalCards": 9
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "SPAN"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Tablet",
+      "type": "excessive-padding",
+      "description": "Section 2 has excessive padding",
+      "padding": "48px top, 128px bottom"
+    },
+    {
+      "page": "/directory/medspas",
+      "viewport": "Tablet",
+      "type": "search-missing",
+      "description": "No search functionality on collection page"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "card-visibility",
+      "description": "Too few collection cards visible without scrolling",
+      "visibleCards": 0,
+      "totalCards": 9
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "SPAN"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "text-too-small",
+      "description": "Text too small on mobile: \"© 2025 GetRankedLocal. All rig...\"",
+      "fontSize": 12
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "low-contrast",
+      "description": "Gray text on dark background may have contrast issues",
+      "element": "P"
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "text-too-small",
+      "description": "Text too small on mobile: \"Powered by SpotCircuit AI...\"",
+      "fontSize": 12
+    },
+    {
+      "page": "/directory",
+      "viewport": "Mobile",
+      "type": "excessive-padding",
+      "description": "Section 2 has excessive padding",
+      "padding": "48px top, 128px bottom"
+    },
+    {
+      "page": "/directory/medspas",
+      "viewport": "Mobile",
+      "type": "search-missing",
+      "description": "No search functionality on collection page"
+    }
+  ],
+  "layoutRecommendations": [
+    "Ensure all collection cards have consistent height for better visual alignment",
+    "Reduce padding on section 2 to improve content density",
+    "Reduce vertical spacing to show more cards above the fold"
+  ],
+  "flowImprovements": [
+    "Add clear call-to-action buttons on state cards",
+    "Add search/filter functionality to help users find specific locations",
+    "Add category filters or grouping for easier navigation with many collections",
+    "Add clear instructions or helper text to guide users",
+    "Consider adding a back button for easier navigation"
+  ],
+  "priorityFixes": [
+    "1. Fix \"No collections found\" empty state - ensure API returns fallback data",
+    "2. Reduce hero section height to show more content above the fold",
+    "3. Improve mobile responsiveness - stack cards vertically on small screens",
+    "4. Add search/filter functionality to collection pages",
+    "5. Enhance breadcrumb navigation with complete trail",
+    "6. Fix contrast issues with gray text on dark backgrounds",
+    "7. Add loading states that resolve properly",
+    "8. Implement proper error handling with user-friendly messages"
+  ],
+  "summary": {
+    "totalIssues": 35,
+    "issueTypes": [
+      "card-inconsistency",
+      "low-contrast",
+      "excessive-padding",
+      "loading-state",
+      "card-visibility",
+      "search-missing",
+      "text-too-small"
+    ],
+    "recommendationCount": 3,
+    "flowImprovementCount": 5
+  }
+}

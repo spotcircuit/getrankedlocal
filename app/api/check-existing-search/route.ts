@@ -106,6 +106,83 @@ export async function POST(request: NextRequest) {
       return new Date(current.created_at) > new Date(best.created_at) ? current : best;
     }, existingSearches[0]);
 
+    // Get the target business details from prospects or leads table
+    let targetBusinessDetails = null;
+    if (bestSearch.target_business_place_id) {
+      // First check if it's in search_prospects as the target business
+      const targetFromSearch = await sql`
+        SELECT 
+          p.*,
+          sp.rank
+        FROM search_prospects sp
+        JOIN prospects p ON p.place_id = sp.prospect_place_id
+        WHERE sp.search_id = ${bestSearch.id}
+          AND sp.is_target_business = true
+        LIMIT 1
+      `;
+      
+      if (targetFromSearch.length > 0) {
+        targetBusinessDetails = targetFromSearch[0];
+        console.log('📊 Found target business in search_prospects table:', {
+          name: targetBusinessDetails.business_name,
+          rating: targetBusinessDetails.rating,
+          review_count: targetBusinessDetails.review_count
+        });
+      } else {
+        // Try leads table (has more enriched data)
+        const leadResult = await sql`
+          SELECT 
+            business_name,
+            rating,
+            review_count,
+            website,
+            phone,
+            street_address,
+            city,
+            state
+          FROM leads
+          WHERE place_id = ${bestSearch.target_business_place_id}
+          LIMIT 1
+        `;
+        
+        if (leadResult.length > 0) {
+          targetBusinessDetails = leadResult[0];
+          console.log('📊 Found target business in leads table:', {
+            name: targetBusinessDetails.business_name,
+            rating: targetBusinessDetails.rating,
+            review_count: targetBusinessDetails.review_count
+          });
+        } else {
+          // Fall back to prospects table
+          const prospectResult = await sql`
+            SELECT 
+              business_name,
+              rating,
+              review_count,
+              website,
+              phone,
+              street_address,
+              city,
+              state
+            FROM prospects
+            WHERE place_id = ${bestSearch.target_business_place_id}
+            LIMIT 1
+          `;
+          
+          if (prospectResult.length > 0) {
+            targetBusinessDetails = prospectResult[0];
+            console.log('📊 Found target business in prospects table:', {
+              name: targetBusinessDetails.business_name,
+              rating: targetBusinessDetails.rating,
+              review_count: targetBusinessDetails.review_count
+            });
+          } else {
+            console.log('⚠️ Target business not found in any table for place_id:', bestSearch.target_business_place_id);
+          }
+        }
+      }
+    }
+
     // Get competitors for the best search (limited sample for display)
     const competitors = await sql`
       SELECT 
@@ -151,6 +228,15 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Log the business data we're about to send
+    console.log('📤 Business data being sent in response:', {
+      name: bestSearch.target_business_name,
+      place_id: bestSearch.target_business_place_id,
+      rating: targetBusinessDetails?.rating || 0,
+      review_count: targetBusinessDetails?.review_count || 0,
+      targetBusinessDetails: targetBusinessDetails
+    });
+
     const response = {
       found: true,
       searches: existingSearches.map(s => ({
@@ -171,6 +257,13 @@ export async function POST(request: NextRequest) {
           name: bestSearch.target_business_name,
           place_id: bestSearch.target_business_place_id,
           rank: bestSearch.target_business_rank,
+          rating: targetBusinessDetails?.rating || 0,
+          review_count: targetBusinessDetails?.review_count || 0,
+          website: targetBusinessDetails?.website || bestSearch.lead_domain,
+          phone: targetBusinessDetails?.phone,
+          address: targetBusinessDetails?.street_address,
+          city: targetBusinessDetails?.city,
+          state: targetBusinessDetails?.state,
           email: bestSearch.lead_email,
           domain: bestSearch.lead_domain,
           owner: bestSearch.lead_owner,

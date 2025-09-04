@@ -104,7 +104,7 @@ export default function IntakeModal({
     <div className="fixed inset-0 overflow-y-auto isolate" role="dialog" aria-modal="true" style={{ zIndex: 2147483647 }}>
       <div className="absolute inset-0 z-0 bg-black/90 backdrop-blur-sm" onClick={onClose} />
       <div className="relative z-10 flex items-center justify-center px-4 py-6 sm:py-8" style={{ minHeight: '100dvh' }}>
-        <div className="relative z-10" style={{ width: '90%', maxWidth: '650px' }} onClick={(e) => e.stopPropagation()}>
+        <div className="relative z-10 w-[90%] max-w-2xl" onClick={(e) => e.stopPropagation()}>
           <div className="absolute inset-0 z-0 pointer-events-none bg-gradient-to-r from-purple-600/20 to-blue-600/20 blur-3xl" />
           <div className="relative z-10 bg-gray-900 rounded-2xl shadow-2xl border border-gray-800 overflow-hidden">
             <div className="h-1 bg-gradient-to-r from-purple-600 to-blue-600" />

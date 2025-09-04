@@ -1,0 +1,220 @@
+/* Breadcrumb Component - Mobile-First CSS Module */
+
+.container {
+  width: 100%;
+  background: rgba(17, 24, 39, 0.5);
+  backdrop-filter: blur(12px);
+  border-bottom: var(--border-1) solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: var(--z-30);
+}
+
+.wrapper {
+  max-width: var(--container-xl);
+  margin: 0 auto;
+  padding: var(--space-3) var(--container-padding-mobile);
+}
+
+@media (min-width: 768px) {
+  .wrapper {
+    padding: var(--space-3) var(--container-padding-tablet);
+  }
+}
+
+@media (min-width: 1024px) {
+  .wrapper {
+    padding: var(--space-3) var(--container-padding-desktop);
+  }
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.nav::-webkit-scrollbar {
+  display: none;
+}
+
+.list {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  border-radius: var(--radius-md);
+  transition: all var(--transition-fast);
+  position: relative;
+}
+
+.link:hover {
+  color: var(--color-purple-400);
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.link:focus-visible {
+  outline: 2px solid var(--color-purple-400);
+  outline-offset: 2px;
+}
+
+.icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.separator {
+  width: 16px;
+  height: 16px;
+  color: var(--color-text-disabled);
+  flex-shrink: 0;
+}
+
+.current {
+  color: var(--color-text-primary);
+  font-weight: var(--font-medium);
+  pointer-events: none;
+}
+
+.current::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: var(--space-3);
+  right: var(--space-3);
+  height: 2px;
+  background: var(--gradient-purple-blue);
+  border-radius: var(--radius-full);
+}
+
+/* Mobile Optimization */
+@media (max-width: 640px) {
+  .wrapper {
+    padding: var(--space-2) var(--space-3);
+  }
+  
+  .link {
+    padding: var(--space-2);
+    font-size: var(--text-xs);
+  }
+  
+  .icon {
+    width: 14px;
+    height: 14px;
+  }
+  
+  .separator {
+    width: 14px;
+    height: 14px;
+  }
+  
+  /* Hide icons on very small screens to save space */
+  @media (max-width: 380px) {
+    .link .icon {
+      display: none;
+    }
+  }
+}
+
+/* Schema.org Microdata Support */
+.schema {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Skeleton Loading State */
+.skeleton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--container-padding-mobile);
+}
+
+.skeletonItem {
+  height: 24px;
+  background: var(--color-gray-800);
+  border-radius: var(--radius-md);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+.skeletonItem:nth-child(1) { width: 60px; }
+.skeletonItem:nth-child(2) { width: 16px; }
+.skeletonItem:nth-child(3) { width: 100px; }
+.skeletonItem:nth-child(4) { width: 16px; }
+.skeletonItem:nth-child(5) { width: 120px; }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Theme Variations */
+[data-theme="light"] .container {
+  background: rgba(255, 255, 255, 0.95);
+  border-bottom-color: var(--color-gray-200);
+}
+
+[data-theme="light"] .link {
+  color: var(--color-gray-600);
+}
+
+[data-theme="light"] .link:hover {
+  color: var(--color-purple-600);
+  background: rgba(139, 92, 246, 0.05);
+}
+
+[data-theme="light"] .current {
+  color: var(--color-gray-900);
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .link {
+    transition: none;
+  }
+  
+  .skeletonItem {
+    animation: none;
+  }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+  .link {
+    border: 1px solid transparent;
+  }
+  
+  .link:hover {
+    border-color: currentColor;
+  }
+  
+  .current::after {
+    height: 3px;
+  }
+}

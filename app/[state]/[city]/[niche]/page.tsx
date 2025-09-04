@@ -1,11 +1,21 @@
 'use client';
 
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Head from 'next/head';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import Breadcrumbs from '@/components/Breadcrumbs';
+import { 
+  generateCanonicalUrl, 
+  generateMetaTags, 
+  generateBreadcrumbSchema,
+  generateCollectionSchema,
+  serviceSlugMap,
+  stateNames as stateNameMap,
+  serviceMetadata 
+} from '@/lib/seo-utils';
 import { MapPin, Building2, Star, Phone, Globe, ArrowRight, TrendingUp, Award, Users } from 'lucide-react';
 
 interface BusinessData {
@@ -24,24 +34,75 @@ interface BusinessData {
 
 export default function NichePage() {
   const params = useParams<{ state: string; city: string; niche: string }>();
+  const searchParams = useSearchParams();
   const [businesses, setBusinesses] = useState<BusinessData[]>([]);
   const [loading, setLoading] = useState(true);
   
   const state = (params?.state || '').toString().toUpperCase();
-  const collectionSlug = (params?.city || '').toString();  // This is actually collection
+  const citySlug = (params?.city || '').toString();
   const nicheSlug = (params?.niche || '').toString();
+  const businessId = searchParams?.get('id');
   
-  const collectionName = collectionSlug.split('-').map(word => 
+  const cityName = citySlug.split('-').map(word => 
     word.charAt(0).toUpperCase() + word.slice(1)
   ).join(' ');
   
-  const nicheDisplay = nicheSlug === 'medspas' ? 'Medical Spas' :
-                       nicheSlug === 'dentists' ? 'Dental Practices' :
-                       nicheSlug === 'lawfirms' ? 'Law Firms' :
-                       nicheSlug === 'homeservices' ? 'Home Services' :
-                       nicheSlug.charAt(0).toUpperCase() + nicheSlug.slice(1);
+  // Collection name is the city name for the old API
+  const collectionName = cityName;
+  
+  // Get service metadata - dynamic approach
+  const serviceSlug = serviceSlugMap[nicheSlug] || nicheSlug;
+  
+  // Make service configuration dynamic based on the niche
+  const formatServiceName = (slug: string) => {
+    return slug.split('-').map(word => 
+      word.charAt(0).toUpperCase() + word.slice(1)
+    ).join(' ');
+  };
+  
+  const service = (serviceMetadata as any)[serviceSlug] || {
+    name: formatServiceName(nicheSlug.replace(/-/g, ' ')),
+    shortName: formatServiceName(nicheSlug.replace(/-/g, ' ')),
+    description: `Professional ${formatServiceName(nicheSlug)} services in ${cityName}, ${state}`,
+    keywords: [nicheSlug.replace(/-/g, ' '), formatServiceName(nicheSlug)],
+    schemaType: 'LocalBusiness'
+  };
+  
+  const stateName = stateNameMap[state.toLowerCase()] || state;
+  
+  // CRITICAL: Generate canonical URL pointing to service-first pattern
+  const canonicalUrl = generateCanonicalUrl({
+    type: 'service-city',
+    state: state.toLowerCase(),
+    city: citySlug,
+    service: nicheSlug
+  });
+  
+  // Generate SEO meta tags
+  const metaTags = generateMetaTags({
+    title: `Best ${service.name} in ${cityName}, ${state}`,
+    description: `Find the best ${service.name.toLowerCase()} in ${cityName}, ${stateName}. Compare top-rated providers with verified reviews, ratings, and detailed service information. ${service.description}`,
+    canonical: canonicalUrl
+  });
 
   useEffect(() => {
+    // If there's a business ID in the URL, redirect to the company detail page
+    if (businessId) {
+      // Find the business to get its slug
+      fetch(`/api/directory?state=${state}&collection=${collectionName}&niche=${nicheSlug}`)
+        .then(res => res.json())
+        .then(data => {
+          const business = data.businesses?.find((b: any) => b.id === parseInt(businessId));
+          if (business) {
+            const businessSlug = business.name.toLowerCase()
+              .replace(/[^a-z0-9]+/g, '-')
+              .replace(/^-+|-+$/g, '');
+            window.location.href = `/${state.toLowerCase()}/${citySlug}/${nicheSlug}/${businessSlug}?id=${businessId}`;
+          }
+        });
+      return;
+    }
+
     const fetchBusinesses = async () => {
       try {
         const response = await fetch(`/api/directory?state=${state}&collection=${collectionName}&niche=${nicheSlug}`);
@@ -68,68 +129,75 @@ export default function NichePage() {
     };
 
     fetchBusinesses();
-  }, [state, collectionName, nicheSlug]);
+  }, [state, collectionName, nicheSlug, businessId, citySlug]);
 
   const breadcrumbs = [
-    { label: state, href: `/${state.toLowerCase()}`, icon: MapPin },
-    { label: `${collectionName} Collection`, href: `/${state.toLowerCase()}/${collectionSlug}`, icon: Building2 },
-    { label: nicheDisplay, href: `/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}`, icon: Users }
+    { label: stateName, href: `/${state.toLowerCase()}`, icon: MapPin },
+    { label: cityName, href: `/${state.toLowerCase()}/${citySlug}`, icon: Building2 },
+    { label: service.name, href: `/${state.toLowerCase()}/${citySlug}/${nicheSlug}`, icon: Users }
   ];
+
+  // Generate structured data
+  const breadcrumbSchema = generateBreadcrumbSchema([
+    { name: 'Home', url: process.env.NEXT_PUBLIC_SITE_URL || 'https://getlocalranked.com' },
+    { name: stateName, url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://getlocalranked.com'}/${state.toLowerCase()}` },
+    { name: cityName, url: `${process.env.NEXT_PUBLIC_SITE_URL || 'https://getlocalranked.com'}/${state.toLowerCase()}/${citySlug}` },
+    { name: service.name, url: canonicalUrl }
+  ]);
+
+  const collectionSchema = generateCollectionSchema({
+    name: `${service.name} in ${cityName}, ${stateName}`,
+    description: metaTags.description,
+    url: canonicalUrl,
+    items: businesses.map(b => ({
+      name: b.name,
+      url: `${canonicalUrl}/${b.slug}`,
+      description: b.description,
+      rating: b.rating,
+      reviewCount: b.reviewCount,
+      address: b.address,
+      phone: b.phone
+    }))
+  });
 
   return (
     <>
+      <Head>
+        {/* CRITICAL: Canonical URL pointing to service-first pattern */}
+        <link rel="canonical" href={canonicalUrl} />
+        
+        <title>{metaTags.title}</title>
+        <meta name="description" content={metaTags.description} />
+        <meta name="robots" content="index,follow" />
+        
+        {/* Open Graph Meta Tags */}
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={metaTags.ogTitle} />
+        <meta property="og:description" content={metaTags.ogDescription} />
+        <meta property="og:url" content={canonicalUrl} />
+        <meta property="og:site_name" content="GetLocalRanked" />
+        
+        {/* Twitter Card Meta Tags */}
+        <meta name="twitter:card" content="summary_large_image" />
+        <meta name="twitter:title" content={metaTags.twitterTitle} />
+        <meta name="twitter:description" content={metaTags.twitterDescription} />
+        <meta name="twitter:site" content="@getlocalranked" />
+        
+        {/* Additional SEO Meta Tags */}
+        <meta name="keywords" content={service.keywords.join(', ')} />
+        <meta name="author" content="GetLocalRanked" />
+      </Head>
+      
       <Header />
       <Breadcrumbs items={breadcrumbs} />
-      {/* Structured Data: Niche listing with businesses */}
+      {/* Structured Data */}
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'CollectionPage',
-            name: `${nicheDisplay} - ${collectionName} Collection`,
-            url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}`,
-            hasPart: {
-              '@type': 'ItemList',
-              numberOfItems: businesses.length,
-              itemListElement: businesses.map((b, i) => ({
-                '@type': 'ListItem',
-                position: i + 1,
-                name: b.name,
-                url: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}/${b.slug}`,
-              })),
-            },
-          }),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(collectionSchema) }}
       />
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{
-          __html: JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'BreadcrumbList',
-            itemListElement: [
-              {
-                '@type': 'ListItem',
-                position: 1,
-                name: state,
-                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}`,
-              },
-              {
-                '@type': 'ListItem',
-                position: 2,
-                name: `${collectionName} Collection`,
-                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}`,
-              },
-              {
-                '@type': 'ListItem',
-                position: 3,
-                name: nicheDisplay,
-                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}`,
-              },
-            ],
-          }),
-        }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
       
       <main className="min-h-screen bg-gradient-to-b from-black via-gray-900 to-black text-white">
@@ -138,10 +206,10 @@ export default function NichePage() {
             {/* Header Section */}
             <div className="text-center mb-12">
               <h1 className="text-4xl md:text-5xl font-bold mb-4">
-                {nicheDisplay} - <span className="text-purple-400">{collectionName} Collection</span>
+                {service.name} in <span className="text-purple-400">{cityName}, {state}</span>
               </h1>
               <p className="text-xl text-gray-300">
-                Top-ranked {nicheDisplay.toLowerCase()} in the {collectionName} area, {state}
+                Top-ranked {service.name.toLowerCase()} serving {cityName} and surrounding areas
               </p>
             </div>
 
@@ -194,7 +262,7 @@ export default function NichePage() {
                 {businesses.map((business, index) => (
                   <Link
                     key={index}
-                    href={`/${state.toLowerCase()}/${collectionSlug}/${nicheSlug}/${business.slug}?id=${business.id}`}
+                    href={`/${state.toLowerCase()}/${citySlug}/${nicheSlug}/${business.slug}?id=${business.id}`}
                     className="block group"
                   >
                     <div className={`relative bg-gradient-to-br from-gray-800/50 to-gray-900/50 border ${
@@ -314,7 +382,7 @@ export default function NichePage() {
             <div className="mt-16 bg-gradient-to-r from-purple-900/20 to-blue-900/20 border border-purple-500/30 rounded-2xl p-8 text-center">
               <Award className="w-12 h-12 text-purple-400 mx-auto mb-4" />
               <h2 className="text-2xl font-bold mb-4">
-                Want to Rank #1 in the {collectionName} Collection?
+                Want to Rank #1 for {service.name} in {cityName}?
               </h2>
               <p className="text-gray-300 mb-6 max-w-2xl mx-auto">
                 Get your free competitive analysis and see exactly how to outrank these businesses in 90 days

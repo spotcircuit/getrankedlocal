@@ -1,0 +1,235 @@
+{
+  "status": "ok",
+  "research_summary": {
+    "primary_intent": "local",
+    "entity_map": [
+      "medical spas",
+      "wellness centers",
+      "aesthetic clinics",
+      "health clinics",
+      "local businesses",
+      "service providers"
+    ],
+    "serp_gaps": [
+      "Lack of comprehensive local provider comparisons",
+      "Missing verified review aggregation",
+      "No centralized ranking system for local services",
+      "Limited geographic coverage for specialized services"
+    ]
+  },
+  "keyword_strategy": {
+    "primary_keyword": "{service} in {city}",
+    "secondary_keywords": [
+      "best {service} {city} {state}",
+      "top rated {service} near me",
+      "{service} reviews {city}",
+      "{city} {service} directory"
+    ],
+    "longtail_topics": [
+      "affordable {service} in {city} {state}",
+      "best {service} with {specific_treatment} {city}",
+      "{service} open weekends {city}",
+      "highly rated {service} near {landmark} {city}"
+    ],
+    "cluster_map": [
+      {
+        "cluster": "Medical Spas",
+        "terms": ["med spa", "medical spa", "botox", "fillers", "aesthetic treatments"],
+        "suggested_subheads": [
+          "Top-Rated Medical Spas",
+          "Botox & Filler Specialists",
+          "Advanced Aesthetic Treatments"
+        ]
+      },
+      {
+        "cluster": "Wellness Centers",
+        "terms": ["wellness", "holistic health", "IV therapy", "preventive care"],
+        "suggested_subheads": [
+          "Comprehensive Wellness Services",
+          "IV Therapy & Hydration",
+          "Holistic Health Approaches"
+        ]
+      }
+    ],
+    "rationale": "Focus on service+location combinations as they match high-intent local search queries. Users typically search for specific services in their area rather than browsing by location alone."
+  },
+  "onpage_updates": {
+    "title_tag": "Best {Service} in {City}, {State} - Top-Rated Providers",
+    "meta_description": "Find the best {service} in {city}, {state}. Compare top-rated providers with verified reviews, ratings, and detailed service information. Book your appointment today.",
+    "url_suggestion": "/directory/{service-slug}/{state}/{city-slug}",
+    "h1": "{Service} in {City}, {State}",
+    "outline": [
+      "Top-Ranked {Service} Providers",
+      "What to Look for in a {Service}",
+      "Services & Treatments Available",
+      "Average Pricing in {City}",
+      "How We Rank Providers"
+    ],
+    "featured_answer": "Finding the best {service} in {city} requires comparing verified reviews, service offerings, and pricing. Our directory ranks providers based on customer ratings, service quality, and overall value to help you make an informed decision.",
+    "copy_blocks": [
+      {
+        "selector": ".hero-description",
+        "text": "Discover top-rated {service} in {city} with our comprehensive directory. Compare providers, read verified reviews, and find the perfect match for your needs.",
+        "html": "<p>Discover top-rated {service} in {city} with our comprehensive directory. Compare providers, read verified reviews, and find the perfect match for your needs.</p>"
+      },
+      {
+        "selector": ".cta-section",
+        "text": "Get your free competitive analysis and see how to rank #1 in {city} within 90 days.",
+        "html": "<p>Get your free competitive analysis and see how to rank #1 in {city} within 90 days.</p>"
+      }
+    ],
+    "image_alt_suggestions": [
+      "{Service} facility in {City}",
+      "Top-rated {service} provider logo",
+      "{City} {service} location map",
+      "Customer receiving {service} treatment"
+    ],
+    "accessibility_notes": [
+      "Ensure all interactive elements have proper ARIA labels",
+      "Add skip navigation links for screen readers",
+      "Maintain proper heading hierarchy (H1 → H2 → H3)",
+      "Ensure color contrast ratio meets WCAG AA standards"
+    ]
+  },
+  "structured_data": [
+    {
+      "@context": "https://schema.org",
+      "@type": "CollectionPage",
+      "name": "{Service} in {City}, {State}",
+      "description": "Directory of top-rated {service} providers in {city}",
+      "url": "https://getlocalranked.com/directory/{service}/{state}/{city}",
+      "mainEntity": {
+        "@type": "ItemList",
+        "numberOfItems": "{count}",
+        "itemListElement": []
+      }
+    },
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://getlocalranked.com"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Directory",
+          "item": "https://getlocalranked.com/directory"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "{Service}",
+          "item": "https://getlocalranked.com/directory/{service}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 4,
+          "name": "{State}",
+          "item": "https://getlocalranked.com/directory/{service}/{state}"
+        },
+        {
+          "@type": "ListItem",
+          "position": 5,
+          "name": "{City}",
+          "item": "https://getlocalranked.com/directory/{service}/{state}/{city}"
+        }
+      ]
+    }
+  ],
+  "internal_link_plan": [
+    {
+      "anchor": "medical spas in {nearby_city}",
+      "target_url": "/directory/medical-spas/{state}/{nearby_city}",
+      "reason": "Geographic relevance for users considering nearby options"
+    },
+    {
+      "anchor": "wellness centers in {city}",
+      "target_url": "/directory/wellness-centers/{state}/{city}",
+      "reason": "Related service category for cross-selling"
+    },
+    {
+      "anchor": "{service} providers across {state}",
+      "target_url": "/directory/{service}/{state}",
+      "reason": "State-level directory for broader search"
+    },
+    {
+      "anchor": "compare all {city} healthcare providers",
+      "target_url": "/{state}/{city}",
+      "reason": "City hub page for comprehensive local search"
+    }
+  ],
+  "outbound_link_plan": [
+    {
+      "anchor": "medical spa treatments guide",
+      "target_url": "https://www.americanmedspa.org/page/medicalspa",
+      "rel": "nofollow",
+      "reason": "Authority source for medical spa information"
+    },
+    {
+      "anchor": "FDA guidelines",
+      "target_url": "https://www.fda.gov/cosmetics",
+      "rel": "nofollow",
+      "reason": "Regulatory authority for cosmetic procedures"
+    }
+  ],
+  "tech_qa": {
+    "canonical": "https://getlocalranked.com/directory/{service}/{state}/{city}",
+    "robots_meta": "index,follow",
+    "hreflang": ["en-US"],
+    "cwv_notes": [
+      "Implement lazy loading for business listings below fold",
+      "Optimize images with next/image component",
+      "Use dynamic imports for heavy components",
+      "Implement proper caching headers for static assets",
+      "Consider pagination for listings over 20 items"
+    ]
+  },
+  "diffs": {
+    "unified_diff": ""
+  },
+  "risk_notes": [
+    "CRITICAL: Canonical URL changes require 301 redirects from old URLs",
+    "Monitor Search Console for duplicate content warnings during transition",
+    "Service-first URLs must be consistent across all internal links",
+    "Changing URL structure may temporarily impact rankings - implement gradually",
+    "Ensure all location-first URLs have proper canonical tags to service-first equivalents"
+  ],
+  "implementation_code_snippets": {
+    "canonical_tag": "<link rel=\"canonical\" href=\"{canonicalUrl}\" />",
+    "meta_tags": [
+      "<title>{title} | GetLocalRanked</title>",
+      "<meta name=\"description\" content=\"{description}\" />",
+      "<meta property=\"og:title\" content=\"{title}\" />",
+      "<meta property=\"og:description\" content=\"{description}\" />",
+      "<meta property=\"og:url\" content=\"{canonicalUrl}\" />",
+      "<meta name=\"twitter:card\" content=\"summary_large_image\" />"
+    ],
+    "structured_data_example": "See structured_data array above for complete implementation",
+    "utility_imports": "import { generateCanonicalUrl, generateMetaTags, generateCollectionSchema } from '@/lib/seo-utils';"
+  },
+  "success_metrics": {
+    "primary_kpis": [
+      "Organic traffic growth to service pages",
+      "Reduction in duplicate content warnings",
+      "Improved rankings for {service} + {city} queries",
+      "Increased CTR from search results"
+    ],
+    "monitoring_tools": [
+      "Google Search Console for indexing status",
+      "Google Analytics for traffic patterns",
+      "Rank tracking for target keywords",
+      "Core Web Vitals monitoring"
+    ],
+    "expected_timeline": {
+      "week_1": "Canonical implementation complete",
+      "week_2-4": "Google reindexing of pages",
+      "month_2": "Initial ranking improvements",
+      "month_3": "Full SEO impact visible"
+    }
+  }
+}

@@ -72,7 +72,7 @@ export default function Header() {
               <Link 
                 href="/" 
                 className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ${
-                  isActive('/') && pathname !== '/med-spa-directory'
+                  isActive('/') && pathname !== '/directory'
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
                     : 'text-gray-400 hover:text-white hover:bg-gray-800'
                 }`}
@@ -81,14 +81,14 @@ export default function Header() {
               </Link>
               
               <Link 
-                href="/med-spa-directory" 
+                href="/directory" 
                 className={`px-6 py-2.5 rounded-full font-medium text-sm transition-all duration-300 ${
-                  isActive('/med-spa-directory')
+                  isActive('/directory')
                     ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white shadow-lg' 
                     : 'text-gray-400 hover:text-white hover:bg-gray-800'
                 }`}
               >
-                Med Spa Directory
+                Directory
               </Link>
               
               <div className="w-px h-6 bg-gray-700 mx-1"></div>
