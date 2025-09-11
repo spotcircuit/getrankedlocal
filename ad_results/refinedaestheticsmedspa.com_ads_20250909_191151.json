@@ -1,0 +1,29 @@
+{
+  "company": "refinedaestheticsmedspa.com",
+  "timestamp": "2025-09-09T19:11:14.879075",
+  "platforms": {
+    "google": {
+      "platform": "Google Ads Transparency",
+      "company": "refinedaestheticsmedspa.com",
+      "timestamp": "2025-09-09T19:11:15.305543",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    },
+    "meta": {
+      "platform": "Meta Ad Library",
+      "company": "refinedaestheticsmedspa.com",
+      "timestamp": "2025-09-09T19:11:30.949885",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    }
+  },
+  "summary": {
+    "total_google_ads": 0,
+    "total_meta_ads": 0,
+    "total_ads": 0,
+    "google_error": null,
+    "meta_error": null
+  }
+}

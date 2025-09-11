@@ -14,6 +14,7 @@ import SocialProofImage from '@/components/SocialProofImage';
 export default function HomePage() {
   const [businessName, setBusinessName] = useState('');
   const [niche, setNiche] = useState('');
+  const [useGridSearch, setUseGridSearch] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [showExistingSearchModal, setShowExistingSearchModal] = useState(false);
   const [existingSearchData, setExistingSearchData] = useState<any>(null);
@@ -337,6 +338,19 @@ export default function HomePage() {
     }
     setNiche(searchNiche);
 
+    // GRID SEARCH CHECK - BYPASS EVERYTHING ELSE
+    if (useGridSearch) {
+      console.log('🎯 Grid search enabled - redirecting to grid test page');
+      const params = new URLSearchParams({
+        businessName: extractedLocation.name || businessName.split(',')[0],
+        city: extractedLocation.city,
+        state: extractedLocation.state,
+        niche: searchNiche
+      });
+      window.location.href = `/grid-test?${params.toString()}`;
+      return;
+    }
+
     // Check if we already have existing search data (from autocomplete selection)
     if (existingSearchData && existingSearchData.found && existingSearchData.bestResult) {
       // Check if the search keyword matches any previous searches
@@ -433,7 +447,21 @@ export default function HomePage() {
         }
         return;
       } else {
-        // No existing search, proceed with new search
+        // No existing search - check if grid search is requested
+        if (useGridSearch && !hasExistingData) {
+          // Redirect to grid test page with parameters
+          console.log('🎯 Grid search requested - redirecting to grid test page');
+          const params = new URLSearchParams({
+            businessName: extractedLocation.name || businessName.split(',')[0],
+            city: extractedLocation.city,
+            state: extractedLocation.state,
+            niche: searchNiche
+          });
+          window.location.href = `/grid-test?${params.toString()}`;
+          return;
+        }
+        
+        // Regular search - proceed with modal
         console.log('❌ No existing search found - proceeding with new search');
         setShowModal(true);
       }
@@ -557,29 +585,36 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Business Name
                       </label>
-                      <input
-                        ref={businessInputRef}
-                        type="text"
-                        value={businessName}
-                        onChange={handleBusinessInputChange}
-                        onBlur={handleBusinessInputBlur}
-                        onKeyDown={handleBusinessKeyDown}
-                        onFocus={handleBusinessFocus}
-                        placeholder="Start typing to search..."
-                        className={`w-full px-4 py-3 bg-gray-800 border-2 rounded-lg text-white placeholder-gray-400 focus:outline-none transition-colors ${
-                          validationError 
-                            ? 'border-red-500 focus:border-red-500' 
-                            : isValidBusiness 
-                              ? 'border-green-500 focus:border-green-500'
-                              : 'border-gray-600 focus:border-purple-500'
-                        }`}
-                        autoComplete="off"
-                        autoCapitalize="off"
-                        autoCorrect="off"
-                        spellCheck={false}
-                        name="business"
-                        required
-                      />
+                      <div className="relative">
+                        <input
+                          ref={businessInputRef}
+                          type="text"
+                          value={businessName}
+                          onChange={handleBusinessInputChange}
+                          onBlur={handleBusinessInputBlur}
+                          onKeyDown={handleBusinessKeyDown}
+                          onFocus={handleBusinessFocus}
+                          placeholder="Start typing to search..."
+                          className={`w-full px-4 py-3 ${isValidBusiness ? 'pr-12' : ''} bg-gray-800 border-2 rounded-lg text-white placeholder-gray-400 focus:outline-none transition-colors ${
+                            validationError 
+                              ? 'border-red-500 focus:border-red-500' 
+                              : isValidBusiness 
+                                ? 'border-green-500 focus:border-green-500'
+                                : 'border-gray-600 focus:border-purple-500'
+                          }`}
+                          autoComplete="off"
+                          autoCapitalize="off"
+                          autoCorrect="off"
+                          spellCheck={false}
+                          name="business"
+                          required
+                        />
+                        {isValidBusiness && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <CheckCircle className="w-6 h-6 text-green-500" />
+                          </div>
+                        )}
+                      </div>
                       {validationError && (
                         <p className="mt-2 text-sm text-red-400 flex items-center gap-1">
                           <AlertCircle className="w-4 h-4" />
@@ -592,6 +627,12 @@ export default function HomePage() {
                             <CheckCircle className="w-4 h-4" />
                             Valid business selected - {extractedLocation.city}, {extractedLocation.state}
                           </p>
+                          {!hasExistingData && (
+                            <p className="mt-2 text-sm text-blue-400 flex items-center gap-1">
+                              <MapPin className="w-4 h-4" />
+                              New business - Grid Analysis will map your rankings across 169 search locations
+                            </p>
+                          )}
                           {hasExistingData && existingSearchData && (
                             <div className="mt-4 space-y-3">
                               <div className="p-4 bg-green-900/20 border border-green-500/30 rounded-lg">
@@ -686,23 +727,56 @@ export default function HomePage() {
                       <label className="block text-sm font-medium text-gray-300 mb-2">
                         Search Keyword/Service
                       </label>
-                      <input
-                        type="text"
-                        value={niche}
-                        onChange={(e) => setNiche(e.target.value)}
-                        placeholder={
-                          businessName.toLowerCase().includes('hair') || businessName.toLowerCase().includes('salon')
-                            ? "e.g., hair salon, haircut, hair color, barber"
-                            : businessName.toLowerCase().includes('dental') || businessName.toLowerCase().includes('dentist')
-                            ? "e.g., dentist, dental implants, teeth whitening"
-                            : businessName.toLowerCase().includes('law') || businessName.toLowerCase().includes('attorney')
-                            ? "e.g., lawyer, attorney, personal injury lawyer"
-                            : "e.g., med spa, botox, dental implants"
-                        }
-                        className="w-full px-4 py-3 bg-gray-800 border-2 border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-purple-500 focus:outline-none"
-                      />
+                      <div className="relative">
+                        {niche.trim() && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                            <CheckCircle className="w-6 h-6 text-green-500" />
+                          </div>
+                        )}
+                        <input
+                          type="text"
+                          value={niche}
+                          onChange={(e) => setNiche(e.target.value)}
+                          placeholder={
+                            businessName.toLowerCase().includes('hair') || businessName.toLowerCase().includes('salon')
+                              ? "e.g., hair salon, haircut, hair color, barber"
+                              : businessName.toLowerCase().includes('dental') || businessName.toLowerCase().includes('dentist')
+                              ? "e.g., dentist, dental implants, teeth whitening"
+                              : businessName.toLowerCase().includes('law') || businessName.toLowerCase().includes('attorney')
+                              ? "e.g., lawyer, attorney, personal injury lawyer"
+                              : "e.g., med spa, botox, dental implants"
+                          }
+                          className={`w-full px-4 py-3 ${niche.trim() ? "pr-12" : ""} bg-gray-800 border-2 rounded-lg text-white placeholder-gray-400 focus:outline-none transition-colors ${
+                            niche.trim() ? "border-green-500 focus:border-green-500" : "border-gray-600 focus:border-purple-500"
+                          }`}
+                        />
+                      </div>
                     </div>
                   </div>
+
+                  {/* Grid Search Toggle - Show when new business (not in database) */}
+                  {isValidBusiness && !hasExistingData && (
+                    <div className="bg-gray-800/50 rounded-lg p-4 mb-4 border border-gray-700">
+                      <label className="flex items-center gap-3 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={useGridSearch}
+                          onChange={(e) => setUseGridSearch(e.target.checked)}
+                          className="w-5 h-5 rounded border-gray-600 bg-gray-700 text-purple-500 focus:ring-purple-500 focus:ring-offset-0 cursor-pointer"
+                        />
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <MapPin className="w-5 h-5 text-blue-400" />
+                            <span className="font-semibold text-white">Enable 169-Point Grid Search</span>
+                            <span className="text-xs bg-blue-600 text-white px-2 py-0.5 rounded">NEW</span>
+                          </div>
+                          <p className="text-sm text-gray-400 mt-1">
+                            Comprehensive heat map analysis showing exactly where you rank across 169 search locations in a 5-mile radius
+                          </p>
+                        </div>
+                      </label>
+                    </div>
+                  )}
 
                   <button
                     type="submit"

@@ -1,0 +1,29 @@
+{
+  "company": "The Fix Clinic",
+  "timestamp": "2025-09-09T13:06:50.901219",
+  "platforms": {
+    "google": {
+      "platform": "Google Ads Transparency",
+      "company": "The Fix Clinic",
+      "timestamp": "2025-09-09T13:06:51.477467",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    },
+    "meta": {
+      "platform": "Meta Ad Library",
+      "company": "The Fix Clinic",
+      "timestamp": "2025-09-09T13:07:07.510104",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    }
+  },
+  "summary": {
+    "total_google_ads": 0,
+    "total_meta_ads": 0,
+    "total_ads": 0,
+    "google_error": null,
+    "meta_error": null
+  }
+}

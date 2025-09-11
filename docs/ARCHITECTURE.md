@@ -33,22 +33,38 @@ getlocalranked/
 ├── app/                          # Next.js App Router pages
 │   ├── api/                      # API endpoints
 │   │   ├── analyze/             # Business analysis endpoint
-│   │   ├── directory/           # New directory endpoints
+│   │   ├── directory/           # Directory endpoints
 │   │   │   ├── collections/     # Collection listing
 │   │   │   └── [collection]/[state]/[city]/ # Directory browsing
+│   │   ├── grid-search/         # Grid search analysis endpoints
+│   │   ├── grid-search-temp/    # Temporary grid search endpoint
+│   │   ├── grid-search-test-data/ # Test data for grid search development
 │   │   └── leads/               # Lead capture and management
+│   ├── grid-test/               # Grid search interface page
 │   ├── [state]/[city]/[niche]/[company]/ # Dynamic business pages
 │   ├── med-spa-directory/       # Directory landing page
 │   └── page.tsx                 # Homepage
 ├── components/                   # Reusable React components
 │   ├── ActionPlan.tsx           # Action plan UI
-│   ├── AIIntelligenceSection.tsx # AI insights display
+│   ├── AIIntelligenceSection.tsx # AI insights display  
+│   ├── AIIntelligenceDynamic.tsx # Enhanced AI response parsing
 │   ├── AnalysisModal.tsx        # Competitive analysis modal
 │   ├── BookingModal.tsx         # Lead capture modal
+│   ├── CompetitorAnalysis.tsx   # Updated competitor analysis display
+│   ├── GridBusinessList.tsx     # Grid search business listing component
+│   ├── GridHeatMap.tsx          # Interactive grid search heat map visualization
+│   ├── GridSearchModal.tsx      # Real-time grid search progress modal with 13x13 animation
+│   ├── GridSearchTrigger.tsx    # Grid search initiation and configuration component
+│   ├── QuickSolutionPreview.tsx # Business solution preview component  
+│   ├── ResultsSectionV2.tsx     # Standard results display with progressive disclosure
+│   ├── ResultsSectionV3.tsx     # Advanced grid search results with interactive heat maps
+│   ├── StakeholderHero.tsx      # Business-owner focused landing component
 │   └── ...                      # Additional UI components
 ├── lib/                         # Utility libraries
 │   ├── db.ts                    # Database connection
 │   ├── competitor-db.ts         # Competitor data management
+│   ├── grid-search-storage.ts   # Grid search data storage utilities
+│   ├── grid-search-storage-optimized.ts # Bulk insert optimization for grid data
 │   └── revenueCalculations.ts   # Business metrics calculations
 ├── scripts/                     # Database and maintenance scripts
 │   ├── migrate-lead-collections.js # Lead collections migration
@@ -63,7 +79,35 @@ getlocalranked/
 
 ## Data Flow Architecture
 
-### 1. Lead Generation & Collection
+### 1. Grid Search Analysis System
+
+```
+Grid Initialization → 169-Point Search → Data Extraction → Database Storage → Heat Map Visualization
+                                            ↓
+                                    Place ID Resolution
+                                            ↓
+                                    Bulk Insert Operations
+                                            ↓
+                                Geographic Analysis & Statistics
+```
+
+**Process:**
+1. **Grid Setup:** Create 13x13 coordinate grid covering 5-mile radius around target location
+2. **Parallel Search:** Execute 169 simultaneous Google Maps queries with comprehensive data extraction
+3. **Place ID Resolution:** Use place_id as unique business identifier to eliminate duplicates
+4. **Data Processing:** Extract business details (name, rating, reviews, address, coordinates, phone, business_type)
+5. **Bulk Storage:** Optimized database operations using batch inserts across 5 specialized tables
+6. **Statistical Analysis:** Calculate coverage, ranking distributions, and geographic intelligence
+7. **Heat Map Generation:** Create interactive visualization with color-coded ranking performance
+
+**Database Tables:**
+- `grid_searches`: Master search records with execution metadata
+- `grid_competitors`: Unique businesses with comprehensive profile data
+- `grid_point_results`: Individual ranking results for each grid coordinate
+- `competitor_summaries`: Aggregated performance statistics and coverage metrics
+- `grid_cells`: Grid cell metadata with competition density analysis
+
+### 2. Lead Generation & Collection
 
 ```
 Google Places API → AI Extraction → Database Storage → Lead Collections
@@ -120,23 +164,41 @@ competitor_searches (1:many) leads
   ├── Stores AI intelligence
   └── Tracks performance metrics
 
+grid_searches (1:many) grid_competitors
+  ├── Master search to unique businesses
+  ├── Stores search execution metadata
+  └── Tracks performance statistics
+
+grid_competitors (1:many) grid_point_results
+  ├── Business to ranking appearances
+  ├── Enables coverage analysis
+  └── Supports geographic intelligence
+
 leads_captured (standalone)
   └── Sales funnel lead storage
 ```
 
 ### Recent Major Changes
 
-1. **Lead Collections System (NEW)**
+1. **Grid Search Analysis System (NEW)**
+   - Comprehensive 169-point geographic analysis covering 5-mile radius
+   - 5 new database tables with optimized bulk insert operations
+   - Advanced heat map visualization with interactive Google Maps integration
+   - Fixed duplicate business issue through place_id unique identification
+   - Real-time progress tracking and completion visualization
+   - Dual search modes: "All Businesses" and "Target Business" analysis
+
+2. **Lead Collections System**
    - Many-to-many relationship table `lead_collections`
    - 6,511 leads successfully migrated and normalized
    - Enables businesses to appear in multiple relevant directories
 
-2. **AI Data Enhancement**
+3. **AI Data Enhancement**
    - Owner name extraction with improved parsing
    - Social media handle collection
    - JSONB storage for raw AI insights
 
-3. **Directory Endpoints (NEW)**
+4. **Directory Endpoints**
    - `/api/directory/collections` - List all available collections
    - `/api/directory/[collection]/[state]/[city]` - Browse specific directories
    - Optimized queries with aggregated statistics
@@ -147,6 +209,9 @@ leads_captured (standalone)
 
 ```
 GET  /api/analyze              # Competitive analysis
+POST /api/grid-search          # Execute 169-point grid search analysis
+POST /api/grid-search-temp     # Temporary grid search endpoint for development
+GET  /api/grid-search-test-data # Test data for grid search development
 GET  /api/directory/collections # Collection listing
 GET  /api/directory/{collection}/{state}/{city} # Directory browsing
 POST /api/leads                # Lead capture
@@ -179,11 +244,26 @@ All API endpoints follow consistent response structure:
 
 ### Key Components
 
+#### Core Analysis & Display Components
 1. **AnalysisModal:** Comprehensive competitive analysis interface
-2. **DirectoryBrowser:** Business directory navigation
+2. **DirectoryBrowser:** Business directory navigation  
 3. **AIIntelligenceSection:** AI-generated insights and recommendations
-4. **BookingModal:** Lead capture with progressive disclosure
-5. **BusinessInsights:** Market intelligence dashboard
+4. **AIIntelligenceDynamic:** Enhanced AI response parsing with deduplication
+5. **BookingModal:** Lead capture with progressive disclosure
+6. **BusinessInsights:** Market intelligence dashboard
+7. **CompetitorAnalysis:** Updated competitor analysis display with enhanced features
+
+#### Grid Search System Components  
+8. **GridSearchModal:** Real-time 169-point grid search progress visualization with 13x13 grid animation
+9. **ResultsSectionV3:** Advanced grid search results with interactive heat maps and Google Maps integration
+10. **GridHeatMap:** Color-coded geographic ranking visualization with interactive overlays
+11. **GridSearchTrigger:** Grid search initiation and configuration interface with dual search modes
+12. **GridBusinessList:** Comprehensive business listing component for grid search results
+
+#### Business-Focused Landing Components
+13. **StakeholderHero:** Business-owner focused personalized landing component
+14. **QuickSolutionPreview:** Interactive solution preview with ROI calculations
+15. **ResultsSectionV2:** Standard results display with progressive disclosure and simplified views
 
 ## Performance Optimizations
 
@@ -192,6 +272,9 @@ All API endpoints follow consistent response structure:
 - **Connection Pooling:** Neon serverless automatic scaling
 - **Query Optimization:** Efficient JOINs and aggregations
 - **Batch Processing:** Migration scripts use transaction batching
+- **Bulk Insert Operations:** Grid search data uses optimized bulk inserts in batches of 1000 records
+- **Place ID Deduplication:** Prevents duplicate business records through unique place_id constraints
+- **Geographic Indexing:** Spatial indexes on lat/lng columns for efficient geographic queries
 
 ### Frontend Optimizations
 - **Next.js App Router:** Server-side rendering and static generation

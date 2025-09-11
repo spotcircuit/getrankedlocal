@@ -15,6 +15,7 @@ interface StakeholderHeroProps {
   state?: string;
   niche?: string;
   businessWebsite?: string;
+  businessReviews?: number;
 }
 
 export default function StakeholderHero({ 
@@ -25,7 +26,8 @@ export default function StakeholderHero({
   city,
   state,
   niche = 'your industry',
-  businessWebsite = ''
+  businessWebsite = '',
+  businessReviews = 0
 }: StakeholderHeroProps) {
   const [showLeadForm, setShowLeadForm] = useState(false);
   
@@ -48,7 +50,14 @@ export default function StakeholderHero({
   };
 
   const customersLost = calculateMonthlyCustomerLoss();
-  const topCompetitor = topCompetitors[0];
+  
+  // Find the competitor with the most reviews
+  const topReviewedCompetitor = topCompetitors.reduce((max, competitor) => {
+    return (competitor?.reviews || 0) > (max?.reviews || 0) ? competitor : max;
+  }, topCompetitors[0]);
+  
+  // Calculate review deficit against the highest reviewed competitor
+  const reviewDeficit = Math.max(0, (topReviewedCompetitor?.reviews || 150) - businessReviews);
 
   return (
     <section className="relative min-h-[80vh] flex items-center justify-center overflow-hidden bg-gradient-to-b from-black via-gray-900 to-black">
@@ -64,10 +73,17 @@ export default function StakeholderHero({
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-red-900/30 border-2 border-red-500/50 rounded-full">
-            <AlertCircle className="w-5 h-5 text-red-400 animate-pulse" />
-            <span className="text-lg font-semibold text-red-300">
-              Urgent: {topCompetitor?.name || 'Your competitor'} is stealing your customers
+          <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-purple-900/30 to-blue-900/30 border-2 border-purple-500/50 rounded-full">
+            <TrendingUp className="w-5 h-5 text-purple-400 animate-pulse" />
+            <span className="text-lg font-semibold text-purple-300">
+              {currentRank === 1 ? 
+                `Congratulations! You're #1 in ${city}` :
+                currentRank <= 3 ? 
+                `You're so close to #1 in ${city}` :
+                currentRank <= 10 ?
+                `Great news: You're already ranking in ${city}` :
+                `Your opportunity in ${city} is waiting`
+              }
             </span>
           </div>
         </motion.div>
@@ -79,16 +95,53 @@ export default function StakeholderHero({
           transition={{ delay: 0.2 }}
           className="text-4xl md:text-6xl font-bold mb-6"
         >
-          <span className="text-white">Hey {businessName},</span>
+          <span className="text-white">Hi {businessName},</span>
           <br />
-          <span className="text-5xl md:text-7xl">
-            You're Losing{' '}
-            <span className="text-red-500">${monthlyLoss.toLocaleString()}/month</span>
-          </span>
-          <br />
-          <span className="text-3xl md:text-4xl text-gray-300">
-            to competitors in {city}{state ? `, ${state}` : ''}
-          </span>
+          {currentRank === 1 ? (
+            <>
+              <span className="text-5xl md:text-7xl">
+                You Could Add{' '}
+                <span className="text-green-500">30+ New Customers</span>
+              </span>
+              <br />
+              <span className="text-3xl md:text-4xl text-gray-300">
+                per month with AI optimization
+              </span>
+            </>
+          ) : currentRank <= 3 ? (
+            <>
+              <span className="text-5xl md:text-7xl">
+                Position #1 Could Bring You{' '}
+                <span className="text-yellow-500">50+ More Customers</span>
+              </span>
+              <br />
+              <span className="text-3xl md:text-4xl text-gray-300">
+                per month in {city}{state ? `, ${state}` : ''}
+              </span>
+            </>
+          ) : currentRank <= 10 ? (
+            <>
+              <span className="text-5xl md:text-7xl">
+                You're Missing{' '}
+                <span className="text-orange-500">75+ Customers/Month</span>
+              </span>
+              <br />
+              <span className="text-3xl md:text-4xl text-gray-300">
+                that search for {niche} in {city}
+              </span>
+            </>
+          ) : (
+            <>
+              <span className="text-5xl md:text-7xl">
+                There's{' '}
+                <span className="text-purple-500">${Math.round(monthlyLoss/1000)}K+ in Revenue</span>
+              </span>
+              <br />
+              <span className="text-3xl md:text-4xl text-gray-300">
+                available in {city}'s {niche} market
+              </span>
+            </>
+          )}
         </motion.h1>
 
         {/* Quick Action CTA - Early in the flow */}
@@ -124,7 +177,7 @@ export default function StakeholderHero({
               <div className="text-center">
                 <div className="text-5xl font-bold text-red-500 mb-2">#{currentRank}</div>
                 <p className="text-gray-400">Your Current Rank</p>
-                <p className="text-sm text-red-400 mt-1">Invisible to 85% of searchers</p>
+                <p className="text-sm text-red-400 mt-1">{currentRank === 1 ? 'Leading the market' : currentRank === 2 ? 'Visible to 78% of searchers' : currentRank === 3 ? 'Visible to 72% of searchers' : currentRank <= 10 ? 'Invisible to 85% of searchers' : 'Not visible in top results'}</p>
               </div>
 
               {/* Customers Lost */}
@@ -137,10 +190,12 @@ export default function StakeholderHero({
               {/* Review Gap */}
               <div className="text-center">
                 <div className="text-5xl font-bold text-purple-500 mb-2">
-                  {topCompetitor?.reviews ? Math.max(0, topCompetitor.reviews - 50) : 150}
+                  {reviewDeficit}
                 </div>
                 <p className="text-gray-400">Review Deficit</p>
-                <p className="text-sm text-purple-400 mt-1">vs. #{topCompetitor?.rank || 1} competitor</p>
+                <p className="text-sm text-purple-400 mt-1">
+                  vs. {topReviewedCompetitor?.name || 'top competitor'} ({topReviewedCompetitor?.reviews || 150} reviews)
+                </p>
               </div>
             </div>
 
@@ -171,16 +226,6 @@ export default function StakeholderHero({
                   </div>
                 ))}
               </div>
-              
-              {/* CTA inside the comparison box */}
-              <div className="mt-6 text-center">
-                <button
-                  onClick={() => setShowLeadForm(true)}
-                  className="px-6 py-3 bg-purple-600 hover:bg-purple-700 rounded-lg font-semibold transition-all text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
-                >
-                  See How to Outrank Them →
-                </button>
-              </div>
             </div>
           </div>
         </motion.div>
@@ -198,10 +243,10 @@ export default function StakeholderHero({
                 const section = document.querySelector('#solution-section');
                 section?.scrollIntoView({ behavior: 'smooth' });
               }}
-              className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 rounded-lg font-bold text-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2"
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 rounded-lg font-bold text-lg transition-all transform hover:scale-105 flex items-center justify-center gap-2 text-white"
             >
               <CheckCircle className="w-5 h-5" />
-              See How to Fix This
+              {currentRank === 1 ? 'See Growth Opportunities' : currentRank <= 3 ? 'See How to Reach #1' : 'See How to Fix This'}
               <ArrowRight className="w-5 h-5" />
             </button>
             

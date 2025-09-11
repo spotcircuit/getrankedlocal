@@ -2,7 +2,7 @@
 
 ## Overview
 
-The Lead Finder application uses a Neon PostgreSQL database with several interconnected tables to manage leads, collections, competitor searches, and captured leads.
+The Lead Finder application uses a Neon PostgreSQL database with several interconnected tables to manage leads, collections, competitor searches, captured leads, and the comprehensive grid search analysis system. The database architecture supports both traditional lead generation and the new 169-point geographic grid search functionality.
 
 ## Core Tables
 
@@ -117,6 +117,178 @@ leads_captured (
 )
 ```
 
+## Grid Search Analysis Tables
+
+The grid search system uses 5 specialized tables to store comprehensive geographic market analysis data from 169-point grid searches. These tables support advanced features like competitor heat map switching and real-time competitive intelligence.
+
+### `grid_searches` Table
+
+Master records for each grid search execution with performance metrics and metadata.
+
+```sql
+grid_searches (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+  
+  -- Search parameters
+  search_term VARCHAR(255) NOT NULL,
+  center_lat DECIMAL(10, 7) NOT NULL,
+  center_lng DECIMAL(10, 7) NOT NULL,
+  search_radius_miles DECIMAL(4,2) DEFAULT 5.0,
+  
+  -- Grid configuration  
+  grid_size INTEGER DEFAULT 169,
+  grid_rows INTEGER DEFAULT 13,
+  grid_cols INTEGER DEFAULT 13,
+  
+  -- Business context
+  initiated_by_place_id VARCHAR(255),
+  initiated_by_name VARCHAR(255),
+  city VARCHAR(100),
+  state VARCHAR(50),
+  
+  -- Performance metrics
+  total_unique_businesses INTEGER,
+  avg_businesses_per_point DECIMAL(5,2),
+  max_businesses_per_point INTEGER, 
+  min_businesses_per_point INTEGER,
+  total_search_results INTEGER,
+  execution_time_seconds INTEGER,
+  success_rate DECIMAL(5,2),
+  
+  -- Technical metadata
+  session_id VARCHAR(255),
+  raw_config JSONB
+)
+```
+
+### `grid_competitors` Table
+
+All unique businesses discovered across the grid, using place_id as the primary deduplication key.
+
+```sql
+grid_competitors (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  search_id UUID REFERENCES grid_searches(id) ON DELETE CASCADE,
+  
+  -- Business identification (CRITICAL: place_id prevents duplicates)
+  place_id VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
+  
+  -- Business details
+  rating DECIMAL(2, 1),
+  reviews INTEGER,
+  business_lat DECIMAL(10, 7),
+  business_lng DECIMAL(10, 7),
+  address TEXT,
+  phone VARCHAR(50),
+  website VARCHAR(500),
+  business_type VARCHAR(255),
+  
+  -- Performance statistics
+  appearances INTEGER,           -- Number of grid points where business appears
+  coverage_percent DECIMAL(5,2), -- Percentage of total grid coverage
+  avg_rank DECIMAL(5,2),         -- Average ranking across all appearances
+  best_rank INTEGER,             -- Best ranking achieved
+  worst_rank INTEGER,            -- Worst ranking found
+  top3_count INTEGER,            -- Number of top-3 appearances
+  top10_count INTEGER,           -- Number of top-10 appearances
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  
+  -- Ensure uniqueness per search
+  UNIQUE(search_id, place_id)
+)
+```
+
+### `grid_point_results` Table
+
+Individual business rankings at each grid coordinate for detailed geographic analysis.
+
+```sql
+grid_point_results (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  search_id UUID REFERENCES grid_searches(id) ON DELETE CASCADE,
+  competitor_id UUID REFERENCES grid_competitors(id) ON DELETE CASCADE,
+  
+  -- Grid position
+  grid_row INTEGER NOT NULL,     -- 0-12 for 13x13 grid
+  grid_col INTEGER NOT NULL,     -- 0-12 for 13x13 grid  
+  lat DECIMAL(10, 7) NOT NULL,   -- Actual grid point coordinates
+  lng DECIMAL(10, 7) NOT NULL,
+  
+  -- Ranking data
+  rank_position INTEGER NOT NULL, -- Business rank at this location
+  total_results_at_point INTEGER, -- Total businesses found at this point
+  
+  created_at TIMESTAMP DEFAULT NOW()
+)
+```
+
+### `competitor_summaries` Table 
+
+Aggregated performance statistics and coverage metrics for quick analysis retrieval.
+
+```sql
+competitor_summaries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(), 
+  search_id UUID REFERENCES grid_searches(id) ON DELETE CASCADE,
+  competitor_id UUID REFERENCES grid_competitors(id) ON DELETE CASCADE,
+  
+  -- Geographic coverage analysis
+  north_appearances INTEGER,     -- Appearances in northern quadrant
+  south_appearances INTEGER,     -- Appearances in southern quadrant  
+  east_appearances INTEGER,      -- Appearances in eastern quadrant
+  west_appearances INTEGER,      -- Appearances in western quadrant
+  center_appearances INTEGER,    -- Appearances in center region
+  
+  -- Performance distribution
+  rank_1_count INTEGER,          -- Number of #1 rankings
+  rank_2_3_count INTEGER,        -- Number of 2-3 rankings  
+  rank_4_10_count INTEGER,       -- Number of 4-10 rankings
+  rank_11_20_count INTEGER,      -- Number of 11-20 rankings
+  rank_21_plus_count INTEGER,    -- Number of 21+ rankings
+  
+  -- Market intelligence
+  dominant_regions TEXT[],       -- Geographic areas where business dominates
+  weak_regions TEXT[],           -- Geographic areas with poor performance
+  competition_level VARCHAR(20), -- 'low', 'medium', 'high', 'very_high'
+  market_position VARCHAR(20),   -- 'leader', 'challenger', 'follower', 'niche'
+  
+  created_at TIMESTAMP DEFAULT NOW()
+)
+```
+
+### `grid_cells` Table
+
+Grid cell metadata and competition density analysis for market intelligence.
+
+```sql
+grid_cells (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  search_id UUID REFERENCES grid_searches(id) ON DELETE CASCADE,
+  
+  -- Grid position
+  grid_row INTEGER NOT NULL,
+  grid_col INTEGER NOT NULL, 
+  lat DECIMAL(10, 7) NOT NULL,
+  lng DECIMAL(10, 7) NOT NULL,
+  
+  -- Competition analysis
+  total_businesses INTEGER,
+  competition_level VARCHAR(20),  -- 'low', 'medium', 'high', 'very_high'
+  avg_rating DECIMAL(2,1),       -- Average rating of businesses in this cell
+  total_reviews INTEGER,         -- Sum of all reviews in this cell
+  
+  -- Top performers at this location
+  top_3_competitors JSONB,       -- [{name, rank, rating, reviews}, ...]
+  
+  created_at TIMESTAMP DEFAULT NOW(),
+  
+  UNIQUE(search_id, grid_row, grid_col)
+)
+```
+
 ## Database Migration History
 
 ### Lead Collections Migration
@@ -171,15 +343,60 @@ CREATE INDEX idx_leads_rating_reviews ON leads(rating DESC, review_count DESC);
 -- Collection browsing indexes
 CREATE INDEX idx_lead_collections_destination ON lead_collections(search_destination);
 CREATE INDEX idx_lead_collections_term ON lead_collections(search_term);
+
+-- Grid search performance indexes
+CREATE INDEX idx_grid_searches_search_term ON grid_searches(search_term);
+CREATE INDEX idx_grid_searches_location ON grid_searches(city, state);
+CREATE INDEX idx_grid_searches_created_at ON grid_searches(created_at DESC);
+
+-- Grid competitors lookup indexes
+CREATE INDEX idx_grid_competitors_search_id ON grid_competitors(search_id);
+CREATE INDEX idx_grid_competitors_place_id ON grid_competitors(place_id);
+CREATE INDEX idx_grid_competitors_coverage ON grid_competitors(coverage_percent DESC);
+CREATE INDEX idx_grid_competitors_avg_rank ON grid_competitors(avg_rank ASC);
+
+-- Grid point results spatial indexes
+CREATE INDEX idx_grid_point_results_search_competitor ON grid_point_results(search_id, competitor_id);
+CREATE INDEX idx_grid_point_results_grid_position ON grid_point_results(grid_row, grid_col);
+CREATE INDEX idx_grid_point_results_coordinates ON grid_point_results(lat, lng);
+
+-- Grid cells spatial indexes  
+CREATE INDEX idx_grid_cells_search_id ON grid_cells(search_id);
+CREATE INDEX idx_grid_cells_position ON grid_cells(grid_row, grid_col);
+CREATE INDEX idx_grid_cells_competition ON grid_cells(competition_level);
 ```
 
 ## Data Relationships
 
+### Core Tables
 ```
 leads (1) ←→ (many) lead_collections
 leads (1) ←→ (many) competitor_searches (via source_directory)
 competitor_searches (1) ←→ (many) leads (via collection)
 ```
+
+### Grid Search Tables
+```
+grid_searches (1) ←→ (many) grid_competitors
+grid_searches (1) ←→ (many) grid_point_results
+grid_searches (1) ←→ (many) competitor_summaries  
+grid_searches (1) ←→ (many) grid_cells
+
+grid_competitors (1) ←→ (many) grid_point_results
+grid_competitors (1) ←→ (1) competitor_summaries
+
+grid_searches (parent)
+├── grid_competitors (unique businesses found)
+│   ├── grid_point_results (rankings at each grid coordinate)
+│   └── competitor_summaries (aggregated performance stats)
+└── grid_cells (grid cell metadata and competition analysis)
+```
+
+### Key Relationships
+- **place_id** serves as the unique business identifier across grid_competitors
+- **search_id** links all grid search data to the master search record
+- **competitor_id** connects businesses to their specific ranking performances
+- **grid_row/grid_col** coordinates enable spatial analysis and visualization
 
 ## Database Connection
 

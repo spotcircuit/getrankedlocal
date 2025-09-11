@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
+import { ensureGoogleMapsLoaded } from '@/lib/maps-loader';
 import { createPortal } from 'react-dom';
 import { X, Sparkles } from 'lucide-react';
 
@@ -23,7 +24,6 @@ export default function IntakeModal({
   const [business, setBusiness] = useState(initialBusiness);
   const [niche, setNiche] = useState(initialNiche);
   const inputRef = useRef<HTMLInputElement | null>(null);
-  const scriptLoadedRef = useRef(false);
 
   useEffect(() => setMounted(true), []);
 
@@ -35,44 +35,14 @@ export default function IntakeModal({
     }
   }, [isOpen, initialBusiness, initialNiche]);
 
-  // Load Places API (idempotent) and attach autocomplete
+  // Load Places via shared loader and attach autocomplete
   useEffect(() => {
     if (!isOpen) return;
-    if (scriptLoadedRef.current) {
-      attachAutocomplete();
-      return;
-    }
-
-    const existing = document.querySelector(
-      'script[data-grl=gmp-places]'
-    ) as HTMLScriptElement | null;
-
-    const ensureInit = () => {
-      scriptLoadedRef.current = true;
-      attachAutocomplete();
-    };
-
-    if (existing) {
-      if ((window as any).google?.maps?.places) {
-        ensureInit();
-      } else {
-        existing.addEventListener('load', ensureInit, { once: true });
-      }
-      return () => existing.removeEventListener('load', ensureInit);
-    }
-
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-    if (!apiKey) return;
-
-    const script = document.createElement('script');
-    script.type = 'text/javascript';
-    script.async = true;
-    script.defer = true;
-    script.dataset.grl = 'gmp-places';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&v=weekly`;
-    script.addEventListener('load', ensureInit, { once: true });
-    document.head.appendChild(script);
-    return () => script.removeEventListener('load', ensureInit);
+    let cancelled = false;
+    ensureGoogleMapsLoaded()
+      .then(() => { if (!cancelled) attachAutocomplete(); })
+      .catch((e) => console.error('Failed to load Google Maps for IntakeModal:', e));
+    return () => { cancelled = true; };
   }, [isOpen]);
 
   const attachAutocomplete = () => {

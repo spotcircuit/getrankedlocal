@@ -30,3 +30,6 @@ coverage/
 *.tsbuildinfo
 .next/cache/
 .vercel/
+
+# Claude settings
+.claude/

@@ -23,14 +23,33 @@ function parseAIResponse(rawText: string, businessName: string = ''): Record<str
   // First, remove duplicate content by finding repeated sections
   let cleanedText = rawText;
   
+  // Remove the massive duplicated text blocks that appear in Greenfield Fence data
+  // These are caused by truncated responses being repeated
+  const duplicatePattern = /Greenfield Fence Inc[\s\S]*?Show all/g;
+  const matches = cleanedText.match(duplicatePattern);
+  if (matches && matches.length > 1) {
+    // Keep only the first occurrence
+    cleanedText = cleanedText.replace(duplicatePattern, (match, offset) => {
+      return offset === cleanedText.indexOf(match) ? match : '';
+    });
+  }
+  
+  // Remove Google Maps data and duplicated sections
+  cleanedText = cleanedText
+    .replace(/Map data ©\d+ Google[\s\S]*?Terms[\s\S]*?km/g, '') // Remove map data
+    .replace(/AI responses may include mistakes[\s\S]*?Learn more/g, '') // Remove AI disclaimer
+    .replace(/\d+ sites[\s\S]*?Show all/g, '') // Remove sites list
+    .replace(/Fence contractor[\s\S]*?Open\s*·/g, '') // Remove duplicate business listings
+    .trim();
+  
   // Find and remove duplicate paragraphs (same text appearing multiple times)
-  const paragraphs = rawText.split(/\n\n+/);
+  const paragraphs = cleanedText.split(/\n\n+/);
   const uniqueParagraphs = new Set<string>();
   const deduplicatedParagraphs: string[] = [];
   
   for (const para of paragraphs) {
     const normalized = para.trim().toLowerCase();
-    if (normalized && !uniqueParagraphs.has(normalized)) {
+    if (normalized && normalized.length > 20 && !uniqueParagraphs.has(normalized)) {
       uniqueParagraphs.add(normalized);
       deduplicatedParagraphs.push(para.trim());
     }
@@ -45,6 +64,7 @@ function parseAIResponse(rawText: string, businessName: string = ''): Record<str
     .replace(/Owner and founders?\s*$/gim, '')
     .replace(/or package deals[\s\S]*?top 3 local competitors/g, '') // Remove run-on sentences
     .replace(/by name, negative review themes[^.]*?\./gi, '') // Remove incomplete fragments
+    .replace(/booking platform or reservation system:[\s\S]*?online reservation system\./gi, 'Booking: Direct communication for custom projects.') // Simplify booking info
     .trim();
   
   // Split into major sections based on common headers
@@ -104,14 +124,24 @@ function parseAIResponse(rawText: string, businessName: string = ''): Record<str
   const extractedData: Record<string, any> = {};
   
   // Try to extract structured data from the messy text
-  // Owner/Founder extraction
-  const ownerMatch = cleanedText.match(/(?:Juan Carlos|JC)\s*(?:\(JC\))?\s*Sanabria[^.]*(?:is the|owner)[^.]*\./i);
-  if (ownerMatch) {
-    structured.owner = {
-      name: 'Juan Carlos (JC) Sanabria',
-      role: 'Owner',
-      business: cleanedText.match(/of ([^.]+?)(?:\.|$)/i)?.[1] || businessName
-    };
+  // Owner/Founder extraction - handle different formats
+  const ownerPatterns = [
+    /(?:Owner\/President|President|Owner):\s*([^\n.]+)/i,
+    /([A-Z][a-z]+ [A-Z][a-z]+)\s+is (?:listed as )?(?:the )?(?:President|Owner|Founder)/i,
+    /(?:Juan Carlos|JC)\s*(?:\(JC\))?\s*Sanabria[^.]*(?:is the|owner)[^.]*\./i
+  ];
+  
+  for (const pattern of ownerPatterns) {
+    const match = cleanedText.match(pattern);
+    if (match) {
+      const ownerName = match[1] ? match[1].trim() : match[0];
+      structured.owner = {
+        name: ownerName.replace(/\s+is listed as.*$/i, '').trim(),
+        role: cleanedText.includes('President') ? 'President' : 'Owner',
+        business: businessName
+      };
+      break;
+    }
   }
   
   // Extract social media with follower counts
@@ -143,6 +173,24 @@ function parseAIResponse(rawText: string, businessName: string = ''): Record<str
   // Extract LinkedIn URLs
   const linkedinRegex = /linkedin\.com\/(?:in|company)\/([^\s,)]+)/gi;
   extractedData.linkedinProfiles = Array.from(new Set((rawText.match(linkedinRegex) || [])));
+  
+  // Extract address
+  const addressMatch = cleanedText.match(/(?:Address|Location):\s*([^\n]+)/i);
+  if (addressMatch) {
+    extractedData.address = addressMatch[1].trim();
+  }
+  
+  // Extract company overview/services
+  const overviewMatch = cleanedText.match(/(?:Company Overview|Overview):\s*([^\n]+)/i);
+  if (overviewMatch) {
+    extractedData.overview = overviewMatch[1].trim();
+  }
+  
+  // Extract founded year
+  const foundedMatch = cleanedText.match(/founded (?:in )?(\d{4})/i);
+  if (foundedMatch) {
+    extractedData.founded = foundedMatch[1];
+  }
   
   // Extract specific pricing data
   const pricingData: string[] = [];

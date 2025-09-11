@@ -108,6 +108,9 @@ export async function POST(request: NextRequest) {
 
     // Get the target business details from prospects or leads table
     let targetBusinessDetails = null;
+    let ratingFromAI = 0;
+    let reviewCountFromAI = 0;
+    
     if (bestSearch.target_business_place_id) {
       // First check if it's in search_prospects as the target business
       const targetFromSearch = await sql`
@@ -178,6 +181,46 @@ export async function POST(request: NextRequest) {
             });
           } else {
             console.log('⚠️ Target business not found in any table for place_id:', bestSearch.target_business_place_id);
+            
+            // Extract rating and review count from AI intelligence if available
+            if (bestSearch.ai_intelligence) {
+              console.log('🔍 Attempting to extract data from AI intelligence...');
+              
+              // Parse raw_ai_response for rating and review count
+              const rawResponse = bestSearch.ai_intelligence.raw_ai_response || '';
+              
+              // Look for rating pattern like "4.3(30)" or "4.3 (30 reviews)"
+              const ratingMatch = rawResponse.match(/(\d+\.?\d*)\s*\((\d+)\)/);
+              if (ratingMatch) {
+                ratingFromAI = parseFloat(ratingMatch[1]) || 0;
+                reviewCountFromAI = parseInt(ratingMatch[2]) || 0;
+                console.log(`📊 Extracted from AI: Rating ${ratingFromAI}, Reviews ${reviewCountFromAI}`);
+              }
+              
+              // Also check if there's structured data in AI intelligence
+              const ai = bestSearch.ai_intelligence;
+              if (!ratingFromAI && (ai.rating || ai.businessRating)) {
+                ratingFromAI = parseFloat(ai.rating || ai.businessRating) || 0;
+              }
+              if (!reviewCountFromAI && (ai.review_count || ai.reviewCount || ai.reviews)) {
+                reviewCountFromAI = parseInt(ai.review_count || ai.reviewCount || ai.reviews) || 0;
+              }
+              
+              // Extract other business details from AI intelligence
+              targetBusinessDetails = {
+                business_name: bestSearch.target_business_name,
+                rating: ratingFromAI,
+                review_count: reviewCountFromAI,
+                website: ai.domain || ai.website || null,
+                phone: ai.contacts?.phones?.[0] || ai.phone || null,
+                street_address: ai.location?.address || null,
+                city: city,
+                state: state,
+                // Include owner info if available
+                owner_name: ai.owner?.name || null,
+                additional_data: ai
+              };
+            }
           }
         }
       }

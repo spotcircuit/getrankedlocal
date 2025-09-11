@@ -1,0 +1,29 @@
+{
+  "company": "Nike",
+  "timestamp": "2025-09-09T13:05:54.078460",
+  "platforms": {
+    "google": {
+      "platform": "Google Ads Transparency",
+      "company": "Nike",
+      "timestamp": "2025-09-09T13:05:55.755960",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    },
+    "meta": {
+      "platform": "Meta Ad Library",
+      "company": "Nike",
+      "timestamp": "2025-09-09T13:06:11.417424",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    }
+  },
+  "summary": {
+    "total_google_ads": 0,
+    "total_meta_ads": 0,
+    "total_ads": 0,
+    "google_error": null,
+    "meta_error": null
+  }
+}

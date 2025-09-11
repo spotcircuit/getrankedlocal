@@ -1,0 +1,29 @@
+{
+  "company": "Refined Aesthetics",
+  "timestamp": "2025-09-09T19:05:21.596539",
+  "platforms": {
+    "google": {
+      "platform": "Google Ads Transparency",
+      "company": "Refined Aesthetics",
+      "timestamp": "2025-09-09T19:05:24.157288",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    },
+    "meta": {
+      "platform": "Meta Ad Library",
+      "company": "Refined Aesthetics",
+      "timestamp": "2025-09-09T19:05:40.565406",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    }
+  },
+  "summary": {
+    "total_google_ads": 0,
+    "total_meta_ads": 0,
+    "total_ads": 0,
+    "google_error": null,
+    "meta_error": null
+  }
+}

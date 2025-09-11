@@ -79,17 +79,25 @@ export default function CompetitorAnalysis({ competitors, businessName, business
           className="text-center mb-12"
         >
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            {currentRank && currentRank <= 3 ? (
-              <>Your <span className="text-green-500">Closest Competitors</span> in the Market</>
+            {currentRank === 1 ? (
+              <>Maintain Your <span className="text-green-500">Market Leadership</span> Position</>
+            ) : currentRank === 2 || currentRank === 3 ? (
+              <>Your Path to <span className="text-yellow-500">Position #1</span> in {city}</>
+            ) : currentRank && currentRank <= 10 ? (
+              <>These <span className="text-orange-500">Top Competitors</span> Are Winning Your Customers</>
             ) : (
-              <>The <span className="text-red-500">Top 10 Businesses</span> Dominating Your Market</>
+              <>The <span className="text-red-500">Top 10 Businesses</span> Stealing Your Market Share</>
             )}
           </h2>
           <p className="text-xl text-gray-400">
-            {currentRank && currentRank <= 3 ? (
-              "These businesses are competing for your market share"
+            {currentRank === 1 ? (
+              "Stay ahead of these businesses trying to take your #1 spot"
+            ) : currentRank === 2 || currentRank === 3 ? (
+              `You're close! Here's who you need to outperform to reach #1`
+            ) : currentRank && currentRank <= 10 ? (
+              "These businesses are capturing customers searching for your services"
             ) : (
-              "These competitors capture the majority of all local searches"
+              "These competitors get 91% of all clicks from local searches"
             )}
           </p>
         </motion.div>

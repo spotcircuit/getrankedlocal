@@ -1,0 +1,29 @@
+{
+  "company": "Refined Aesthetics Leesburg",
+  "timestamp": "2025-09-09T19:03:52.600855",
+  "platforms": {
+    "google": {
+      "platform": "Google Ads Transparency",
+      "company": "Refined Aesthetics Leesburg",
+      "timestamp": "2025-09-09T19:03:54.101745",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    },
+    "meta": {
+      "platform": "Meta Ad Library",
+      "company": "Refined Aesthetics Leesburg",
+      "timestamp": "2025-09-09T19:04:09.909523",
+      "ads": [],
+      "error": null,
+      "message": "No ads found for this advertiser"
+    }
+  },
+  "summary": {
+    "total_google_ads": 0,
+    "total_meta_ads": 0,
+    "total_ads": 0,
+    "google_error": null,
+    "meta_error": null
+  }
+}

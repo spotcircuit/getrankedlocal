@@ -14,6 +14,7 @@ import CompetitorAlertFixed from '@/components/CompetitorAlertFixed';
 import SimplifiedSolution from '@/components/SimplifiedSolution';
 import StakeholderHero from '@/components/StakeholderHero';
 import LeadCaptureForm, { LeadData } from '@/components/LeadCaptureForm';
+import QuickSolutionPreview from '@/components/QuickSolutionPreview';
 
 interface ResultsSectionV2Props {
   results: any;
@@ -335,18 +336,35 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
       <StakeholderHero
         businessName={businessData.name}
         currentRank={analysisData.currentRank}
-        topCompetitors={competitorsSafe.slice(0, 3)}
+        topCompetitors={competitorsSafe}
         monthlyLoss={analysisData.lostRevenue ? Math.round(analysisData.lostRevenue / 12) : 15000}
         city={businessData.city}
         state={businessData.state}
         niche={businessData.niche}
         businessWebsite={businessData.website}
+        businessReviews={businessData.reviewCount || 0}
       />
 
       {/* Business Intelligence with Google Map - Right after Hero */}
       <BusinessInsights 
         business={businessData} 
         analysis={analysisData} 
+      />
+
+      {/* Quick Solution Preview - Show them there IS a solution early */}
+      <QuickSolutionPreview
+        businessName={businessData.name}
+        currentRank={analysisData.currentRank}
+        niche={businessData.niche}
+        city={businessData.city}
+        reviewDeficit={(() => {
+          // Find the competitor with the most reviews
+          const maxCompetitorReviews = Math.max(
+            ...competitorsSafe.map(c => c.reviews || 0),
+            0
+          );
+          return Math.max(0, maxCompetitorReviews - (businessData.reviewCount || 0));
+        })()}
       />
 
       {/* Visual Problem Representations */}

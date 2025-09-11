@@ -1,0 +1,6 @@
+Business Name,Website,Industry,Primary Email,Email Type,Decision Maker Name,Decision Maker Title,Decision Maker Email,Phone,Address,City,State,Google Rating,Review Count,Grid Coverage %,Running Ads,Competition Level,Campaign Status,Last Contact Date,Response Status,Follow Up Date,Notes,Data Source,Date Added
+Example Business 1,example1.com,Medical Spa,info@example1.com,Generic,,,,,123 Main St,Leesburg,VA,4.5,125,27%,Yes,High,Not Started,,No Response,,Low map visibility,Grid Search,2025-09-09
+Example Business 2,example2.com,Medical Spa,contact@example2.com,Generic,,,,,456 Oak Ave,Ashburn,VA,4.8,234,81%,Yes,High,Email Sent,2025-09-08,Opened,,Market leader,Scraped,2025-09-09
+Example Business 3,example3.com,Dental,hello@example3.com,Generic,Dr. Smith,Owner,smith@example3.com,,789 Elm St,Vienna,VA,4.2,89,45%,No,Medium,Completed,2025-09-01,Replied,2025-09-15,Interested in proposal,Manual,2025-09-08
+Example Business 4,example4.com,Restaurant,admin@example4.com,Generic,,,,,321 Pine Rd,Reston,VA,4.6,342,15%,No,Low,Not Started,,No Response,,New prospect,API,2025-09-09
+Example Business 5,example5.com,Law Firm,info@example5.com,Generic,John Doe,Partner,jdoe@example5.com,,555 Legal Way,McLean,VA,4.9,567,92%,Yes,High,In Progress,2025-09-09,Meeting Scheduled,2025-09-11,Demo scheduled,Referral,2025-09-07

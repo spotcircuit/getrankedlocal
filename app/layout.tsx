@@ -2,12 +2,16 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
+// Derive a sensible site URL for dev and prod
+const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL
+  || (process.env.NODE_ENV === 'development' ? 'http://localhost:3001' : 'http://localhost:3000');
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'GetRankedLocal - Dominate Google & AI Search in 90 Days',
   description: 'Get your business ranked #1 on Google Maps and AI platforms. See exactly who\'s stealing your customers and how to beat them.',
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'),
+  metadataBase: new URL(SITE_URL),
   alternates: {
     canonical: '/',
   },
@@ -36,8 +40,8 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'GetRankedLocal',
-              url: process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000',
-              logo: (process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000') + '/logo.png',
+              url: SITE_URL,
+              logo: SITE_URL + '/logo.png',
               sameAs: [
                 'https://www.linkedin.com/company/getrankedlocal',
               ],

@@ -9,8 +9,9 @@ GetLocalRanked is a sophisticated Google Maps ranking analysis and lead generati
 ### ✅ Completed Features
 - **Core Analysis Engine**: Fully functional Google Maps scraping and ranking analysis
 - **Real-time Data**: Live competitor analysis with 100+ businesses tracked per search
+- **Grid Search System**: Advanced 169-point geographic grid analysis for comprehensive market mapping
 - **AI Intelligence**: Advanced business intelligence extraction using AI
-- **Visual Analytics**: Interactive maps, competitor comparisons, and ranking visualizations
+- **Visual Analytics**: Interactive maps, competitor comparisons, and ranking heat maps
 - **Directory System**: Multi-city business directory with SEO-optimized pages
 - **Lead Collections System**: Many-to-many relationship system for organizing leads by search collections and destinations
 - **Data Migration**: Successfully migrated 6,511 leads to normalized collection system with 9 distinct collections
@@ -25,6 +26,37 @@ GetLocalRanked is a sophisticated Google Maps ranking analysis and lead generati
 - **Visual Assets**: Integrated visual problem representations for better understanding
 
 ### 🎯 Recently Implemented
+
+#### Grid Search Analysis System (Version 3.0)
+The platform now features a comprehensive grid search system that performs 169-point geographic analysis for complete market coverage:
+
+**Grid Search Capabilities:**
+- **169-Point Analysis**: 13x13 grid covering 5-mile radius around target location
+- **Dual Search Modes**: "All Businesses" for market exploration and "Target Business" for specific tracking
+- **Real-time Progress Visualization**: Live grid progress modal with completion tracking
+- **Comprehensive Data Extraction**: Place IDs, addresses, phone numbers, business types, coordinates, and ratings
+- **Advanced Heat Maps**: Color-coded ranking visualization with interactive Google Maps integration
+
+**Database Architecture:**
+- **5 New Tables**: Optimized storage for grid search data with bulk insert performance
+  - `grid_searches`: Main search records with metadata and execution statistics
+  - `grid_competitors`: All discovered businesses using place_id as unique identifier
+  - `grid_point_results`: Individual business rankings at each grid coordinate
+  - `competitor_summaries`: Aggregated performance statistics and coverage metrics
+  - `grid_cells`: Grid cell metadata with competition density analysis
+
+**Frontend Integration:**
+- **Grid Test Page**: Full-featured interface supporting both search modes with Google Places autocomplete
+- **ResultsSectionV3**: Advanced results display with interactive heat map, competitor overlays, and competitor heat map switching
+- **Competitor Heat Map Switching**: Click any competitor to instantly view their ranking heat map across the grid
+- **GridSearchModal**: Real-time progress visualization with 13x13 grid animation
+- **Storage Optimization**: Bulk database operations for performance at scale
+
+**Key Technical Improvements:**
+- **Fixed Duplicate Business Issue**: Previous system created duplicates without place_ids - now resolved
+- **Enhanced Data Quality**: Comprehensive business information matching production scraper capabilities
+- **Performance Optimization**: Bulk insert operations replacing individual database queries
+- **Geographic Intelligence**: Coverage analysis across north/south/east/west quadrants
 
 #### Lead Collections System (Version 2.0)
 The platform now features a comprehensive lead collections system that organizes 6,511 leads across 9 distinct business categories:
@@ -189,11 +221,16 @@ getlocalranked/
 │   ├── layout.css               # Layout utilities
 │   ├── utilities.css            # Utility classes
 │   └── components/              # Component-specific styles
-├── docs/                        # Documentation
-│   ├── directory-architecture.md
-│   ├── seo-strategy.md
-│   ├── css-architecture.md
-│   └── api-reference.md
+├── docs/                        # Technical Documentation
+│   ├── API.md                   # Complete API endpoints reference
+│   ├── ARCHITECTURE.md          # System architecture and design
+│   ├── DATABASE.md              # Database schema and relationships
+│   ├── grid-search-system.md    # Grid search analysis system
+│   ├── grid-search-database.md  # Grid search database architecture  
+│   ├── directory-architecture.md # Directory system structure
+│   ├── seo-strategy.md          # SEO implementation guide
+│   ├── css-architecture.md      # CSS system documentation
+│   └── deployment.md            # Production deployment guide
 └── public/                      # Static assets
 
 ## 🎨 CSS Architecture
@@ -229,6 +266,33 @@ The directory system implements comprehensive SEO optimization:
 - **Local Keywords**: City + service keyword optimization
 
 See `/docs/seo-strategy.md` for complete implementation details.
+
+## 📚 Technical Documentation
+
+This project follows a modular documentation architecture. The README serves as the main navigation hub, with specialized documentation for different aspects of the system:
+
+### Core System Documentation
+- **[API.md](/docs/API.md)** - Complete API endpoints reference including grid search, directory, and analysis endpoints
+- **[ARCHITECTURE.md](/docs/ARCHITECTURE.md)** - System architecture, technology stack, and component relationships
+- **[DATABASE.md](/docs/DATABASE.md)** - Database schema, relationships, and migration history
+- **[COMPONENTS.md](/docs/COMPONENTS.md)** - React component documentation with props, usage, and integration patterns
+
+### Feature-Specific Documentation  
+- **[grid-search-system.md](/docs/grid-search-system.md)** - Comprehensive grid search analysis system documentation
+- **[grid-search-database.md](/docs/grid-search-database.md)** - Grid search database architecture and table relationships
+- **[directory-architecture.md](/docs/directory-architecture.md)** - Directory system structure and SEO optimization
+
+### Development & Deployment
+- **[css-architecture.md](/docs/css-architecture.md)** - CSS system, design tokens, and styling guidelines
+- **[seo-strategy.md](/docs/seo-strategy.md)** - SEO implementation strategy and local optimization
+- **[deployment.md](/docs/deployment.md)** - Production deployment and configuration guide
+
+### Quick Reference
+- For API integration: Start with [API.md](/docs/API.md)
+- For system overview: Read [ARCHITECTURE.md](/docs/ARCHITECTURE.md) 
+- For database structure: Check [DATABASE.md](/docs/DATABASE.md)
+- For React components: See [COMPONENTS.md](/docs/COMPONENTS.md)
+- For grid search features: See [grid-search-system.md](/docs/grid-search-system.md)
 
 ## 🎯 Features
 
@@ -306,8 +370,9 @@ Create `.env.local` (never commit). See `.env.example` for the shape.
 
 ## 🔎 Key Routes
 
-- `/` — Homepage with “Browse Med Spas by Location”, social proof, and CTAs.
+- `/` — Homepage with "Browse Med Spas by Location", social proof, and CTAs.
 - `/getrankedlocal` — Get Ranked Local page with hero form, CTA, breadcrumbs, and lead capture modal.
+- `/grid-test` — Grid Search Analysis interface with dual search modes, real-time visualization, and competitor heat map switching.
 - `/[state]`, `/[state]/[city]`, etc. — Dynamic directories.
 
 ## 📊 Tracking & Analytics
