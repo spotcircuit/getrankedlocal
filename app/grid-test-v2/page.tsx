@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, Suspense } from 'react';
 import { Loader2, MapPin, Search, Building2, Globe, Grid3x3, Ruler, Info, Navigation, X, Crosshair, Star, Phone, Eye } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import ResultsSectionV3 from '@/components/ResultsSectionV3';
@@ -18,7 +18,7 @@ import { ensureGoogleMapsLoaded } from '@/lib/maps-loader';
 
 // Google Maps loader centralized in lib/maps-loader
 
-export default function GridTestV2Page() {
+function GridTestV2Content() {
   const searchParams = useSearchParams();
   const [searchMode, setSearchMode] = useState<'all' | 'targeted'>('all');
   const [businessName, setBusinessName] = useState('');
@@ -772,5 +772,20 @@ export default function GridTestV2Page() {
         />
       </div>
     </>
+  );
+}
+
+export default function GridTestV2Page() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-b from-gray-900 to-black text-white flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <Loader2 className="w-6 h-6 animate-spin" />
+          <span>Loading...</span>
+        </div>
+      </div>
+    }>
+      <GridTestV2Content />
+    </Suspense>
   );
 }
