@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, TrendingUp, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { MapPin, TrendingUp, AlertCircle, ChevronDown, ChevronUp, Eye } from 'lucide-react';
 import { ensureGoogleMapsLoaded } from '@/lib/maps-loader';
 import GridBusinessList from './GridBusinessList';
 
@@ -79,18 +79,19 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
   const [showAllCompetitors, setShowAllCompetitors] = useState(true);
   const [expandedCompetitorCount, setExpandedCompetitorCount] = useState(5);
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const markersRef = useRef<google.maps.Marker[]>([]);
-  const infoWindowRef = useRef<google.maps.InfoWindow | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<any[]>([]);
+  const infoWindowRef = useRef<any>(null);
   const selectedMarkerRef = useRef<any>(null);
   const allCompetitorMarkersRef = useRef<any[]>([]);
+  const targetMarkerRef = useRef<any>(null);
   
   // Reset selected competitor when new search data arrives
   // Use a combination of factors to detect a new search
   useEffect(() => {
     setSelectedCompetitor(null);
     setExpandedCompetitorCount(5);
-    setShowAllCompetitors(false);
+    // preserve user's Show Pins preference
     setSelectedCell(null);
     console.log('Resetting state for new search');
   }, [gridData.summary?.executionTime, businessName]);
@@ -121,24 +122,27 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
       return rankings;
     }
     
-    // Fallback to old method if matrix not available
+    // Fallback: fuzzy match against topCompetitors names at each grid point
     const rankings = new Map<number, number>();
     let foundCount = 0;
-    
+    const target = (competitorName || '').toLowerCase();
+    const tokens = target.split(/\s+/).filter(w => w.length > 2);
     gridData.gridPoints.forEach((point, index) => {
-      const competitor = point.topCompetitors.find(c => c.name === competitorName);
-      if (competitor) {
-        rankings.set(index, competitor.rank);
-        foundCount++;
-      } else {
-        rankings.set(index, 999);
+      // choose best (lowest rank) among matches, if multiple variants exist
+      let bestRank = 999;
+      for (const c of point.topCompetitors || []) {
+        const name = (c.name || '').toLowerCase();
+        const match = tokens.length ? tokens.every(t => name.includes(t)) : name === target;
+        if (match) {
+          if (typeof c.rank === 'number' && c.rank < bestRank) bestRank = c.rank;
+        }
       }
+      rankings.set(index, bestRank);
+      if (bestRank < 999) foundCount++;
     });
-    
     if (foundCount === 0) {
-      console.warn(`No rankings found for competitor: ${competitorName}`);
+      console.warn(`No rankings found for competitor (fuzzy): ${competitorName}`);
     }
-    
     return rankings;
   };
 
@@ -155,49 +159,29 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
         return;
       }
 
-      // Calculate center - use targeted business/competitor location if available
-      let centerLat = gridData.location?.centerLat || gridData.gridPoints.reduce((sum, p) => sum + p.lat, 0) / gridData.gridPoints.length;
-      let centerLng = gridData.location?.centerLng || gridData.gridPoints.reduce((sum, p) => sum + p.lng, 0) / gridData.gridPoints.length;
-      
-      // Center on targeted business if in targeted mode
-      if (businessName && gridData.targetBusiness?.lat && gridData.targetBusiness?.lng) {
-        centerLat = gridData.targetBusiness.lat;
-        centerLng = gridData.targetBusiness.lng;
-        console.log(`Centering map on target business: ${businessName} at ${centerLat}, ${centerLng}`);
-      }
-      // Or center on selected competitor if one is selected
-      else if (selectedCompetitor) {
-        const competitor = gridData.competitors.find(c => c.name === selectedCompetitor);
-        if (competitor?.lat && competitor?.lng) {
-          centerLat = competitor.lat;
-          centerLng = competitor.lng;
-          console.log(`Centering map on selected competitor: ${selectedCompetitor} at ${centerLat}, ${centerLng}`);
-        } else {
-          // Fallback: derive a representative position from grid points where this competitor appears
-          const pointsForComp = gridData.gridPoints.filter(pt => pt.topCompetitors?.some(tc => tc.name === selectedCompetitor));
-          if (pointsForComp.length) {
-            centerLat = pointsForComp.reduce((s, p) => s + p.lat, 0) / pointsForComp.length;
-            centerLng = pointsForComp.reduce((s, p) => s + p.lng, 0) / pointsForComp.length;
-            console.log(`Centering map on derived position for ${selectedCompetitor} at ${centerLat}, ${centerLng}`);
-          }
+      // Create the map once; reuse thereafter without changing center/zoom
+      let map = mapInstanceRef.current as any;
+      if (!map) {
+        // Calculate initial center: target business if available, else centroid
+        let centerLat = gridData.location?.centerLat || gridData.gridPoints.reduce((sum, p) => sum + p.lat, 0) / gridData.gridPoints.length;
+        let centerLng = gridData.location?.centerLng || gridData.gridPoints.reduce((sum, p) => sum + p.lng, 0) / gridData.gridPoints.length;
+        if (businessName && gridData.targetBusiness?.lat && gridData.targetBusiness?.lng) {
+          centerLat = gridData.targetBusiness.lat;
+          centerLng = gridData.targetBusiness.lng;
+          console.log(`Centering map on target business: ${businessName} at ${centerLat}, ${centerLng}`);
         }
+        map = new (window as any).google.maps.Map(mapRef.current!, {
+          center: { lat: centerLat, lng: centerLng },
+          zoom: 12,
+          mapTypeControl: false,
+          streetViewControl: false,
+          fullscreenControl: true
+        });
+        mapInstanceRef.current = map;
       }
-      
-      console.log(`Map center: ${centerLat}, ${centerLng} for ${selectedCompetitor || businessName || 'grid search'}`);
-
-      // Create map 
-      const map = new (window as any).google.maps.Map(mapRef.current!, {
-        center: { lat: centerLat, lng: centerLng },
-        zoom: 12,  // Increased from 11 for closer view
-        mapTypeControl: false,
-        streetViewControl: false,
-        fullscreenControl: true
-      });
-
-      mapInstanceRef.current = map;
       
       // Create info window
-      infoWindowRef.current = new google.maps.InfoWindow();
+      if (!infoWindowRef.current) infoWindowRef.current = new (window as any).google.maps.InfoWindow();
 
       // Clear existing markers and rectangles
       markersRef.current.forEach(marker => {
@@ -209,21 +193,60 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
       });
       markersRef.current = [];
 
-      // Calculate grid cell size (distance between points)
-      // With 13x13 grid over 5 miles, each cell is ~0.77 miles
-      const gridSpacing = 5 / 6; // miles between grid points (5 mile radius / 6 steps from center)
-      const latSpacing = gridSpacing / 69; // degrees latitude per mile
-      const lngSpacing = gridSpacing / (69 * Math.cos(centerLat * Math.PI / 180)); // degrees longitude
+      // Calculate grid cell size dynamically (degrees) from actual points
+      const points = gridData.gridPoints || [];
+      const rows = points.reduce((m, p) => Math.max(m, p.gridRow), 0) + 1;
+      const cols = points.reduce((m, p) => Math.max(m, p.gridCol), 0) + 1;
+      const verticalSteps: number[] = [];
+      const horizontalSteps: number[] = [];
+      try {
+        // Build maps for quick neighbor lookup
+        const byRowCol = new Map<string, GridPoint>();
+        points.forEach(p => byRowCol.set(`${p.gridRow}:${p.gridCol}`, p));
+        // Collect vertical neighbor spacings (same col, row+1)
+        for (let r = 0; r < rows - 1; r++) {
+          for (let c = 0; c < cols; c++) {
+            const a = byRowCol.get(`${r}:${c}`);
+            const b = byRowCol.get(`${r + 1}:${c}`);
+            if (a && b) verticalSteps.push(Math.abs(a.lat - b.lat));
+          }
+        }
+        // Collect horizontal neighbor spacings (same row, col+1)
+        for (let r = 0; r < rows; r++) {
+          for (let c = 0; c < cols - 1; c++) {
+            const a = byRowCol.get(`${r}:${c}`);
+            const b = byRowCol.get(`${r}:${c + 1}`);
+            if (a && b) horizontalSteps.push(Math.abs(a.lng - b.lng));
+          }
+        }
+      } catch {}
+      const median = (arr: number[]) => {
+        if (!arr.length) return 0;
+        const s = arr.slice().sort((x, y) => x - y);
+        const mid = Math.floor(s.length / 2);
+        return s.length % 2 ? s[mid] : (s[mid - 1] + s[mid]) / 2;
+      };
+      let latSpacing = median(verticalSteps) || 0;
+      let lngSpacing = median(horizontalSteps) || 0;
+      // Fallback to extents if neighbors missing or zero spacing
+      if (!latSpacing || !lngSpacing) {
+        const minLat = Math.min(...points.map(p => p.lat));
+        const maxLat = Math.max(...points.map(p => p.lat));
+        const minLng = Math.min(...points.map(p => p.lng));
+        const maxLng = Math.max(...points.map(p => p.lng));
+        latSpacing = latSpacing || ((maxLat - minLat) / Math.max(rows - 1, 1));
+        lngSpacing = lngSpacing || ((maxLng - minLng) / Math.max(cols - 1, 1));
+      }
       
-      // Create grid rectangles with rankings if we have targetRank data
-      // For targeted searches, always show the heat map grid
-      const hasTargetRankings = gridData.gridPoints.some(p => p.targetRank !== undefined && p.targetRank !== null);
+      // Create grid rectangles when we have meaningful target rankings (targeted mode)
+      // In "All Businesses" mode we don't draw the heat map by default
+      const hasTargetRankings = !!(businessName && gridData.gridPoints.some(p => typeof p.targetRank === 'number' && p.targetRank < 999));
       
       // Get rankings for selected competitor if one is selected
       const competitorRankings = selectedCompetitor ? getCompetitorRankings(selectedCompetitor) : null;
       
-      // Show heat map if it's a targeted search (businessName exists) OR we have target rankings OR a competitor is selected
-      if (businessName || hasTargetRankings || selectedCompetitor) {
+      // Show heat map only when targeted (or when a competitor is selected to view their heat map)
+      if (businessName || selectedCompetitor) {
         gridData.gridPoints.forEach((point, index) => {
         // Use competitor rankings if a competitor is selected, otherwise use target rankings
         const rankToDisplay = competitorRankings ? competitorRankings.get(index) || 999 : point.targetRank;
@@ -358,7 +381,10 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
                   TOP 3 BUSINESSES AT THIS LOCATION
                 </p>
                 ${point.topCompetitors.slice(0, 3).map((c, idx) => `
-                  <div style="padding: 8px 0; ${idx < 2 ? 'border-bottom: 1px solid #334155;' : ''}">
+                  <div id="grid-comp-${c.name.replace(/[^a-zA-Z0-9]/g, '-')}" 
+                       style="padding: 8px 0; ${idx < 2 ? 'border-bottom: 1px solid #334155;' : ''} cursor: pointer;"
+                       onmouseover="this.style.backgroundColor='#334155'" 
+                       onmouseout="this.style.backgroundColor='transparent'">
                     <div style="display: flex; align-items: start;">
                       <span style="min-width: 26px; height: 26px; border-radius: 50%; 
                                    background: ${idx === 0 ? '#FFD700' : idx === 1 ? '#C0C0C0' : '#CD7F32'}; 
@@ -371,14 +397,14 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
                         <p style="margin: 0; font-size: 12px; color: #FFFFFF; font-weight: 700;">
                           ${c.name}
                         </p>
-                        ${c.address ? `
+                        ${(c as any).address ? `
                           <p style="margin: 3px 0 0 0; font-size: 10px; color: #94A3B8; line-height: 1.3;">
-                            📍 ${c.address}
+                            📍 ${(c as any).address}
                           </p>
                         ` : ''}
-                        ${c.phone ? `
+                        ${(c as any).phone ? `
                           <p style="margin: 2px 0 0 0; font-size: 10px; color: #94A3B8;">
-                            📞 ${c.phone}
+                            📞 ${(c as any).phone}
                           </p>
                         ` : ''}
                         <p style="margin: 3px 0 0 0; font-size: 10px; color: #60A5FA;">
@@ -454,18 +480,11 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
         // In "All Businesses" mode, plot top 20 unique businesses
         Array.from(uniqueCompetitors.values()).slice(0, 20).forEach((competitor: any, idx: number) => {
           // Use business coordinates if available, otherwise find a point where it appears
-          let position = null;
+          let position = null as { lat: number; lng: number } | null;
           
-          // Check if competitor has lat/lng (from database)
-          if (competitor.lat && competitor.lng) {
-            // Only use coordinates if they're within reasonable distance of center (10 miles)
-            const distance = Math.sqrt(
-              Math.pow((competitor.lat - centerLat) * 69, 2) + 
-              Math.pow((competitor.lng - centerLng) * 69, 2)
-            );
-            if (distance < 10) {
-              position = { lat: competitor.lat, lng: competitor.lng };
-            }
+          // Prefer business coordinates from DB if available (no distance filter)
+          if (typeof competitor.lat === 'number' && typeof competitor.lng === 'number') {
+            position = { lat: competitor.lat, lng: competitor.lng };
           }
           
           if (!position) {
@@ -492,24 +511,24 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
             else if (listPosition <= 10) markerColor = '#f97316'; // Orange for 7-10
             else if (listPosition <= 20) markerColor = '#ef4444'; // Red for 11-20
             
-            const marker = new google.maps.Marker({
+            const marker = new (window as any).google.maps.Marker({
               position: position,
               map,
               icon: {
-                path: google.maps.SymbolPath.CIRCLE,
-                scale: 10,  // Smaller circle
+                path: (window as any).google.maps.SymbolPath.CIRCLE,
+                scale: 14,  // Larger, more visible
                 fillColor: markerColor,
-                fillOpacity: 0.9,
+                fillOpacity: 0.95,
                 strokeColor: '#FFFFFF',  // White border for contrast
-                strokeWeight: 2          // Thinner border
+                strokeWeight: 2
               },
               label: listPosition === 1 
-                ? { text: '👑', fontSize: '16px' }  // Smaller crown for #1 in list
+                ? { text: '👑', fontSize: '16px' }
                 : {
-                    text: listPosition.toString(),  // Show position in list
-                    color: listPosition <= 10 ? '#FFFFFF' : '#000000', // White text on darker colors
-                    fontSize: '12px',  // Smaller text
-                    fontWeight: '900'  // Extra bold
+                    text: listPosition.toString(),
+                    color: '#FFFFFF',
+                    fontSize: '12px',
+                    fontWeight: '900'
                   },
               title: `#${idx + 1} ${competitor.name} (Avg Rank: #${avgRank.toFixed(1)}, Coverage: ${cov.toFixed(1)}%)`,
               zIndex: 5000 - idx  // Higher z-index to ensure they're on top
@@ -605,7 +624,7 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
                     <div style="background: #f1f3f4; padding: 6px; border-radius: 4px;">
                       <p style="margin: 0; font-size: 9px; color: #666;">Appearances</p>
                       <p style="margin: 1px 0 0 0; font-size: 14px; font-weight: 700; color: #1a1a1a;">
-                        ${competitor.appearances}/169
+                        ${competitor.appearances}/${gridData.gridPoints?.length || 169}
                       </p>
                     </div>
                     
@@ -633,7 +652,7 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
               nameElement.addEventListener('click', () => {
                 setSelectedCompetitor(competitor.name);
                 try { onSelectCompetitor && onSelectCompetitor(competitor.name); } catch {}
-                setShowAllCompetitors(false); // Hide other competitors when selecting one
+                // preserve user's Show Pins preference
                 infoWindowRef.current!.close();
               });
             }
@@ -653,12 +672,15 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
           },
           map,
           icon: {
-            url: 'https://maps.google.com/mapfiles/ms/icons/blue-dot.png',
-            scaledSize: new (window as any).google.maps.Size(40, 40)
+            url: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+            scaledSize: new (window as any).google.maps.Size(44, 44)
           },
           title: businessName || gridData.targetBusiness.name || 'Target business',
-          zIndex: 1000
+          zIndex: 10000
         });
+
+        // Track as the persistent target marker so we can hide/show it on competitor selection
+        try { targetMarkerRef.current = businessMarker; } catch {}
         
         // Add click listener for business marker
         businessMarker.addListener('click', () => {
@@ -668,67 +690,39 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
                                  tbCov > 25 ? '#FFA500' : '#FF0000';
           
           const content = `
-            <div style="background: linear-gradient(135deg, #1F2937 0%, #111827 100%); 
-                        padding: 14px; min-width: 280px; 
-                        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-                        border-radius: 4px;">
-              <div style="border-bottom: 2px solid #7C3AED; padding-bottom: 8px; margin-bottom: 10px;">
-                <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: #FFFFFF;">
-                  ${businessName}
-                </h3>
-                <p style="margin: 3px 0 0 0; font-size: 11px; color: #A78BFA; font-weight: 600;">
-                  YOUR BUSINESS HQ
-                </p>
+            <div style="width: 320px; background: linear-gradient(180deg, #0b0f1a 0%, #111827 100%); color:#FFFFFF; border:1px solid #374151; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.45); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,system-ui,sans-serif;">
+              <div style="padding:12px 14px 10px 14px; border-bottom:1px solid #2a2f3a;">
+                <div style="font-size:16px; font-weight:800; line-height:1.2; color:#FFFFFF;">${businessName || gridData.targetBusiness!.name || 'Target Business'}</div>
+                ${typeof gridData.targetBusiness!.rating === 'number' ? `<div style=\"margin-top:6px; font-size:12px; color:#fbbf24;\">⭐ ${gridData.targetBusiness!.rating} <span style=\"color:#9CA3AF\">(${gridData.targetBusiness!.reviews || 0})</span></div>` : ''}
               </div>
-              
-              <div style="background: #7C3AED; border-radius: 6px; padding: 10px; margin-bottom: 10px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                  <div>
-                    <p style="margin: 0; font-size: 10px; color: #E5E7EB; font-weight: 600;">COVERAGE</p>
-                    <p style="margin: 2px 0 0 0; font-size: 20px; font-weight: 900; color: ${coverageColor};">
-                      ${tbCov.toFixed(1)}%
-                    </p>
-                  </div>
-                  <div>
-                    <p style="margin: 0; font-size: 10px; color: #E5E7EB; font-weight: 600;">AVG RANK</p>
-                    <p style="margin: 2px 0 0 0; font-size: 20px; font-weight: 900; color: #FFFFFF;">
-                      #${gridData.targetBusiness!.avgRank.toFixed(0)}
-                    </p>
-                  </div>
+              <div style="display:flex; gap:10px; padding:10px 14px;">
+                <div style="flex:1; background:#111827; border:1px solid #374151; border-radius:8px; padding:8px; text-align:center;">
+                  <div style="font-size:10px; color:#9CA3AF;">Coverage</div>
+                  <div style="margin-top:2px; font-size:18px; font-weight:900; color:${coverageColor};">${tbCov.toFixed(1)}%</div>
+                </div>
+                <div style="flex:1; background:#111827; border:1px solid #374151; border-radius:8px; padding:8px; text-align:center;">
+                  <div style="font-size:10px; color:#9CA3AF;">Avg Rank</div>
+                  <div style="margin-top:2px; font-size:18px; font-weight:900; color:#60A5FA;">#${gridData.targetBusiness!.avgRank.toFixed(0)}</div>
                 </div>
               </div>
-              
-              <div style="background: #1E293B; border-radius: 6px; padding: 10px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-                  <div style="padding: 6px; background: #334155; border-radius: 4px;">
-                    <p style="margin: 0; font-size: 9px; color: #94A3B8; font-weight: 600;">BEST</p>
-                    <p style="margin: 2px 0 0 0; font-size: 16px; font-weight: 800; color: #00FF00;">
-                      #${gridData.targetBusiness!.bestRank}
-                    </p>
-                  </div>
-                  <div style="padding: 6px; background: #334155; border-radius: 4px;">
-                    <p style="margin: 0; font-size: 9px; color: #94A3B8; font-weight: 600;">WORST</p>
-                    <p style="margin: 2px 0 0 0; font-size: 16px; font-weight: 800; color: #FF0000;">
-                      #${gridData.targetBusiness!.worstRank}
-                    </p>
-                  </div>
+              <div style="display:flex; gap:10px; padding:0 14px 12px 14px;">
+                <div style="flex:1; background:#0f172a; border:1px solid #374151; border-radius:8px; padding:8px; text-align:center;">
+                  <div style="font-size:10px; color:#9CA3AF;">Best</div>
+                  <div style="margin-top:2px; font-size:16px; font-weight:800; color:#10b981;">#${gridData.targetBusiness!.bestRank}</div>
                 </div>
-                <div style="margin-top: 8px; padding-top: 8px; border-top: 1px solid #475569;">
-                  <p style="margin: 0; font-size: 10px; color: #E5E7EB;">
-                    <span style="font-weight: 700; color: #A78BFA;">GRID:</span> 
-                    <span style="font-weight: 700; color: #FFFFFF; font-size: 12px;">${gridData.targetBusiness!.pointsFound}</span> 
-                    <span style="color: #94A3B8;">of ${gridData.targetBusiness!.totalPoints}</span>
-                  </p>
+                <div style="flex:1; background:#0f172a; border:1px solid #374151; border-radius:8px; padding:8px; text-align:center;">
+                  <div style="font-size:10px; color:#9CA3AF;">Worst</div>
+                  <div style="margin-top:2px; font-size:16px; font-weight:800; color:#ef4444;">#${gridData.targetBusiness!.worstRank}</div>
                 </div>
               </div>
             </div>
           `;
           
           infoWindowRef.current!.setContent(content);
-          infoWindowRef.current!.open(map, businessMarker);
+          infoWindowRef.current!.open(map, targetMarkerRef.current || businessMarker);
         });
         
-        markersRef.current.push(businessMarker);
+        // Keep target marker persistent; do not include in markersRef cleanup
       }
     };
 
@@ -753,6 +747,17 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
       }
       allCompetitorMarkersRef.current.forEach(m => m.setMap && m.setMap(null));
       allCompetitorMarkersRef.current = [];
+    } catch {}
+
+    // Hide target (original) marker when a competitor is selected; show it when cleared
+    try {
+      if (selectedCompetitor) {
+        targetMarkerRef.current && targetMarkerRef.current.setMap && targetMarkerRef.current.setMap(null);
+      } else {
+        if (targetMarkerRef.current && mapInstanceRef.current) {
+          targetMarkerRef.current.setMap(mapInstanceRef.current);
+        }
+      }
     } catch {}
 
     // Selected competitor marker (derive a reasonable position if coordinates are missing)
@@ -781,12 +786,52 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
             scaledSize: new g.maps.Size(40, 40)
           }
         });
+
+        // Do not move the map when selecting competitors; only show the pin
+
+        const cov = Math.min(100, Math.max(0, parseFloat(String(comp?.coverage ?? 0))));
+        const avgRank = parseFloat(String(comp?.avgRank ?? '999'));
+        const ranks = (gridData.competitorRankMatrix && comp?.name && gridData.competitorRankMatrix[comp.name])
+          ? gridData.competitorRankMatrix[comp.name].filter((r: number) => r < 999)
+          : Array.from(getCompetitorRankings(selectedCompetitor).values()).filter((r) => r < 999);
+        const best = ranks.length ? Math.min(...ranks) : 999;
+        const worst = ranks.length ? Math.max(...ranks) : 999;
+
+        const html = `
+          <div style="width: 280px; background: linear-gradient(180deg, #0b0f1a 0%, #111827 100%); color:#FFFFFF; border:1px solid #374151; border-radius:10px; padding:10px; font-family:'Segoe UI', system-ui, -apple-system, sans-serif;">
+            <h3 style="margin: 0 0 6px 0; font-size: 14px; font-weight: 900; color: #FFFFFF;">${selectedCompetitor}</h3>
+            <div style="display:flex; justify-content:space-between; gap:8px;">
+              <div style="flex:1; background:#111827; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
+                <div style="font-size:10px; color:#9CA3AF;">Coverage</div>
+                <div style="font-size:16px; font-weight:900; color:#C4B5FD;">${cov.toFixed(1)}%</div>
+              </div>
+              <div style="flex:1; background:#111827; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
+                <div style="font-size:10px; color:#9CA3AF;">Avg Rank</div>
+                <div style="font-size:16px; font-weight:900; color:#60A5FA;">#${isNaN(avgRank) ? 'N/A' : avgRank.toFixed(1)}</div>
+              </div>
+            </div>
+            <div style="display:flex; justify-content:space-between; gap:8px; margin-top:6px;">
+              <div style="flex:1; background:#0f172a; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
+                <div style="font-size:10px; color:#9CA3AF;">Best</div>
+                <div style="font-size:14px; font-weight:800; color:#10b981;">#${best === 999 ? '—' : best}</div>
+              </div>
+              <div style="flex:1; background:#0f172a; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
+                <div style="font-size:10px; color:#9CA3AF;">Worst</div>
+                <div style="font-size:14px; font-weight:800; color:#ef4444;">#${worst === 999 ? '—' : worst}</div>
+              </div>
+            </div>
+            <p style="margin:8px 0 0 0; font-size:11px; color:#9CA3AF;">Viewing this competitor's heat map.</p>
+          </div>`;
+        try { infoWindowRef.current!.setContent(html); infoWindowRef.current!.open(mapInstanceRef.current, selectedMarkerRef.current); } catch {}
       }
+    } else {
+      // No selected competitor: close any open competitor info
+      try { infoWindowRef.current && infoWindowRef.current.close(); } catch {}
     }
 
     // All competitor pins
-    if (showAllCompetitorPins) {
-      gridData.competitors.forEach(c => {
+    if (showAllCompetitorPins || !businessName) {
+      gridData.competitors.forEach((c, idx) => {
         if (typeof c.lat === 'number' && typeof c.lng === 'number') {
           const m = new g.maps.Marker({
             map: mapInstanceRef.current,
@@ -795,13 +840,15 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
             zIndex: 1500,
             icon: {
               path: g.maps.SymbolPath.CIRCLE,
-              scale: 5,
-              fillColor: '#60a5fa',
-              fillOpacity: 0.9,
-              strokeColor: '#1e3a8a',
-              strokeWeight: 1,
+              scale: 14,
+              fillColor: (() => { const cov = Math.min(100, Math.max(0, parseFloat(String(c.coverage ?? 0)))); return cov > 75 ? '#10b981' : cov > 50 ? '#eab308' : cov > 25 ? '#f97316' : '#ef4444'; })(),
+              fillOpacity: 0.95,
+              strokeColor: '#ffffff',
+              strokeWeight: 2,
             }
           });
+          // Add a numeric label for quick context
+          try { m.setLabel && m.setLabel({ text: String(idx + 1), color: '#FFFFFF', fontSize: '12px', fontWeight: '900' } as any); } catch {}
 
           // Clickable info with summary + action to view as focus
           m.addListener('click', () => {
@@ -816,27 +863,27 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
 
             const compId = 'pin-comp-' + c.name.replace(/[^a-zA-Z0-9]/g, '-');
             infoWindowRef.current!.setContent(`
-              <div style="width: 260px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
+              <div style="width: 280px; background: linear-gradient(135deg, #1F2937 0%, #111827 100%); color: #FFFFFF; border: 1px solid #374151; border-radius: 10px; padding: 10px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
                 <h3 id="${compId}" 
-                    style="margin: 0 0 6px 0; font-size: 14px; font-weight: 800; color: #ffffff; cursor: pointer; text-decoration: underline;">
+                    style="margin: 0 0 6px 0; font-size: 14px; font-weight: 900; color: #FFFFFF; cursor: pointer; text-decoration: underline; text-decoration-color: #A78BFA;">
                   ${c.name}
                 </h3>
                 <div style="display:flex; justify-content:space-between; gap:8px;">
-                  <div style="flex:1; background:#111827; padding:6px; border-radius:6px; text-align:center;">
+                  <div style="flex:1; background:#111827; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
                     <div style="font-size:10px; color:#9CA3AF;">Coverage</div>
-                    <div style="font-size:16px; font-weight:900; color:#A78BFA;">${cov.toFixed(1)}%</div>
+                    <div style="font-size:16px; font-weight:900; color:#C4B5FD;">${cov.toFixed(1)}%</div>
                   </div>
-                  <div style="flex:1; background:#111827; padding:6px; border-radius:6px; text-align:center;">
+                  <div style="flex:1; background:#111827; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
                     <div style="font-size:10px; color:#9CA3AF;">Avg Rank</div>
                     <div style="font-size:16px; font-weight:900; color:#60A5FA;">#${isNaN(avgRank) ? 'N/A' : avgRank.toFixed(1)}</div>
                   </div>
                 </div>
                 <div style="display:flex; justify-content:space-between; gap:8px; margin-top:6px;">
-                  <div style="flex:1; background:#1F2937; padding:6px; border-radius:6px; text-align:center;">
+                  <div style="flex:1; background:#1F2937; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
                     <div style="font-size:10px; color:#9CA3AF;">Best</div>
                     <div style="font-size:14px; font-weight:800; color:#10b981;">#${best === 999 ? '—' : best}</div>
                   </div>
-                  <div style="flex:1; background:#1F2937; padding:6px; border-radius:6px; text-align:center;">
+                  <div style="flex:1; background:#1F2937; padding:6px; border-radius:6px; text-align:center; border:1px solid #374151;">
                     <div style="font-size:10px; color:#9CA3AF;">Worst</div>
                     <div style="font-size:14px; font-weight:800; color:#ef4444;">#${worst === 999 ? '—' : worst}</div>
                   </div>
@@ -950,7 +997,9 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
             <div className="bg-gray-800 rounded-lg p-2">
               <p className="text-xs text-gray-400">Mode</p>
               <p className="text-sm font-bold text-white truncate">
-                {businessName ? businessName.slice(0, 20) + (businessName.length > 20 ? '...' : '') : 'All Businesses'}
+                {selectedCompetitor
+                  ? selectedCompetitor
+                  : (businessName ? businessName.slice(0, 20) + (businessName.length > 20 ? '...' : '') : 'All Businesses')}
               </p>
             </div>
             <div className="bg-gray-800 rounded-lg p-2">
@@ -962,32 +1011,76 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
             <div className="bg-gray-800 rounded-lg p-2">
               <p className="text-xs text-gray-400">Reviews</p>
               <p className="text-sm font-bold text-yellow-400">
-                {gridData.targetBusiness ? `⭐ ${gridData.targetBusiness.rating || 'N/A'} (${gridData.targetBusiness.reviews || 0})` : 'N/A'}
+                {(() => {
+                  if (selectedCompetitor) {
+                    const comp = gridData.competitors.find(c => c.name === selectedCompetitor);
+                    if (comp && typeof comp.rating === 'number') return `⭐ ${comp.rating} (${comp.reviews || 0})`;
+                    return 'N/A';
+                  }
+                  if (gridData.targetBusiness && typeof gridData.targetBusiness.rating === 'number') {
+                    return `⭐ ${gridData.targetBusiness.rating} (${gridData.targetBusiness.reviews || 0})`;
+                  }
+                  return 'N/A';
+                })()}
               </p>
             </div>
             <div className="bg-gray-800 rounded-lg p-2">
               <p className="text-xs text-gray-400">Coverage</p>
               {(() => {
-                const cov = Math.min(100, Math.max(0, gridData.targetBusiness?.coverage ?? 0));
+                let cov = 0;
+                if (selectedCompetitor) {
+                  const ranks = gridData.competitorRankMatrix && gridData.competitorRankMatrix[selectedCompetitor]
+                    ? gridData.competitorRankMatrix[selectedCompetitor]
+                    : Array.from(getCompetitorRankings(selectedCompetitor).values());
+                  const valid = ranks.filter((r: number) => r < 999).length;
+                  const total = gridData.gridPoints.length || 1;
+                  cov = Math.min(100, Math.max(0, (valid / total) * 100));
+                } else if (gridData.targetBusiness) {
+                  cov = Math.min(100, Math.max(0, gridData.targetBusiness.coverage));
+                }
                 const covClass = cov > 50 ? 'text-green-400' : cov > 25 ? 'text-yellow-400' : 'text-red-400';
+                return <p className={`text-lg font-bold ${covClass}`}>{cov.toFixed(1)}%</p>;
+              })()}
+            </div>
+            <div className="bg-gray-800 rounded-lg p-2">
+              <p className="text-xs text-gray-400">Avg Rank</p>
+              {(() => {
+                let avg = 999;
+                if (selectedCompetitor) {
+                  const ranks = gridData.competitorRankMatrix && gridData.competitorRankMatrix[selectedCompetitor]
+                    ? gridData.competitorRankMatrix[selectedCompetitor]
+                    : Array.from(getCompetitorRankings(selectedCompetitor).values());
+                  const valid = ranks.filter((r: number) => r < 999);
+                  avg = valid.length ? valid.reduce((a: number, b: number) => a + b, 0) / valid.length : 999;
+                } else if (gridData.targetBusiness) {
+                  avg = gridData.targetBusiness.avgRank;
+                }
                 return (
-                  <p className={`text-lg font-bold ${covClass}`}>
-                    {cov.toFixed(1)}%
+                  <p className={`text-lg font-bold ${getRankColorClass(avg)}`}>
+                    #{isNaN(avg as any) || avg === 999 ? 'N/A' : (avg as number).toFixed(0)}
                   </p>
                 );
               })()}
             </div>
             <div className="bg-gray-800 rounded-lg p-2">
-              <p className="text-xs text-gray-400">Avg Rank</p>
-              <p className={`text-lg font-bold ${getRankColorClass(gridData.targetBusiness?.avgRank || 999)}`}>
-                #{gridData.targetBusiness?.avgRank?.toFixed(0) || 'N/A'}
-              </p>
-            </div>
-            <div className="bg-gray-800 rounded-lg p-2">
               <p className="text-xs text-gray-400">Best Position</p>
-              <p className={`text-lg font-bold ${getRankColorClass(gridData.targetBusiness?.bestRank || 999)}`}>
-                #{gridData.targetBusiness?.bestRank || 'N/A'}
-              </p>
+              {(() => {
+                let best = 999;
+                if (selectedCompetitor) {
+                  const ranks = gridData.competitorRankMatrix && gridData.competitorRankMatrix[selectedCompetitor]
+                    ? gridData.competitorRankMatrix[selectedCompetitor]
+                    : Array.from(getCompetitorRankings(selectedCompetitor).values());
+                  const valid = ranks.filter((r: number) => r < 999);
+                  best = valid.length ? Math.min(...valid) : 999;
+                } else if (gridData.targetBusiness) {
+                  best = gridData.targetBusiness.bestRank;
+                }
+                return (
+                  <p className={`text-lg font-bold ${getRankColorClass(best)}`}>
+                    #{best === 999 ? 'N/A' : best}
+                  </p>
+                );
+              })()}
             </div>
           </div>
         </div>
@@ -1077,11 +1170,12 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
                 {gridData.competitors.slice(0, expandedCompetitorCount).map((comp, idx) => {
                   const cov = Math.min(100, Math.max(0, parseFloat(String(comp.coverage))));
                   const isSelected = selectedCompetitor === comp.name;
+                  const covColor = cov > 75 ? '#10b981' : cov > 50 ? '#eab308' : cov > 25 ? '#f97316' : '#ef4444';
                   return (
                     <div
                       key={idx}
-                      className={`bg-gray-800/80 rounded-lg p-2 flex items-center justify-between cursor-pointer hover:bg-gray-700/80 transition-colors ${
-                        isSelected ? 'ring-2 ring-purple-500' : ''
+                      className={`bg-gray-800/80 rounded-lg p-2 flex items-center justify-between cursor-pointer hover:bg-gray-700/80 transition-colors border ${
+                        isSelected ? 'ring-2 ring-purple-500 border-purple-500' : 'border-gray-700'
                       }`}
                       onClick={() => {
                         setSelectedCompetitor(comp.name === selectedCompetitor ? null : comp.name);
@@ -1092,6 +1186,7 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
                       aria-current={isSelected ? 'true' : undefined}
                     >
                       <div className="flex items-center gap-2">
+                        <span className="shrink-0" style={{ width: 8, height: 8, borderRadius: '9999px', backgroundColor: covColor }} />
                         <span className={`text-xs font-bold ${
                           idx === 0 ? 'text-yellow-400' :
                           idx === 1 ? 'text-gray-300' :
@@ -1109,14 +1204,7 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
                         </div>
                       </div>
                       <div className="text-right ml-2">
-                        <p className={`text-sm font-bold ${
-                          cov > 75 ? 'text-green-400' :
-                          cov > 50 ? 'text-yellow-400' :
-                          'text-orange-400'
-                        }`}>
-                          {cov.toFixed(1)}%
-                        </p>
-                        <p className="text-xs text-gray-500">coverage</p>
+                        <span className="inline-block text-xs text-purple-200 font-semibold" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', border: '1px solid rgba(147, 51, 234, 0.5)', padding: '2px 6px', borderRadius: '9999px' }}>{cov.toFixed(1)}%</span>
                         {isSelected && (
                           <p className="text-[10px] text-purple-300 font-semibold mt-0.5">Viewing</p>
                         )}

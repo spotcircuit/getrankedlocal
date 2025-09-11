@@ -149,13 +149,11 @@ export default function GridTestV2Page() {
         let extractedCity = '';
         let extractedState = '';
         
-        let lat: number | null = null;
-        let lng: number | null = null;
-        if (place.geometry && place.geometry.location) {
-          lat = place.geometry.location.lat();
-          lng = place.geometry.location.lng();
-          setLocationCoords({ lat, lng });
-          setCenterCoords({ lat, lng });
+    if (place.geometry && place.geometry.location) {
+      const lat: number = place.geometry.location.lat();
+      const lng: number = place.geometry.location.lng();
+      setLocationCoords({ lat, lng });
+      setCenterCoords({ lat, lng });
           try {
             console.log('[GridTestV2] Autocomplete selection coords:', { lat, lng, name: place.name });
           } catch {}
@@ -324,6 +322,7 @@ export default function GridTestV2Page() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           businessName: searchMode === 'targeted' ? businessName : undefined,
+          businessPlaceId: searchMode === 'targeted' ? targetBusiness?.placeId : undefined,
           city,
           state,
           niche: niche.trim(),
@@ -444,9 +443,9 @@ export default function GridTestV2Page() {
     <>
       <div key="mapRoot" className="min-h-screen flex items-stretch bg-black">
         {/* Left Sidebar */}
-        <div className="w-80 bg-gray-900 shadow-2xl z-10 h-screen flex flex-col">
+        <div className="w-64 bg-gray-900 shadow-2xl z-10 h-screen flex flex-col">
           {/* Header */}
-          <div className="p-4 border-b border-gray-800">
+          <div className="p-3 border-b border-gray-800">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-white">Configure your grid</h2>
               <button
@@ -610,7 +609,7 @@ export default function GridTestV2Page() {
             ) : (
               <>
                 {/* Results Sidebar: Competitor List */}
-                <div className="bg-gray-800 rounded-lg p-3 space-y-2">
+                <div className="bg-gray-800 rounded-lg p-2 space-y-2">
                   <div className="flex items-center justify-between">
                     <div className="text-sm text-gray-300">Top Competitors</div>
                     <label className="flex items-center gap-2 text-xs text-gray-300">
@@ -618,22 +617,23 @@ export default function GridTestV2Page() {
                       Show pins
                     </label>
                   </div>
-                  <div className="max-h-64 overflow-y-auto grid grid-cols-1 gap-1">
+                  <div className="max-h-48 overflow-y-auto grid grid-cols-1 gap-1">
                     {((gridData?.competitors || [])
                       .slice()
                       .sort((a, b) => (parseFloat(String(b.coverage)) || 0) - (parseFloat(String(a.coverage)) || 0))
                       .slice(0, 20)
-                    ).map((c, idx) => {
+                    ).map((c: any, idx: number) => {
                       const isSelected = selectedCompetitor === c.name;
                       const targetedName = (searchMode === 'targeted') ? (targetBusiness?.name || businessName) : '';
                       const isTargeted = targetedName && c.name && c.name.toLowerCase() === targetedName.toLowerCase();
-                      const rankColor = idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-gray-500';
+                      const rankColor = idx === 0 ? 'text-yellow-400' : idx === 1 ? 'text-gray-300' : idx === 2 ? 'text-orange-400' : 'text-purple-400';
                       const cov = Math.min(100, Math.max(0, Math.round(Number(c.coverage))));
                       const covColor = cov > 75 ? '#10b981' : cov > 50 ? '#eab308' : cov > 25 ? '#f97316' : '#ef4444';
+                      const covTextColor = cov > 75 ? 'text-green-400' : cov > 50 ? 'text-yellow-400' : cov > 25 ? 'text-orange-400' : 'text-red-400';
                       return (
                         <button
                           key={c.name + idx}
-                          onClick={() => setSelectedCompetitor(c.name)}
+                          onClick={() => { setSelectedCompetitor(c.name); /* preserve show pins state */ }}
                           className={`text-left px-2 py-1.5 rounded-md border-2 transition-colors flex items-start justify-between ${
                             isSelected ? 'border-purple-500 bg-gray-700' : 'border-gray-700 bg-gray-800 hover:bg-gray-700'
                           } ${isTargeted ? 'border-blue-500' : ''}`}
@@ -646,8 +646,8 @@ export default function GridTestV2Page() {
                             <span className="text-sm text-white font-semibold truncate">{c.name}</span>
                           </div>
                           <div className="text-right ml-2 shrink-0">
-                            <span className="inline-block text-xs text-purple-200 font-semibold" style={{ backgroundColor: 'rgba(147, 51, 234, 0.15)', border: '1px solid rgba(147, 51, 234, 0.5)', padding: '2px 6px', borderRadius: '9999px' }}>cov {cov}%</span>
-                            <div className="mt-0.5 text-[11px] text-gray-400 flex items-center gap-2 justify-end">
+                            <span className="inline-block text-xs font-semibold text-purple-400">cov {cov}%</span>
+                            <div className="mt-0.5 text-[11px] text-gray-200 flex items-center gap-2 justify-end">
                               <span>avg #{c.avgRank}</span>
                               {typeof c.rating === 'number' && <span>⭐ {c.rating} ({c.reviews || 0})</span>}
                             </div>
@@ -672,7 +672,7 @@ export default function GridTestV2Page() {
           )}
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-800 shrink-0">
+          <div className="p-3 border-t border-gray-800 shrink-0">
             <button
               onClick={runGridSearch}
               disabled={isLoading || !niche.trim() || !!gridData}
@@ -699,7 +699,7 @@ export default function GridTestV2Page() {
         </div>
 
         {/* Map Area (replaces with results view when available) */}
-        <div className="flex-1 min-w-0 bg-gray-800 overflow-hidden relative" style={{ height: '100vh', width: 'calc(100vw - 20rem)' }}>
+        <div className="flex-1 min-w-0 bg-gray-800 overflow-hidden relative" style={{ height: '100vh', width: 'calc(100vw - 16rem)' }}>
           {!gridData ? (
             <>
               {!centerCoords && (

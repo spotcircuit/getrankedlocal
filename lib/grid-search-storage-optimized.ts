@@ -19,6 +19,7 @@ export interface GridSearchData {
   gridSize: number;
   gridRows: number;
   gridCols: number;
+  searchRadiusMiles?: number;
   executionTime: number;
   sessionId: string;
   rawResults: any[];
@@ -162,7 +163,7 @@ export async function saveGridSearch(data: GridSearchData) {
         ${data.searchTerm},
         ${data.centerLat},
         ${data.centerLng},
-        ${5.0},
+        ${Math.min(Number(data.searchRadiusMiles || 5), 30)},
         ${data.gridSize},
         ${data.gridRows},
         ${data.gridCols},

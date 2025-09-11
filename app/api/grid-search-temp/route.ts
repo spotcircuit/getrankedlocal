@@ -16,7 +16,7 @@ export const maxDuration = 300; // 5 minutes max for grid search
 
 export async function POST(request: NextRequest) {
   try {
-    const { businessName, city, state, niche, lat, lng, gridSize, radiusMiles } = await request.json();
+    const { businessName, businessPlaceId, city, state, niche, lat, lng, gridSize, radiusMiles } = await request.json();
     
     if (!city || !state) {
       return NextResponse.json(
@@ -33,6 +33,9 @@ export async function POST(request: NextRequest) {
       console.warn('⚠️  WARNING: Targeted search without coordinates! This will use city center instead of business location.');
     }
     
+    // Enforce max 30 miles coverage radius
+    const boundedRadius = Math.min(Number(radiusMiles) || 5, 30);
+
     // Create a unique session ID for this search
     const sessionId = `grid_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
     
@@ -67,12 +70,15 @@ export async function POST(request: NextRequest) {
       headless: true,  // Run browser in headless mode
       // Grid configuration from modal
       grid_size: gridSize || 13,  // Default to 13x13
-      radius_miles: radiusMiles || 5,  // Default to 5 miles
+      radius_miles: boundedRadius || 5,  // Default to 5 miles, capped at 30
       // Store original location info for display/storage
       city,
       state,
       lat,
-      lng
+      lng,
+      // Also store explicit center fields for downstream usage
+      center_lat: lat,
+      center_lng: lng
     };
     
     console.log(`🎯 Config location being sent: ${config.location}`);
@@ -174,8 +180,8 @@ export async function POST(request: NextRequest) {
       // Process results for frontend display
       const processedResults = processGridResults(results, businessName);
       
-      // Add elapsed time to processed results
-      processedResults.summary.elapsedTime = elapsedSeconds;
+      // Add elapsed time to processed results (loosen typing)
+      ((processedResults as any).summary as any).elapsedTime = elapsedSeconds;
       
       console.log(`✅ Grid search completed in ${elapsedSeconds} seconds`);
       
@@ -194,11 +200,27 @@ export async function POST(request: NextRequest) {
       // Get center coordinates from the first result or config
       const centerLat = results.config?.center_lat || 
                        results.raw_results?.[0]?.point?.center_lat ||
+                       results.config?.lat ||
                        (processedResults.targetBusiness ? processedResults.targetBusiness.lat : 0);
       const centerLng = results.config?.center_lng || 
                        results.raw_results?.[0]?.point?.center_lng ||
+                       results.config?.lng ||
                        (processedResults.targetBusiness ? processedResults.targetBusiness.lng : 0);
       
+      // Derive grid dimensions from results
+      let gridRows = 13;
+      let gridCols = 13;
+      try {
+        const pts = (results.raw_results || []).filter((p: any) => p && p.point && Number.isInteger(p.point.grid_row) && Number.isInteger(p.point.grid_col));
+        if (pts.length > 0) {
+          const maxRow = pts.reduce((m: number, p: any) => Math.max(m, p.point.grid_row), 0);
+          const maxCol = pts.reduce((m: number, p: any) => Math.max(m, p.point.grid_col), 0);
+          gridRows = (maxRow + 1) || gridRows;
+          gridCols = (maxCol + 1) || gridCols;
+        }
+      } catch {}
+      const totalGridPoints = gridRows * gridCols;
+
       // Fire and forget - save to DB in background
       saveGridSearch({
         searchTerm: niche || 'business',
@@ -208,11 +230,13 @@ export async function POST(request: NextRequest) {
         state,
         searchMode: businessName ? 'targeted' : 'all_businesses',
         initiatedBy: businessName ? {
-          name: businessName
+          name: businessName,
+          placeId: businessPlaceId || null
         } : undefined,
-        gridSize: 169,
-        gridRows: 13,
-        gridCols: 13,
+        gridSize: totalGridPoints,
+        gridRows,
+        gridCols,
+        searchRadiusMiles: boundedRadius,
         executionTime: results.execution?.duration_seconds || processedResults.summary.executionTime,
         sessionId,
         rawResults: results.raw_results || []
@@ -377,9 +401,13 @@ function processGridResults(results: any, targetBusinessName: string | null | un
     .sort((a, b) => b.appearances - a.appearances)
     .slice(0, 20);
   
-  // Get the center business location from the config
-  const centerLat = results.config?.center_lat || results.raw_results[0]?.point.center_lat || 0;
-  const centerLng = results.config?.center_lng || results.raw_results[0]?.point.center_lng || 0;
+  // Derive a robust center for map/target marker
+  const rawPoints = Array.isArray(results.raw_results) ? results.raw_results : [];
+  const successfulPoints = rawPoints.filter((p: any) => p && p.success && p.point && typeof p.point.lat === 'number' && typeof p.point.lng === 'number');
+  const avgLat = successfulPoints.length ? successfulPoints.reduce((s: number, p: any) => s + p.point.lat, 0) / successfulPoints.length : 0;
+  const avgLng = successfulPoints.length ? successfulPoints.reduce((s: number, p: any) => s + p.point.lng, 0) / successfulPoints.length : 0;
+  const centerLat = (results.config?.center_lat ?? results.raw_results?.[0]?.point?.center_lat ?? results.config?.lat ?? avgLat) as number;
+  const centerLng = (results.config?.center_lng ?? results.raw_results?.[0]?.point?.center_lng ?? results.config?.lng ?? avgLng) as number;
   
   // Find target business rating and reviews from raw results
   let targetRating = null;

@@ -44,13 +44,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Enforce max 30 miles radius
+    const boundedRadius = Math.min(Number(radiusMiles) || 5, 30);
+
     const searchParams = {
       niche,
       city: hasCityState ? city : undefined,
       state: hasCityState ? state : undefined,
       center_lat: hasCoordinates ? centerLat : undefined,
       center_lng: hasCoordinates ? centerLng : undefined,
-      radius_miles: radiusMiles,
+      radius_miles: boundedRadius,
       grid_size: gridSize,
       business_name: businessName,
       use_city_bounds: hasCityState
@@ -121,6 +124,7 @@ export async function POST(request: NextRequest) {
         gridSize: gridSize * gridSize,
         gridRows: gridSize,
         gridCols: gridSize,
+        searchRadiusMiles: boundedRadius,
         executionTime: Math.round((Date.now() - new Date(data.timestamp).getTime()) / 1000),
         sessionId,
         rawResults

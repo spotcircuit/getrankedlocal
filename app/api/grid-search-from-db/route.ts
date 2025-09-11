@@ -76,6 +76,7 @@ export async function GET(request: NextRequest) {
       SELECT 
         gpr.*,
         gc.name as competitor_name,
+        gc.place_id as competitor_place_id,
         gc.rating,
         gc.reviews
       FROM grid_point_results gpr
@@ -87,23 +88,28 @@ export async function GET(request: NextRequest) {
     console.log(`Found ${gridPointResults.length} grid point results`);
     console.log(`Target business name: "${search.initiated_by_name}"`);
     
-    // Build grid points array (13x13 = 169 points)
-    const gridPoints = [];
-    
-    // Calculate grid spacing for missing cells
+    // Build grid points array using stored grid dimensions and radius
+    const gridPoints = [] as any[];
+
+    // Calculate grid spacing for missing cells using stored settings
     const centerLat = parseFloat(search.center_lat);
     const centerLng = parseFloat(search.center_lng);
-    const radiusMiles = 5;
-    const gridSize = 13;
-    const centerIdx = Math.floor(gridSize / 2); // 6
-    const stepSize = (radiusMiles * 2) / (gridSize - 1);
-    const latStep = stepSize / 69; // degrees per mile
-    const lngStep = stepSize / (69 * Math.abs(Math.cos(centerLat * Math.PI / 180)));
+    const gridRows = Number(search.grid_rows) || 13;
+    const gridCols = Number(search.grid_cols) || 13;
+    const totalGridPoints = (Number(search.grid_size) || (gridRows * gridCols)) || (13 * 13);
+    const storedRadius = Number(search.search_radius_miles) || 5;
+    const radiusMiles = Math.min(storedRadius, 30); // cap at 30 miles
+    const centerRow = Math.floor(gridRows / 2);
+    const centerCol = Math.floor(gridCols / 2);
+    const stepMilesRow = (radiusMiles * 2) / Math.max(gridRows - 1, 1);
+    const stepMilesCol = (radiusMiles * 2) / Math.max(gridCols - 1, 1);
+    const latStep = stepMilesRow / 69; // degrees per mile (lat)
+    const lngStep = stepMilesCol / (69 * Math.abs(Math.cos(centerLat * Math.PI / 180)));
     
-    // Initialize all 169 grid points
-    for (let i = 0; i < 169; i++) {
-      const row = Math.floor(i / 13);
-      const col = i % 13;
+    // Initialize all grid points
+    for (let i = 0; i < totalGridPoints; i++) {
+      const row = Math.floor(i / gridCols);
+      const col = i % gridCols;
       
       const cell = gridCells.find(c => c.grid_row === row && c.grid_col === col);
       
@@ -120,22 +126,26 @@ export async function GET(request: NextRequest) {
         }));
         
         // Find target business rank at this point if we have one
-        let targetRank = undefined;
+        let targetRank = undefined as number | undefined;
         if (search.initiated_by_name || search.initiated_by_place_id) {
-          // Look for the target business in this grid point's results
-          const targetResult = pointResults.find(r => 
-            r.competitor_name === search.initiated_by_name
-          );
-          if (targetResult) {
-            targetRank = targetResult.rank_position;
-            if (i < 5) { // Log first 5 for debugging
-              console.log(`Grid ${i}: Found ${search.initiated_by_name} at rank ${targetRank}`);
-            }
-          } else {
+          // Prefer place_id match if available
+          const targetPlaceId = (search.initiated_by_place_id || '').toString().trim();
+          if (targetPlaceId) {
+            const byPlace = (pointResults as any[]).find(r => (r.competitor_place_id || '').toString() === targetPlaceId);
+            if (byPlace) targetRank = (byPlace as any).rank_position;
+          }
+          if (targetRank === undefined) {
+            // Fuzzy name match: all significant words (len>2) must be present (case-insensitive)
+            const targetName = (search.initiated_by_name || '').toString().toLowerCase();
+            const words = targetName.split(/\s+/).filter((w: string) => w.length > 2);
+            const byName = (pointResults as any[]).find(r => {
+              const name = (r.competitor_name || '').toString().toLowerCase();
+              return words.length ? words.every((w: string) => name.includes(w)) : name === targetName;
+            });
+            if (byName) targetRank = (byName as any).rank_position;
+          }
+          if (targetRank === undefined) {
             targetRank = 999; // Only set to 999 if we're looking for a target but didn't find it
-            if (i < 5 && pointResults.length > 0) {
-              console.log(`Grid ${i}: Target not found. Names at this point:`, pointResults.slice(0, 3).map(r => r.competitor_name));
-            }
           }
         }
         
@@ -156,8 +166,8 @@ export async function GET(request: NextRequest) {
         gridPoints.push(gridPoint);
       } else {
         // Cell is missing - create a placeholder with calculated position
-        const lat = centerLat + ((row - centerIdx) * latStep);
-        const lng = centerLng + ((col - centerIdx) * lngStep);
+        const lat = centerLat + ((row - centerRow) * latStep);
+        const lng = centerLng + ((col - centerCol) * lngStep);
         
         const gridPoint: any = {
           lat: lat,
@@ -209,11 +219,11 @@ export async function GET(request: NextRequest) {
     
     // Initialize all competitors with 999 (not found) for all grid points
     formattedCompetitors.forEach(comp => {
-      competitorRankMatrix[comp.name] = new Array(169).fill(999);
+      competitorRankMatrix[comp.name] = new Array(totalGridPoints).fill(999);
     });
     
     // Fill in actual rankings from grid point results
-    for (let gridIndex = 0; gridIndex < 169; gridIndex++) {
+    for (let gridIndex = 0; gridIndex < totalGridPoints; gridIndex++) {
       const pointResults = gridPointResults.filter(r => r.grid_index === gridIndex);
       
       pointResults.forEach(result => {
@@ -247,7 +257,7 @@ export async function GET(request: NextRequest) {
           reviews: targetCompetitor.reviews,
           coverage: parseFloat(targetCompetitor.coverage),
           pointsFound: pointsWithTarget,
-          totalPoints: 169,
+          totalPoints: totalGridPoints,
           avgRank: targetRanks.length > 0 ? 
             targetRanks.reduce((a, b) => a + b, 0) / targetRanks.length : 999,
           bestRank: targetRanks.length > 0 ? Math.min(...targetRanks) : 999,

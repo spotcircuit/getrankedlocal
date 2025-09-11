@@ -305,14 +305,16 @@ export default function GridMapCanvas({
         const phone = targetBusiness.phone ?? null;
         const addr = targetBusiness.address ?? '';
         const html = `
-          <div style="min-width:260px; background:#0b0f1a; color:#fff; border-radius:10px; padding:12px 14px; box-shadow:0 10px 30px rgba(0,0,0,0.4); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,system-ui,sans-serif;">
-            <div style="font-weight:800; font-size:14px; margin-bottom:6px; line-height:1.2; color:#ffffff;">${targetBusiness.name}</div>
-            ${addr ? `<div style=\"font-size:12px; color:#9ca3af;\">${addr}</div>` : ''}
-            <div style="display:flex; gap:10px; align-items:center; margin-top:8px;">
-              <div style="font-size:12px; color:#fbbf24;">${rating !== null ? `⭐ ${rating}` : 'No rating'}</div>
-              ${reviews !== null ? `<div style=\"font-size:12px; color:#9ca3af;\">(${reviews})</div>` : ''}
+          <div style="width: 320px; background: linear-gradient(180deg, #0b0f1a 0%, #111827 100%); color:#FFFFFF; border:1px solid #374151; border-radius:12px; box-shadow:0 12px 30px rgba(0,0,0,0.45); font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,system-ui,sans-serif;">
+            <div style="padding:12px 14px 8px 14px; border-bottom:1px solid #2a2f3a;">
+              <div style="font-weight:900; font-size:16px; line-height:1.2; color:#ffffff;">${targetBusiness.name}</div>
+              ${addr ? `<div style=\"font-size:12px; color:#9ca3af; margin-top:4px;\">${addr}</div>` : ''}
+              <div style="display:flex; gap:10px; align-items:center; margin-top:6px;">
+                <div style="font-size:12px; color:#fbbf24;">${rating !== null ? `⭐ ${rating}` : 'No rating'}</div>
+                ${reviews !== null ? `<div style=\"font-size:12px; color:#9ca3af;\">(${reviews})</div>` : ''}
+                ${phone ? `<div style=\"font-size:12px; color:#e5e7eb; margin-left:auto;\">📞 ${phone}</div>` : ''}
+              </div>
             </div>
-            ${phone ? `<div style=\"font-size:12px; color:#e5e7eb; margin-top:6px;\">📞 ${phone}</div>` : ''}
           </div>
         `;
         infoWindowRef.current.setContent(html);
