@@ -146,14 +146,16 @@ export default function GridTestV2Page() {
         const place = autocompleteInstance.getPlace();
         if (!place) return;
 
-        let extractedCity = '';
-        let extractedState = '';
-        
+    let extractedCity = '';
+    let extractedState = '';
+    
+    let lat: number | null = null;
+    let lng: number | null = null;
     if (place.geometry && place.geometry.location) {
-      const lat: number = place.geometry.location.lat();
-      const lng: number = place.geometry.location.lng();
-      setLocationCoords({ lat, lng });
-      setCenterCoords({ lat, lng });
+      lat = place.geometry.location.lat();
+      lng = place.geometry.location.lng();
+      setLocationCoords({ lat: lat as number, lng: lng as number });
+      setCenterCoords({ lat: lat as number, lng: lng as number });
           try {
             console.log('[GridTestV2] Autocomplete selection coords:', { lat, lng, name: place.name });
           } catch {}
@@ -317,7 +319,7 @@ export default function GridTestV2Page() {
     setError(null);
     
     try {
-      const response = await fetch('/api/grid-search-temp', {
+      const response = await fetch('/api/grid-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -620,7 +622,7 @@ export default function GridTestV2Page() {
                   <div className="max-h-48 overflow-y-auto grid grid-cols-1 gap-1">
                     {((gridData?.competitors || [])
                       .slice()
-                      .sort((a, b) => (parseFloat(String(b.coverage)) || 0) - (parseFloat(String(a.coverage)) || 0))
+                      .sort((a: any, b: any) => (parseFloat(String(b.coverage)) || 0) - (parseFloat(String(a.coverage)) || 0))
                       .slice(0, 20)
                     ).map((c: any, idx: number) => {
                       const isSelected = selectedCompetitor === c.name;

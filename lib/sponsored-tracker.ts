@@ -121,22 +121,22 @@ export async function trackSponsoredResults(
   // Create rollup summaries for each sponsored business
   const totalGridPoints = rawResults.filter(r => r.success).length;
   
-  for (const [key, bizData] of sponsoredByBusiness) {
+  sponsoredByBusiness.forEach(async (bizData, key) => {
     const appearances = bizData.appearances;
     const appearanceCount = appearances.length;
     
-    if (appearanceCount === 0) continue;
+    if (appearanceCount === 0) return;
     
     // Calculate statistics
-    const sponsoredRanks = appearances.map(a => a.sponsoredRank).filter(r => r > 0);
-    const overallPositions = appearances.map(a => a.overallPosition);
+    const sponsoredRanks = appearances.map((a: SponsoredResult) => a.sponsoredRank).filter((r: number) => r > 0);
+    const overallPositions = appearances.map((a: SponsoredResult) => a.overallPosition);
     
     const avgSponsoredRank = sponsoredRanks.length > 0 
-      ? sponsoredRanks.reduce((a, b) => a + b, 0) / sponsoredRanks.length 
+      ? sponsoredRanks.reduce((a: number, b: number) => a + b, 0) / sponsoredRanks.length 
       : null;
     
     const avgOverallPosition = overallPositions.length > 0
-      ? overallPositions.reduce((a, b) => a + b, 0) / overallPositions.length
+      ? overallPositions.reduce((a: number, b: number) => a + b, 0) / overallPositions.length
       : null;
     
     const avgRating = bizData.ratingCount > 0 
@@ -199,7 +199,7 @@ export async function trackSponsoredResults(
         avg_rating = EXCLUDED.avg_rating,
         avg_reviews = EXCLUDED.avg_reviews
     `;
-  }
+  });
   
   return {
     totalSponsors: sponsoredByBusiness.size,

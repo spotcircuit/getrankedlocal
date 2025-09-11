@@ -231,7 +231,7 @@ export default function GridTestPage() {
         radiusMiles: finalConfig.radiusMiles
       });
       
-      const response = await fetch('/api/grid-search-temp', {
+      const response = await fetch('/api/grid-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

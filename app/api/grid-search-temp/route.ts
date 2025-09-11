@@ -16,6 +16,13 @@ export const maxDuration = 300; // 5 minutes max for grid search
 
 export async function POST(request: NextRequest) {
   try {
+    // This endpoint is not supported on Vercel/serverless (no filesystem, no child_process)
+    if (process.env.VERCEL || process.env.NEXT_RUNTIME === 'edge') {
+      return NextResponse.json(
+        { error: 'Direct grid search is disabled in this environment. Use /api/grid-search which proxies to the external orchestrator.' },
+        { status: 400 }
+      );
+    }
     const { businessName, businessPlaceId, city, state, niche, lat, lng, gridSize, radiusMiles } = await request.json();
     
     if (!city || !state) {

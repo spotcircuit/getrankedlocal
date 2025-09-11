@@ -48,7 +48,7 @@ export default function GridSearchTrigger({
       // No existing data, run grid search
       setProgress('Starting 169-point grid analysis...');
       
-      const gridResponse = await fetch('/api/grid-search-temp', {
+      const gridResponse = await fetch('/api/grid-search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

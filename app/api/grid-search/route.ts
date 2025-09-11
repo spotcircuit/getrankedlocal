@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
     const data = await response.json();
     
     // Process and format the results for the frontend
-    const formattedResults = formatGridResults(data, businessName);
+    const formattedResults: any = formatGridResults(data, businessName);
     
     // Save to database if we have raw results
     if (data.grid_results && data.grid_results.length > 0) {

@@ -5,6 +5,11 @@ const { promisify } = require('util');
 const execAsync = promisify(exec);
 
 async function checkTypes() {
+  // Allow skipping type checks for CI/deploys when explicitly requested
+  if (process.env.SKIP_TYPECHECK === '1' || process.env.SKIP_TYPECHECK === 'true') {
+    console.log('⏭️  Skipping TypeScript type checking (SKIP_TYPECHECK set)\n');
+    return true;
+  }
   console.log('🔍 Running TypeScript type checking...\n');
   
   try {

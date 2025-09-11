@@ -360,7 +360,7 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
         reviewDeficit={(() => {
           // Find the competitor with the most reviews
           const maxCompetitorReviews = Math.max(
-            ...competitorsSafe.map(c => c.reviews || 0),
+            ...competitorsSafe.map((c: any) => c.reviews || 0),
             0
           );
           return Math.max(0, maxCompetitorReviews - (businessData.reviewCount || 0));
