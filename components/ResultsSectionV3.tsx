@@ -1,9 +1,11 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { MapPin, TrendingUp, AlertCircle, ChevronDown, ChevronUp, Eye } from 'lucide-react';
+import { MapPin, TrendingUp, AlertCircle, ChevronDown, ChevronUp, Eye, Download, FileText } from 'lucide-react';
 import { ensureGoogleMapsLoaded } from '@/lib/maps-loader';
 import GridBusinessList from './GridBusinessList';
+import MarketingAnalystReport from './MarketingAnalystReport';
+import { exportGridDataToCSV, exportCompetitorAnalysisCSV } from '@/lib/csv-export';
 
 interface GridPoint {
   lat: number;

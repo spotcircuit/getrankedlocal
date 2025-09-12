@@ -55,12 +55,16 @@ export async function POST(request: NextRequest) {
     // Enforce max 30 miles radius
     const boundedRadius = Math.min(Number(radiusMiles) || 5, 30);
 
+    // Get batch size from environment variable, default to 10 for safety
+    const batchSize = parseInt(process.env.GRID_BATCH_SIZE || '10', 10);
+    
     const searchParams = {
       niche,
       lat: finalLat,
       lng: finalLng,
       radius_miles: boundedRadius,
       grid_size: gridSize,
+      batch_size: batchSize,
       business_name: businessName
     };
 
