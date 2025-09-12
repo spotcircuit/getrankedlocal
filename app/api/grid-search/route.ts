@@ -57,16 +57,11 @@ export async function POST(request: NextRequest) {
 
     const searchParams = {
       niche,
-      search_term: niche,
-      location: hasCityState ? `${city}, ${state}` : undefined,
-      city: hasCityState ? city : undefined,
-      state: hasCityState ? state : undefined,
-      center_lat: hasCoordinates ? finalLat : undefined,
-      center_lng: hasCoordinates ? finalLng : undefined,
+      lat: finalLat,
+      lng: finalLng,
       radius_miles: boundedRadius,
       grid_size: gridSize,
-      business_name: businessName,
-      use_city_bounds: hasCityState
+      business_name: businessName
     };
 
     console.log('🗺️ Initiating grid search:', searchParams);
