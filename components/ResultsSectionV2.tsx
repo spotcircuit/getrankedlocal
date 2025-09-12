@@ -15,6 +15,8 @@ import SimplifiedSolution from '@/components/SimplifiedSolution';
 import StakeholderHero from '@/components/StakeholderHero';
 import LeadCaptureForm, { LeadData } from '@/components/LeadCaptureForm';
 import QuickSolutionPreview from '@/components/QuickSolutionPreview';
+import MarketingAnalystReport from '@/components/MarketingAnalystReport';
+import { exportGridDataToCSV, exportCompetitorAnalysisCSV } from '@/lib/csv-export';
 
 interface ResultsSectionV2Props {
   results: any;
@@ -29,6 +31,7 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
 
   const { business, analysis, ai_intelligence, market_analysis, top_competitors, all_competitors, competitors } = results;
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [showReport, setShowReport] = useState(false);
   
   const handleLeadSubmit = (data: LeadData) => {
     setShowLeadForm(false);
@@ -38,6 +41,20 @@ export default function ResultsSectionV2({ results, businessName, niche, city, s
     successMessage.textContent = 'Thank you! We\'ll contact you within 24 hours with your competitive analysis.';
     document.body.appendChild(successMessage);
     setTimeout(() => successMessage.remove(), 5000);
+  };
+
+  const handleExportGridData = () => {
+    exportGridDataToCSV(results, businessName, niche || '', `${city}, ${state}`);
+  };
+
+  const handleExportCompetitorAnalysis = () => {
+    exportCompetitorAnalysisCSV(
+      businessData,
+      competitorsSafe,
+      analysisData,
+      niche || '',
+      `${city}, ${state}`
+    );
   };
   
   
