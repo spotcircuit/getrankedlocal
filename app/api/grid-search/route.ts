@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: localResult.error || 'Grid search failed' }, { status: localResult.status || 500 });
     }
 
-    // Try remote endpoint first if configured, otherwise fall back to local Python runner
+    // Try remote endpoint if configured; if FORCE_REMOTE_GRID=1, never use local runner
     if ((fullGridUrl || apiUrl) && process.env.FORCE_REMOTE_GRID === '1') {
       const urlToUse = fullGridUrl || `${apiUrl!.replace(/\/$/, '')}/api/grid-search`;
       console.log(`📡 Using Grid URL (forced): ${urlToUse}`);
@@ -109,25 +109,12 @@ export async function POST(request: NextRequest) {
       console.log(`📡 Using Grid URL: ${urlToUse}`);
       const remoteResult = await tryRemote(urlToUse, searchParams, true);
       if (remoteResult.ok) return NextResponse.json(remoteResult.payload);
-      console.warn(`Remote grid-search failed (${remoteResult.status}). Falling back to local Python...`);
-    } else {
-      console.log('ℹ️ No API URL configured; using local Python grid search');
+      // No fallback in production: surface remote error as-is
+      return NextResponse.json({ error: remoteResult.error || 'Remote grid-search failed' }, { status: remoteResult.status || 502 });
     }
 
-    const localResult = await tryLocalPython({
-      niche,
-      city,
-      state,
-      businessName,
-      businessPlaceId,
-      lat: finalLat,
-      lng: finalLng,
-      gridSize,
-      radiusMiles: boundedRadius
-    });
-
-    if (localResult.ok) return NextResponse.json(localResult.payload);
-    return NextResponse.json({ error: localResult.error || 'Grid search failed' }, { status: localResult.status || 500 });
+    // If no remote URL configured and not local/dev, return configuration error
+    return NextResponse.json({ error: 'GRID_SEARCH_URL (or RAILWAY_API_URL) not configured' }, { status: 500 });
     
   } catch (error) {
     console.error('Grid search error:', error);

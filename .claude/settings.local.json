@@ -56,7 +56,13 @@
       "Read(//tmp/**)",
       "Bash(cat:*)",
       "Bash(find:*)",
-      "Read(//mnt/c/Users/Big Daddy Pyatt/CascadeProjects/lead_finder_parallel/**)"
+      "Read(//mnt/c/Users/Big Daddy Pyatt/CascadeProjects/lead_finder_parallel/**)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "WebSearch",
+      "Bash(claude mcp add:*)",
+      "Bash(pkill:*)"
     ],
     "deny": [],
     "ask": []
