@@ -323,15 +323,12 @@ function GridTestV2Content() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          businessName: searchMode === 'targeted' ? businessName : undefined,
-          businessPlaceId: searchMode === 'targeted' ? targetBusiness?.placeId : undefined,
-          city,
-          state,
           niche: niche.trim(),
           lat: centerCoords?.lat || locationCoords?.lat,
           lng: centerCoords?.lng || locationCoords?.lng,
           gridSize,
-          radiusMiles
+          radiusMiles,
+          businessName: searchMode === 'targeted' ? businessName : undefined
         })
       });
 
