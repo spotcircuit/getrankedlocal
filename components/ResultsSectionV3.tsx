@@ -551,17 +551,17 @@ export default function ResultsSectionV3({ gridData, businessName, externalSelec
               
               infoWindowRef.current!.setContent(`
                 <div style="width: 280px; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;">
-                  <!-- Rank by Coverage Badge -->
+                  <!-- Rank by Coverage Badge - Smaller to prevent cutoff -->
                   <div style="background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%); 
-                              padding: 8px; 
+                              padding: 6px; 
                               margin: -16px -16px 10px -16px; 
                               border-radius: 8px 8px 0 0;
                               text-align: center;
                               box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3);">
-                    <p style="margin: 0; font-size: 10px; color: #000000; font-weight: 600; opacity: 0.8;">
+                    <p style="margin: 0; font-size: 9px; color: #000000; font-weight: 600; opacity: 0.8;">
                       RANK BY COVERAGE
                     </p>
-                    <p style="margin: 2px 0 0 0; font-size: 24px; font-weight: 900; color: #000000; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                    <p style="margin: 1px 0 0 0; font-size: 20px; font-weight: 900; color: #000000; text-shadow: 0 1px 2px rgba(0,0,0,0.1);">
                       #${idx + 1}
                     </p>
                   </div>
