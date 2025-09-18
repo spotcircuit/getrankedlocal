@@ -62,7 +62,8 @@
       "Bash(git push:*)",
       "WebSearch",
       "Bash(claude mcp add:*)",
-      "Bash(pkill:*)"
+      "Bash(pkill:*)",
+      "Bash(time python3:*)"
     ],
     "deny": [],
     "ask": []
