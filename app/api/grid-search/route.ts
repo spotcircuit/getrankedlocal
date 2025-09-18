@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 // For DB persistence using raw grid results
 import { saveGridSearch as saveGridSearchOptimized } from '@/lib/grid-search-storage-optimized';
+// Performance optimization: Intelligent caching system
+import { gridSearchCache } from '@/lib/grid-search-cache';
 import { exec } from 'child_process';
 import { promisify } from 'util';
 import path from 'path';
@@ -55,8 +57,39 @@ export async function POST(request: NextRequest) {
     // Enforce max 30 miles radius
     const boundedRadius = Math.min(Number(radiusMiles) || 5, 30);
 
-    // Get batch size from environment variable, default to 10 for safety
-    const batchSize = parseInt(process.env.GRID_BATCH_SIZE || '10', 10);
+    // PERFORMANCE OPTIMIZATION: Check cache first
+    const cacheKey = {
+      searchTerm: niche,
+      centerLat: finalLat,
+      centerLng: finalLng,
+      gridSize: gridSize * gridSize, // Convert to total points
+      radiusMiles: boundedRadius
+    };
+
+    console.log('🗺️ Initiating grid search:', {
+      niche,
+      location: hasCityState ? `${city}, ${state}` : `${finalLat}, ${finalLng}`,
+      gridSize: `${gridSize}x${gridSize}`,
+      radius: `${boundedRadius} miles`,
+      businessName: businessName || 'all businesses'
+    });
+
+    // Check cache for existing results
+    const cachedResult = await gridSearchCache.get(cacheKey);
+    if (cachedResult) {
+      console.log('⚡ Cache hit - returning cached grid search results');
+      return NextResponse.json({
+        success: true,
+        cached: true,
+        gridData: cachedResult.gridData,
+        sessionId: cachedResult.sessionId,
+        elapsedSeconds: 0,
+        message: 'Results loaded from cache'
+      });
+    }
+
+    // Get batch size from environment variable, increased default for optimization
+    const batchSize = parseInt(process.env.GRID_BATCH_SIZE || '15', 10);
     
     const searchParams = {
       niche,
@@ -189,32 +222,26 @@ async function tryLocalPython(opts: {
 
     const sessionId = `grid_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     const scriptPath = path.join(process.cwd(), '..', 'production', 'grid_search_PROD.py');
-    const configPath = path.join(process.cwd(), '..', 'production', 'temp_configs', `${sessionId}.json`);
 
-    await fs.mkdir(path.dirname(configPath), { recursive: true });
+    // Build command with direct arguments (no config file!)
+    const location = (opts.lat && opts.lng) ? `${opts.lat},${opts.lng}` : `${opts.city || ''}, ${opts.state || ''}`.trim();
+    const batchSize = parseInt(process.env.GRID_BATCH_SIZE || '10', 10);
+    const radiusMiles = Math.min(Number(opts.radiusMiles) || 5, 30);
 
-    const config = {
-      target_business: opts.businessName || null,
-      location: (opts.lat && opts.lng) ? `${opts.lat},${opts.lng}` : `${opts.city || ''}, ${opts.state || ''}`.trim(),
-      niche: opts.niche || 'business',
-      session_id: sessionId,
-      silent: true,
-      headless: true,
-      grid_size: opts.gridSize,
-      radius_miles: Math.min(Number(opts.radiusMiles) || 5, 30),
-      city: opts.city,
-      state: opts.state,
-      lat: opts.lat,
-      lng: opts.lng,
-      center_lat: opts.lat,
-      center_lng: opts.lng
-    };
+    let cmd = `python3 "${scriptPath}" --location "${location}" --search "${opts.niche || 'business'}" --headless --silent`;
+    cmd += ` --session-id "${sessionId}"`;
+    cmd += ` --grid-size ${opts.gridSize}`;
+    cmd += ` --radius-miles ${radiusMiles}`;
+    cmd += ` --batch-size ${batchSize}`;
 
-    await fs.writeFile(configPath, JSON.stringify(config, null, 2));
+    if (opts.businessName) {
+      cmd += ` --target "${opts.businessName}"`;
+    }
+    if (opts.lat && opts.lng) {
+      cmd += ` --lat ${opts.lat} --lng ${opts.lng}`;
+    }
 
-    // Execute Python script
-    let cmd = `python3 "${scriptPath}" --config "${configPath}" --headless --silent`;
-    try { await execAsync('which python3'); } catch { cmd = `python "${scriptPath}" --config "${configPath}" --headless --silent`; }
+    try { await execAsync('which python3'); } catch { cmd = cmd.replace('python3', 'python'); }
     const { stdout, stderr } = await execAsync(cmd, { timeout: 180000, maxBuffer: 10 * 1024 * 1024 });
     if (stderr && !/WARNING/i.test(stderr)) console.error('Grid search stderr:', stderr);
 
@@ -236,12 +263,26 @@ async function tryLocalPython(opts: {
       results = JSON.parse(content);
     }
 
-    // Cleanup temp file
-    await fs.unlink(configPath).catch(() => {});
+    // No temp file to cleanup anymore
 
     // Process to UI-friendly shape
     const gridData = processGridResultsFromRaw(results, opts.businessName);
     const payload = { success: true, sessionId, gridData, elapsedSeconds: results.execution?.duration_seconds || 0, raw: results };
+
+    // PERFORMANCE OPTIMIZATION: Cache successful results
+    const cacheParams = {
+      searchTerm: opts.niche,
+      centerLat: (results.config?.center_lat ?? opts.lat) as number,
+      centerLng: (results.config?.center_lng ?? opts.lng) as number,
+      gridSize: (Math.max(...(Array.isArray(results.raw_results) ? results.raw_results : []).map((p: any) => p?.point?.grid_row ?? 0)) + 1 || opts.gridSize) *
+                (Math.max(...(Array.isArray(results.raw_results) ? results.raw_results : []).map((p: any) => p?.point?.grid_col ?? 0)) + 1 || opts.gridSize),
+      radiusMiles: Math.min(Number(opts.radiusMiles) || 5, 30)
+    };
+
+    // Cache the successful result (fire-and-forget)
+    gridSearchCache.set(cacheParams, { gridData, sessionId }, sessionId).catch(err => {
+      console.warn('Failed to cache grid search result:', err);
+    });
 
     // Save to DB (fire-and-forget)
     const rawResults = Array.isArray(results.raw_results) ? results.raw_results : [];
